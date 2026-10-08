@@ -9,6 +9,8 @@ class RespuestaUsuario extends Model
 {
     protected $table = 'respuestas_usuario';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'intento_id',
         'pregunta_id',

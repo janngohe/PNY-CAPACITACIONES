@@ -19,7 +19,6 @@ return new class extends Migration
             $table->boolean('completado')->default(false);
             $table->dateTime('fecha_inicio')->nullable();
             $table->dateTime('fecha_finalizacion')->nullable();
-            $table->timestamps();
 
             $table->unique(['usuario_id', 'modulo_id'], 'uk_progreso_usuario_modulo');
         });

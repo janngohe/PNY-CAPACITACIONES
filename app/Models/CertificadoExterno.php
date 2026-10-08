@@ -9,6 +9,8 @@ class CertificadoExterno extends Model
 {
     protected $table = 'certificados_externos';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'usuario_id',
         'entidad_emisora',

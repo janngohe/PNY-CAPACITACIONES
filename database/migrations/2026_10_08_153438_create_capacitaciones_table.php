@@ -25,7 +25,6 @@ return new class extends Migration
             $table->unsignedBigInteger('plantilla_certificado_id')->nullable();
             $table->foreign('plantilla_certificado_id')->references('id')->on('plantillas_certificado')->onDelete('set null')->onUpdate('cascade');
             $table->boolean('estado')->default(true);
-            $table->timestamps();
         });
     }
 

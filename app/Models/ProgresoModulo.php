@@ -9,6 +9,8 @@ class ProgresoModulo extends Model
 {
     protected $table = 'progreso_modulos';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'usuario_id',
         'modulo_id',

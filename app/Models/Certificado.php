@@ -9,6 +9,8 @@ class Certificado extends Model
 {
     protected $table = 'certificados';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'usuario_id',
         'capacitacion_id',

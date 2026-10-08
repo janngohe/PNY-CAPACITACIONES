@@ -10,6 +10,8 @@ class IntentoEvaluacion extends Model
 {
     protected $table = 'intentos_evaluacion';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'usuario_id',
         'evaluacion_id',

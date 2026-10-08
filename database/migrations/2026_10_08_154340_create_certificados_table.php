@@ -24,7 +24,6 @@ return new class extends Migration
             $table->decimal('porcentaje', 5, 2)->default(0.00);
             $table->dateTime('fecha_emision')->useCurrent();
             $table->string('ruta_archivo', 255)->nullable();
-            $table->timestamps();
         });
     }
 

@@ -9,6 +9,8 @@ class AreaCapacitacion extends Model
 {
     protected $table = 'area_capacitacion';
 
+    public $timestamps = false;
+
     protected $fillable = ['area_id', 'capacitacion_id'];
 
     public function area(): BelongsTo

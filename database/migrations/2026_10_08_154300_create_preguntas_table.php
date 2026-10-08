@@ -17,7 +17,6 @@ return new class extends Migration
             $table->text('pregunta');
             $table->enum('tipo', ['UNICA', 'MULTIPLE', 'VERDADERO_FALSO'])->default('UNICA');
             $table->unsignedInteger('orden')->default(1);
-            $table->timestamps();
         });
     }
 

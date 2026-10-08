@@ -10,6 +10,8 @@ class Evaluacion extends Model
 {
     protected $table = 'evaluaciones';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'capacitacion_id',
         'titulo',

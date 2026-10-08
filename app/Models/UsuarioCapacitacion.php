@@ -9,6 +9,8 @@ class UsuarioCapacitacion extends Model
 {
     protected $table = 'usuario_capacitacion';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'usuario_id',
         'capacitacion_id',

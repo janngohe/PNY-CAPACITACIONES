@@ -10,6 +10,8 @@ class Area extends Model
 {
     protected $table = 'areas';
 
+    public $timestamps = false;
+
     protected $fillable = ['nombre', 'descripcion', 'estado'];
 
     protected function casts(): array
@@ -29,6 +31,6 @@ class Area extends Model
 
     public function capacitaciones(): BelongsToMany
     {
-        return $this->belongsToMany(Capacitacion::class, 'area_capacitacion', 'area_id', 'capacitacion_id')->withTimestamps();
+        return $this->belongsToMany(Capacitacion::class, 'area_capacitacion', 'area_id', 'capacitacion_id');
     }
 }

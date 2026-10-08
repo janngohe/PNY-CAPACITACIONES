@@ -19,7 +19,6 @@ return new class extends Migration
             $table->decimal('porcentaje_aprobacion', 5, 2)->default(80.00);
             $table->unsignedInteger('intentos_permitidos')->default(3);
             $table->boolean('estado')->default(true);
-            $table->timestamps();
         });
     }
 

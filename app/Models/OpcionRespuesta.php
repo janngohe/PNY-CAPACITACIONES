@@ -9,6 +9,8 @@ class OpcionRespuesta extends Model
 {
     protected $table = 'opciones_respuesta';
 
+    public $timestamps = false;
+
     protected $fillable = ['pregunta_id', 'texto', 'es_correcta'];
 
     protected function casts(): array

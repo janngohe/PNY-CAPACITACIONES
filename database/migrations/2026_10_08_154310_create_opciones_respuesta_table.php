@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('pregunta_id')->constrained('preguntas')->cascadeOnDelete()->cascadeOnUpdate();
             $table->text('texto');
             $table->boolean('es_correcta')->default(false);
-            $table->timestamps();
         });
     }
 

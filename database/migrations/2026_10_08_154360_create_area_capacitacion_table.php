@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('area_id')->constrained('areas')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('capacitacion_id')->constrained('capacitaciones')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->timestamps();
 
             $table->unique(['area_id', 'capacitacion_id'], 'uk_area_capacitacion');
         });

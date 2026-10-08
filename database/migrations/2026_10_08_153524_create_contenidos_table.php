@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('ruta_archivo', 255)->nullable();
             $table->unsignedInteger('orden')->default(1);
             $table->boolean('obligatorio')->default(true);
-            $table->timestamps();
         });
     }
 

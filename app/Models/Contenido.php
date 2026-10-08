@@ -9,6 +9,8 @@ class Contenido extends Model
 {
     protected $table = 'contenidos';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'modulo_id',
         'titulo',

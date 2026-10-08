@@ -11,6 +11,8 @@ class Capacitacion extends Model
 {
     protected $table = 'capacitaciones';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'titulo',
         'descripcion',
@@ -52,14 +54,13 @@ class Capacitacion extends Model
 
     public function areas(): BelongsToMany
     {
-        return $this->belongsToMany(Area::class, 'area_capacitacion', 'capacitacion_id', 'area_id')->withTimestamps();
+        return $this->belongsToMany(Area::class, 'area_capacitacion', 'capacitacion_id', 'area_id');
     }
 
     public function usuarios(): BelongsToMany
     {
         return $this->belongsToMany(Usuario::class, 'usuario_capacitacion', 'capacitacion_id', 'usuario_id')
-            ->withPivot(['fecha_asignacion', 'fecha_inicio', 'fecha_finalizacion', 'estado'])
-            ->withTimestamps();
+            ->withPivot(['fecha_asignacion', 'fecha_inicio', 'fecha_finalizacion', 'estado']);
     }
 
     public function asignaciones(): HasMany

@@ -19,7 +19,6 @@ return new class extends Migration
             $table->unsignedInteger('numero_seccion')->default(1);
             $table->string('ruta_imagen', 255)->nullable();
             $table->boolean('estado')->default(true);
-            $table->timestamps();
         });
     }
 

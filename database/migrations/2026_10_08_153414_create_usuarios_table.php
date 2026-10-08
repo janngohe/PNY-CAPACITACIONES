@@ -21,7 +21,6 @@ return new class extends Migration
             $table->foreign('area_id')->references('id')->on('areas')->onDelete('set null')->onUpdate('cascade');
             $table->boolean('usuario_nuevo')->default(true);
             $table->boolean('estado')->default(true);
-            $table->timestamps();
         });
     }
 

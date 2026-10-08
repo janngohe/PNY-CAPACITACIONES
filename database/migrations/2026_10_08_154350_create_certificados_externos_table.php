@@ -18,7 +18,6 @@ return new class extends Migration
             $table->date('fecha_emision')->nullable();
             $table->string('ruta_archivo', 255);
             $table->enum('estado', ['PENDIENTE', 'APROBADO', 'RECHAZADO'])->default('PENDIENTE');
-            $table->timestamps();
         });
     }
 

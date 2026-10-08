@@ -19,7 +19,6 @@ return new class extends Migration
             $table->dateTime('fecha_inicio')->nullable();
             $table->dateTime('fecha_finalizacion')->nullable();
             $table->enum('estado', ['PENDIENTE', 'EN_PROGRESO', 'COMPLETADA', 'NO_APROBADA'])->default('PENDIENTE');
-            $table->timestamps();
 
             $table->unique(['usuario_id', 'capacitacion_id'], 'uk_usuario_capacitacion');
         });

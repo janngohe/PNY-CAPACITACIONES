@@ -10,6 +10,8 @@ class Pregunta extends Model
 {
     protected $table = 'preguntas';
 
+    public $timestamps = false;
+
     protected $fillable = ['evaluacion_id', 'pregunta', 'tipo', 'orden'];
 
     public function evaluacion(): BelongsTo

@@ -22,7 +22,6 @@ return new class extends Migration
             $table->enum('estado', ['APROBADO', 'NO_APROBADO']);
             $table->dateTime('fecha_inicio')->nullable();
             $table->dateTime('fecha_finalizacion')->nullable();
-            $table->timestamps();
         });
     }
 

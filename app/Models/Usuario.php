@@ -14,6 +14,8 @@ class Usuario extends Authenticatable
 
     protected $table = 'usuarios';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'identificacion',
         'nombre_completo',
@@ -43,8 +45,7 @@ class Usuario extends Authenticatable
     public function capacitaciones(): BelongsToMany
     {
         return $this->belongsToMany(Capacitacion::class, 'usuario_capacitacion', 'usuario_id', 'capacitacion_id')
-            ->withPivot(['fecha_asignacion', 'fecha_inicio', 'fecha_finalizacion', 'estado'])
-            ->withTimestamps();
+            ->withPivot(['fecha_asignacion', 'fecha_inicio', 'fecha_finalizacion', 'estado']);
     }
 
     public function asignaciones(): HasMany

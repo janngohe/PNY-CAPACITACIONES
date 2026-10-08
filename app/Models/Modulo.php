@@ -10,6 +10,8 @@ class Modulo extends Model
 {
     protected $table = 'modulos';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'capacitacion_id',
         'titulo',

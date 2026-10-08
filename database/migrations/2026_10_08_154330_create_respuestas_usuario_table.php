@@ -18,7 +18,6 @@ return new class extends Migration
             $table->foreignId('opcion_id')->nullable()->constrained('opciones_respuesta')->nullOnDelete()->cascadeOnUpdate();
             $table->text('respuesta_texto')->nullable();
             $table->boolean('es_correcta')->default(false);
-            $table->timestamps();
         });
     }
 
