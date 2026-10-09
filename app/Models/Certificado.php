@@ -23,6 +23,7 @@ class Certificado extends Model
         'porcentaje',
         'fecha_emision',
         'ruta_archivo',
+        'emitido_por',
     ];
 
     protected function casts(): array

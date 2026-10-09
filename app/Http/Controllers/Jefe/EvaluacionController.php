@@ -16,7 +16,10 @@ use Illuminate\Validation\ValidationException;
 
 class EvaluacionController extends Controller
 {
-    private const TIPOS_PREGUNTA = ['UNICA', 'MULTIPLE', 'VERDADERO_FALSO'];
+    protected const TIPOS_PREGUNTA = ['UNICA', 'MULTIPLE', 'VERDADERO_FALSO'];
+
+    /** Prefijo de rutas / layout del panel que usa este controlador (jefe | admin). */
+    protected string $panel = 'jefe';
 
     public function index()
     {
@@ -38,6 +41,7 @@ class EvaluacionController extends Controller
 
         return view('jefe.evaluaciones.form', [
             'usuario' => $usuario,
+            'panel' => $this->panel,
             'evaluacion' => null,
             'bloqueada' => false,
             'capacitaciones' => $this->capacitacionesDelJefe($usuario),
@@ -65,7 +69,7 @@ class EvaluacionController extends Controller
             $this->sincronizarPreguntas($evaluacion, $datos['preguntas']);
         });
 
-        return redirect()->route('jefe.evaluaciones.index')
+        return redirect()->route($this->panel . '.evaluaciones.index')
             ->with('success', 'Evaluación creada correctamente.');
     }
 
@@ -76,6 +80,7 @@ class EvaluacionController extends Controller
 
         return view('jefe.evaluaciones.form', [
             'usuario' => $usuario,
+            'panel' => $this->panel,
             'evaluacion' => $evaluacion,
             'bloqueada' => $evaluacion->intentos()->exists(),
             'capacitaciones' => $this->capacitacionesDelJefe($usuario),
@@ -108,7 +113,7 @@ class EvaluacionController extends Controller
             }
         });
 
-        return redirect()->route('jefe.evaluaciones.index')
+        return redirect()->route($this->panel . '.evaluaciones.index')
             ->with('success', 'Evaluación actualizada correctamente.');
     }
 
@@ -128,7 +133,7 @@ class EvaluacionController extends Controller
 
     /* ------------------------------------------------------------------ */
 
-    private function jefe(): Usuario
+    protected function jefe(): Usuario
     {
         /** @var Usuario $usuario */
         $usuario = Auth::user();
@@ -136,7 +141,7 @@ class EvaluacionController extends Controller
         return $usuario;
     }
 
-    private function autorizar(Evaluacion $evaluacion, Usuario $usuario): void
+    protected function autorizar(Evaluacion $evaluacion, Usuario $usuario): void
     {
         $evaluacion->loadMissing('capacitacion');
 
@@ -147,15 +152,20 @@ class EvaluacionController extends Controller
         );
     }
 
-    private function capacitacionesDelJefe(Usuario $usuario)
+    protected function capacitacionesDelJefe(Usuario $usuario)
     {
         return $usuario->capacitacionesCreadas()->orderBy('titulo')->get(['id', 'titulo', 'estado']);
     }
 
-    private function validar(Request $request, Usuario $usuario, bool $bloqueada): array
+    protected function reglaCapacitacion(Usuario $usuario)
+    {
+        return Rule::exists('capacitaciones', 'id')->where('creado_por', $usuario->id);
+    }
+
+    protected function validar(Request $request, Usuario $usuario, bool $bloqueada): array
     {
         $reglas = [
-            'capacitacion_id' => ['required', 'integer', Rule::exists('capacitaciones', 'id')->where('creado_por', $usuario->id)],
+            'capacitacion_id' => ['required', 'integer', $this->reglaCapacitacion($usuario)],
             'titulo' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:3000'],
             'porcentaje_aprobacion' => ['required', 'numeric', 'between:1,100'],
@@ -216,12 +226,12 @@ class EvaluacionController extends Controller
         return $datos;
     }
 
-    private function posicion(array $items, int|string $key): int
+    protected function posicion(array $items, int|string $key): int
     {
         return array_search($key, array_keys($items), true) + 1;
     }
 
-    private function sincronizarPreguntas(Evaluacion $evaluacion, array $preguntasForm): void
+    protected function sincronizarPreguntas(Evaluacion $evaluacion, array $preguntasForm): void
     {
         $existentes = $evaluacion->preguntas()->get()->keyBy('id');
         $mantenidas = [];
@@ -251,7 +261,7 @@ class EvaluacionController extends Controller
         $evaluacion->preguntas()->whereNotIn('id', $mantenidas)->delete();
     }
 
-    private function sincronizarOpciones(Pregunta $pregunta, array $opcionesForm): void
+    protected function sincronizarOpciones(Pregunta $pregunta, array $opcionesForm): void
     {
         $existentes = $pregunta->opciones()->get()->keyBy('id');
         $mantenidas = [];
@@ -276,7 +286,7 @@ class EvaluacionController extends Controller
         OpcionRespuesta::where('pregunta_id', $pregunta->id)->whereNotIn('id', $mantenidas)->delete();
     }
 
-    private function preguntasParaFormulario(?Evaluacion $evaluacion): array
+    protected function preguntasParaFormulario(?Evaluacion $evaluacion): array
     {
         $old = old('preguntas');
         if (is_array($old)) {

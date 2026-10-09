@@ -1,17 +1,17 @@
-@extends('layouts.jefe')
+@extends('layouts.' . ($panel ?? 'jefe'))
 
-@section('title', 'Mis Evaluaciones')
-@section('page_title', 'Mis Evaluaciones')
+@section('title', ($panel ?? 'jefe') === 'admin' ? 'Evaluaciones' : 'Mis Evaluaciones')
+@section('page_title', ($panel ?? 'jefe') === 'admin' ? 'Evaluaciones' : 'Mis Evaluaciones')
 
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6">
 
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-            <h1 class="font-heading font-extrabold text-xl sm:text-2xl text-brand-dark">Mis Evaluaciones</h1>
-            <p class="text-xs text-muted">Cuestionarios de las capacitaciones que publicaste. Se pueden editar o desactivar, nunca eliminar.</p>
+            <h1 class="font-heading font-extrabold text-xl sm:text-2xl text-brand-dark">{{ ($panel ?? 'jefe') === 'admin' ? 'Evaluaciones' : 'Mis Evaluaciones' }}</h1>
+            <p class="text-xs text-muted">{{ ($panel ?? 'jefe') === 'admin' ? 'Cuestionarios de todas las capacitaciones.' : 'Cuestionarios de las capacitaciones que publicaste.' }} Se pueden editar o desactivar, nunca eliminar.</p>
         </div>
-        <a href="{{ route('jefe.evaluaciones.create') }}" id="btn-nueva-evaluacion"
+        <a href="{{ route(($panel ?? 'jefe') . '.evaluaciones.create') }}" id="btn-nueva-evaluacion"
            class="self-start sm:self-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
             Nueva evaluación
@@ -50,15 +50,15 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-line/60">
-                        <a href="{{ route('jefe.resultados.show', $evaluacion) }}"
+                        <a href="{{ route(($panel ?? 'jefe') . '.resultados.show', $evaluacion) }}"
                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs shadow-xs transition-colors">
                             Resultados
                         </a>
-                        <a href="{{ route('jefe.evaluaciones.edit', $evaluacion) }}"
+                        <a href="{{ route(($panel ?? 'jefe') . '.evaluaciones.edit', $evaluacion) }}"
                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-brand-light hover:text-brand-blue text-slate-700 font-heading font-bold text-xs transition-colors">
                             Editar
                         </a>
-                        <form method="POST" action="{{ route('jefe.evaluaciones.estado', $evaluacion) }}" class="ml-auto m-0"
+                        <form method="POST" action="{{ route(($panel ?? 'jefe') . '.evaluaciones.estado', $evaluacion) }}" class="ml-auto m-0"
                               onsubmit="return confirm('{{ $activa ? '¿Desactivar esta evaluación? Los resultados se conservan.' : '¿Activar nuevamente esta evaluación?' }}');">
                             @csrf
                             @method('PATCH')

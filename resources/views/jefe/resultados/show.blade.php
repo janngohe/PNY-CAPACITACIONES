@@ -1,4 +1,4 @@
-@extends('layouts.jefe')
+@extends('layouts.' . ($panel ?? 'jefe'))
 
 @section('title', 'Resultados · ' . $evaluacion->titulo)
 @section('page_title', 'Resultados de Evaluación')
@@ -19,7 +19,7 @@
     <div class="relative rounded-3xl bg-gradient-to-r from-brand-dark via-brand-deep to-brand-blue text-white p-6 sm:p-8 overflow-hidden shadow-md">
         <div class="absolute -right-10 -top-10 w-56 h-56 rounded-full bg-brand-sky/15 blur-2xl pointer-events-none"></div>
         <div class="relative z-10">
-            <a href="{{ route('jefe.resultados.index') }}" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-brand-sky hover:text-white transition-colors mb-2">
+            <a href="{{ route(($panel ?? 'jefe') . '.resultados.index') }}" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-brand-sky hover:text-white transition-colors mb-2">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
                 Volver a resultados
             </a>
@@ -54,7 +54,7 @@
             <h2 id="titulo-detalle" class="font-heading font-bold text-base text-brand-dark">Detalle por empleado</h2>
             <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-semibold">
                 @foreach ($filtros as $clave => $etiqueta)
-                    <a href="{{ $clave === '' ? route('jefe.resultados.show', $evaluacion) : route('jefe.resultados.show', [$evaluacion, 'estado' => $clave]) }}"
+                    <a href="{{ $clave === '' ? route(($panel ?? 'jefe') . '.resultados.show', $evaluacion) : route(($panel ?? 'jefe') . '.resultados.show', [$evaluacion, 'estado' => $clave]) }}"
                        class="px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors {{ ($filtro ?? '') === $clave ? 'bg-brand-blue text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-brand-light hover:text-brand-blue' }}">
                         {{ $etiqueta }}
                     </a>

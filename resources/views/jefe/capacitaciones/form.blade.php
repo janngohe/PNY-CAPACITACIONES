@@ -1,4 +1,4 @@
-@extends('layouts.jefe')
+@extends('layouts.' . ($panel ?? 'jefe'))
 
 @php
     $editando = (bool) $capacitacion;
@@ -81,7 +81,7 @@
         <!-- COLUMNA IZQUIERDA: FORMULARIO POR PASOS (7 cols en lg) -->
         <div class="lg:col-span-7">
             <form id="form-capacitacion" method="POST" enctype="multipart/form-data"
-                  action="{{ $editando ? route('jefe.capacitaciones.update', $capacitacion) : route('jefe.capacitaciones.store') }}"
+                  action="{{ $editando ? route(($panel ?? 'jefe') . '.capacitaciones.update', $capacitacion) : route(($panel ?? 'jefe') . '.capacitaciones.store') }}"
                   class="space-y-6">
                 @csrf
                 @if ($editando) @method('PUT') @endif
@@ -179,7 +179,7 @@
                     </div>
 
                     <div class="flex items-center justify-between pt-4 border-t border-line/60">
-                        <a href="{{ route('jefe.capacitaciones.index') }}"
+                        <a href="{{ route(($panel ?? 'jefe') . '.capacitaciones.index') }}"
                            class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs transition-colors">
                             Cancelar
                         </a>
@@ -263,7 +263,11 @@
                         <ul class="text-xs space-y-2 text-slate-700 pt-2 border-t border-emerald-200/60">
                             <li class="flex items-center gap-2">
                                 <span class="text-emerald-600 font-bold">✓</span>
-                                <span>Se habilitará automáticamente para los colaboradores del área <strong>{{ $usuario->area->nombre ?? 'Tu Área' }}</strong>.</span>
+                                @isset($areas)
+                                    <span>Se habilitará para los colaboradores de las <strong>áreas que selecciones</strong> a continuación.</span>
+                                @else
+                                    <span>Se habilitará automáticamente para los colaboradores del área <strong>{{ $usuario->area->nombre ?? 'Tu Área' }}</strong>.</span>
+                                @endisset
                             </li>
                             <li class="flex items-center gap-2">
                                 <span class="text-emerald-600 font-bold">✓</span>
@@ -275,6 +279,23 @@
                             </li>
                         </ul>
                     </div>
+
+                    @isset($areas)
+                        @php $areasSel = collect(old('areas', $areasSeleccionadas ?? []))->map(fn ($v) => (int) $v)->all(); @endphp
+                        <div class="space-y-3 pt-2" id="bloque-areas">
+                            <h4 class="font-heading font-bold text-xs text-brand-dark uppercase tracking-wider">Áreas que podrán realizar esta capacitación</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                @foreach ($areas as $area)
+                                    <label class="flex items-center gap-3 p-3 rounded-2xl border border-line bg-slate-50 hover:bg-brand-light/60 cursor-pointer transition-colors">
+                                        <input type="checkbox" name="areas[]" value="{{ $area->id }}" {{ in_array($area->id, $areasSel, true) ? 'checked' : '' }}
+                                               class="rounded text-brand-blue focus:ring-brand-blue">
+                                        <span class="text-xs font-bold text-brand-dark">{{ $area->nombre }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('areas') <p class="text-[11px] font-semibold text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    @endisset
 
                     <div class="space-y-3 pt-2">
                         <h4 class="font-heading font-bold text-xs text-brand-dark uppercase tracking-wider">Estado inicial de publicación</h4>
@@ -334,7 +355,7 @@
                         <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/80 via-brand-dark/20 to-transparent"></div>
 
                         <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-brand-blue/90 backdrop-blur-md text-white text-[10px] font-extrabold tracking-wide uppercase">
-                            Área: {{ $usuario->area->nombre ?? 'Mi Área' }}
+                            @isset($areas) Capacitación Institucional @else Área: {{ $usuario->area->nombre ?? 'Mi Área' }} @endisset
                         </span>
 
                         <div class="absolute bottom-3 left-3 right-3 text-white space-y-0.5">

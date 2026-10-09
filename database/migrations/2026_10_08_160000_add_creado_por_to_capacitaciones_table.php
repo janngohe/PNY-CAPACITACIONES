@@ -13,11 +13,14 @@ return new class extends Migration
     public function up(): void
     {
         if (Schema::hasColumn('capacitaciones', 'creado_por')) {
-            return;
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE capacitaciones MODIFY COLUMN creado_por BIGINT UNSIGNED NULL");
+        } else {
+            Schema::table('capacitaciones', function (Blueprint $table) {
+                $table->unsignedBigInteger('creado_por')->nullable()->after('plantilla_certificado_id');
+            });
         }
 
         Schema::table('capacitaciones', function (Blueprint $table) {
-            $table->integer('creado_por')->nullable()->after('plantilla_certificado_id');
             $table->foreign('creado_por')->references('id')->on('usuarios')->onDelete('set null')->onUpdate('cascade');
         });
     }

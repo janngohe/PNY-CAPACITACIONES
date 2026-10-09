@@ -1,4 +1,4 @@
-@extends('layouts.jefe')
+@extends('layouts.' . ($panel ?? 'jefe'))
 
 @php
     $editando = (bool) $evaluacion;
@@ -34,7 +34,7 @@
     @if ($capacitaciones->isEmpty())
         <div class="p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm" role="alert">
             <strong>Primero necesitas una capacitación.</strong> Las evaluaciones se asocian a una capacitación que hayas publicado.
-            <a href="{{ route('jefe.capacitaciones.create') }}" class="font-bold text-brand-blue hover:underline">Crear capacitación</a>.
+            <a href="{{ route(($panel ?? 'jefe') . '.capacitaciones.create') }}" class="font-bold text-brand-blue hover:underline">Crear capacitación</a>.
         </div>
     @else
 
@@ -57,7 +57,7 @@
     @endif
 
     <form id="form-evaluacion" method="POST"
-          action="{{ $editando ? route('jefe.evaluaciones.update', $evaluacion) : route('jefe.evaluaciones.store') }}"
+          action="{{ $editando ? route(($panel ?? 'jefe') . '.evaluaciones.update', $evaluacion) : route(($panel ?? 'jefe') . '.evaluaciones.store') }}"
           class="space-y-6">
         @csrf
         @if ($editando) @method('PUT') @endif
@@ -129,7 +129,7 @@
         </section>
 
         <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
-            <a href="{{ route('jefe.evaluaciones.index') }}"
+            <a href="{{ route(($panel ?? 'jefe') . '.evaluaciones.index') }}"
                class="text-center px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs sm:text-sm transition-colors">
                 Cancelar
             </a>

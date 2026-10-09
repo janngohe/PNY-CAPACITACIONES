@@ -1,4 +1,4 @@
-@extends('layouts.jefe')
+@extends('layouts.' . ($panel ?? 'jefe'))
 
 @section('title', 'Consultar Resultados')
 @section('page_title', 'Consultar Resultados')
@@ -11,7 +11,7 @@
         <div class="relative z-10">
             <h1 class="font-heading font-extrabold text-xl sm:text-2xl md:text-3xl leading-tight">Consultar Resultados</h1>
             <p class="mt-1.5 text-xs sm:text-sm text-slate-200/90 max-w-2xl">
-                Revisa cómo le va a tu equipo en cada evaluación: quién la presentó, cuántos intentos usó y si aprobó.
+                {{ ($panel ?? 'jefe') === 'admin' ? 'Consulta los resultados de todas las evaluaciones de la plataforma: quién la presentó, cuántos intentos usó y si aprobó.' : 'Revisa cómo le va a tu equipo en cada evaluación: quién la presentó, cuántos intentos usó y si aprobó.' }}
             </p>
         </div>
         <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none pointer-events-none opacity-30">
@@ -21,14 +21,14 @@
 
     <section class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden" aria-labelledby="titulo-resultados">
         <div class="px-5 sm:px-6 py-4 border-b border-line/60">
-            <h2 id="titulo-resultados" class="font-heading font-bold text-base text-brand-dark">Evaluaciones de mis capacitaciones</h2>
+            <h2 id="titulo-resultados" class="font-heading font-bold text-base text-brand-dark">{{ ($panel ?? 'jefe') === 'admin' ? 'Evaluaciones de la plataforma' : 'Evaluaciones de mis capacitaciones' }}</h2>
             <p class="text-xs text-muted">Selecciona una evaluación para ver el detalle por empleado.</p>
         </div>
 
         @if ($evaluaciones->isEmpty())
             <div class="p-10 text-center space-y-2">
-                <p class="text-xs text-muted">Todavía no tienes evaluaciones creadas.</p>
-                <a href="{{ route('jefe.evaluaciones.create') }}" class="inline-block text-xs font-bold text-brand-blue hover:underline">Crear evaluación</a>
+                <p class="text-xs text-muted">Todavía no hay evaluaciones creadas.</p>
+                <a href="{{ route(($panel ?? 'jefe') . '.evaluaciones.create') }}" class="inline-block text-xs font-bold text-brand-blue hover:underline">Crear evaluación</a>
             </div>
         @else
             <div class="overflow-x-auto">
@@ -51,7 +51,7 @@
                                     <p class="font-bold text-brand-dark">{{ $evaluacion->titulo }}</p>
                                     <p class="text-[11px] text-muted truncate max-w-xs">{{ $evaluacion->capacitacion->titulo }}</p>
                                 </td>
-                                <td class="px-4 py-3.5 text-center font-semibold text-brand-dark">{{ $evaluacion->participantes }} / {{ $empleadosArea }}</td>
+                                <td class="px-4 py-3.5 text-center font-semibold text-brand-dark">{{ $evaluacion->participantes }} / {{ $evaluacion->empleados_objetivo ?? $empleadosArea }}</td>
                                 <td class="px-4 py-3.5 text-center">{{ $evaluacion->intentos_total }}</td>
                                 <td class="px-4 py-3.5 text-center font-semibold text-emerald-700">{{ $evaluacion->aprobados_total }}</td>
                                 <td class="px-4 py-3.5 text-center font-bold text-brand-blue">{{ $evaluacion->promedio !== null ? $evaluacion->promedio . '%' : '—' }}</td>
@@ -61,7 +61,7 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-3.5 text-right">
-                                    <a href="{{ route('jefe.resultados.show', $evaluacion) }}"
+                                    <a href="{{ route(($panel ?? 'jefe') . '.resultados.show', $evaluacion) }}"
                                        class="inline-flex px-3.5 py-2 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs shadow-xs transition-colors">
                                         Ver detalle
                                     </a>

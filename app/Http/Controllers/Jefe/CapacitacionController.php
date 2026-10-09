@@ -21,7 +21,7 @@ use Illuminate\Validation\ValidationException;
 
 class CapacitacionController extends Controller
 {
-    private const TIPOS_CONTENIDO = ['TEXTO', 'VIDEO', 'IMAGEN', 'PDF', 'ENLACE'];
+    protected const TIPOS_CONTENIDO = ['TEXTO', 'VIDEO', 'IMAGEN', 'PDF', 'ENLACE'];
 
     /**
      * Vista por defecto del Jefe de Área: capacitaciones publicadas por él.
@@ -226,7 +226,7 @@ class CapacitacionController extends Controller
     /*  Helpers                                                            */
     /* ------------------------------------------------------------------ */
 
-    private function jefe(): Usuario
+    protected function jefe(): Usuario
     {
         /** @var Usuario $usuario */
         $usuario = Auth::user();
@@ -234,12 +234,12 @@ class CapacitacionController extends Controller
         return $usuario;
     }
 
-    private function autorizar(Capacitacion $capacitacion, Usuario $usuario): void
+    protected function autorizar(Capacitacion $capacitacion, Usuario $usuario): void
     {
         abort_unless((int) $capacitacion->creado_por === (int) $usuario->id, 403, 'Esta capacitación no fue publicada por ti.');
     }
 
-    private function empleadosDelArea(array $areaIds)
+    protected function empleadosDelArea(array $areaIds)
     {
         return Usuario::query()
             ->where('rol', 'EMPLEADO')
@@ -247,7 +247,7 @@ class CapacitacionController extends Controller
             ->whereIn('area_id', $areaIds);
     }
 
-    private function atributosCapacitacion(array $datos): array
+    protected function atributosCapacitacion(array $datos): array
     {
         return [
             'titulo' => $datos['titulo'],
@@ -261,7 +261,7 @@ class CapacitacionController extends Controller
         ];
     }
 
-    private function validar(Request $request): array
+    protected function validar(Request $request): array
     {
         $datos = $request->validate([
             'titulo' => ['required', 'string', 'max:255'],
@@ -325,7 +325,7 @@ class CapacitacionController extends Controller
         return $datos;
     }
 
-    private function guardarImagen(Request $request, ?string $rutaActual): ?string
+    protected function guardarImagen(Request $request, ?string $rutaActual): ?string
     {
         if (! $request->hasFile('imagen')) {
             return $rutaActual;
@@ -336,7 +336,7 @@ class CapacitacionController extends Controller
         return 'storage/' . $request->file('imagen')->store('capacitaciones', 'public');
     }
 
-    private function borrarArchivoPublico(?string $ruta): void
+    protected function borrarArchivoPublico(?string $ruta): void
     {
         if ($ruta && str_starts_with($ruta, 'storage/')) {
             Storage::disk('public')->delete(substr($ruta, strlen('storage/')));
@@ -347,7 +347,7 @@ class CapacitacionController extends Controller
      * Crea / actualiza módulos y contenidos respetando el orden enviado.
      * Los módulos retirados del formulario se desactivan (nunca se eliminan, para conservar el progreso).
      */
-    private function sincronizarModulos(Capacitacion $capacitacion, array $modulosForm, Request $request): void
+    protected function sincronizarModulos(Capacitacion $capacitacion, array $modulosForm, Request $request): void
     {
         $existentes = $capacitacion->modulos()->get()->keyBy('id');
         $mantenidos = [];
@@ -378,7 +378,7 @@ class CapacitacionController extends Controller
         $capacitacion->modulos()->whereNotIn('id', $mantenidos)->update(['estado' => false]);
     }
 
-    private function sincronizarContenidos(Modulo $modulo, array $contenidosForm, Request $request, int|string $moduloKey): void
+    protected function sincronizarContenidos(Modulo $modulo, array $contenidosForm, Request $request, int|string $moduloKey): void
     {
         $existentes = $modulo->contenidos()->get()->keyBy('id');
         $mantenidos = [];
@@ -427,7 +427,7 @@ class CapacitacionController extends Controller
     /**
      * Estructura de módulos/contenidos para repoblar el formulario (old input o datos guardados).
      */
-    private function modulosParaFormulario(?Capacitacion $capacitacion): array
+    protected function modulosParaFormulario(?Capacitacion $capacitacion): array
     {
         // Se conservan las llaves originales para poder mapear los errores de validación
         $old = old('modulos');
