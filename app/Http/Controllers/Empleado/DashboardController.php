@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Empleado;
 
 use App\Http\Controllers\Controller;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Capacitacion;
 use App\Models\Certificado;
 use App\Models\CertificadoExterno;
@@ -510,6 +511,29 @@ class DashboardController extends Controller
         $certificado->loadMissing('capacitacion', 'usuario.area', 'plantillaCertificado');
 
         return view('empleado.ver_certificado', compact('usuario', 'certificado'));
+    }
+
+    /**
+     * Descarga el certificado como archivo PDF generado en el servidor.
+     */
+    public function descargarCertificadoPdf(Certificado $certificado)
+    {
+        /** @var \App\Models\Usuario $usuario */
+        $usuario = Auth::user();
+
+        if (!$usuario) {
+            return redirect()->route('login');
+        }
+
+        if ($certificado->usuario_id !== $usuario->id && !in_array($usuario->rol, ['JEFE_AREA', 'ADMINISTRADOR', 'TH'])) {
+            abort(403, 'No tienes permiso para descargar este certificado.');
+        }
+
+        $certificado->loadMissing('plantillaCertificado');
+
+        return Pdf::loadView('empleado.certificado_pdf', compact('certificado'))
+            ->setPaper('letter', 'landscape')
+            ->download('Certificado_' . $certificado->codigo . '.pdf');
     }
 
     /**

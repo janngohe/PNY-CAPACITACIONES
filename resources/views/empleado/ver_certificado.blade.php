@@ -14,11 +14,11 @@
         </a>
 
         <div class="flex items-center gap-3">
-            <button type="button" onclick="descargarPDF()" id="btn-descargar-pdf" 
+            <a href="{{ route('empleado.certificados.pdf', $certificado) }}" id="btn-descargar-pdf"
                     class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-blue via-brand-deep to-brand-dark hover:brightness-110 text-white font-heading font-extrabold text-xs shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
                 <i class="fa-solid fa-file-pdf text-sm"></i>
                 <span id="btn-text">Descargar Certificado (PDF)</span>
-            </button>
+            </a>
         </div>
     </div>
 
@@ -179,39 +179,4 @@
 
 </div>
 
-<!-- SCRIPT DE DESCARGA DIRECTA A PDF (html2pdf.js) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script>
-    function descargarPDF() {
-        const btnText = document.getElementById('btn-text');
-        const btn = document.getElementById('btn-descargar-pdf');
-        
-        if (btnText && btn) {
-            btnText.innerText = 'Generando archivo PDF...';
-            btn.disabled = true;
-        }
-
-        const element = document.getElementById('certificado-documento');
-        const opt = {
-            margin:       [0.15, 0.15, 0.15, 0.15],
-            filename:     'Certificado_{{ $certificado->codigo }}.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false },
-            jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            if (btnText && btn) {
-                btnText.innerText = 'Descargar Certificado (PDF)';
-                btn.disabled = false;
-            }
-        }).catch((err) => {
-            console.error('Error al generar PDF:', err);
-            if (btnText && btn) {
-                btnText.innerText = 'Descargar Certificado (PDF)';
-                btn.disabled = false;
-            }
-        });
-    }
-</script>
 @endsection

@@ -22,6 +22,7 @@ Route::prefix('empleado')->name('empleado.')->middleware('auth')->group(function
     // Certificados generados de la plataforma
     Route::get('/certificados', [DashboardController::class, 'certificados'])->name('certificados');
     Route::get('/certificados/{certificado}', [DashboardController::class, 'verCertificado'])->name('certificados.ver');
+    Route::get('/certificados/{certificado}/pdf', [DashboardController::class, 'descargarCertificadoPdf'])->name('certificados.pdf');
 
     // Historial de capacitaciones aprobadas/completadas
     Route::get('/finalizadas', [DashboardController::class, 'finalizadas'])->name('finalizadas');
