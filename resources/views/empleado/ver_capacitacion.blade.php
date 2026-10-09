@@ -248,6 +248,13 @@
                                                             <i class="fa-solid fa-lock text-slate-400 text-[10px]"></i> Bloqueado
                                                         </span>
                                                     </div>
+                                                @elseif($cont->ruta_archivo)
+                                                    <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-xs border border-line/80 my-2 bg-black flex items-center justify-center">
+                                                        <video controls controlsList="nodownload" preload="metadata" class="w-full h-full object-contain">
+                                                            <source src="{{ asset($cont->ruta_archivo) }}" type="video/mp4">
+                                                            Tu navegador no soporta la reproducción de video HTML5.
+                                                        </video>
+                                                    </div>
                                                 @elseif(filter_var(trim($cont->contenido), FILTER_VALIDATE_URL))
                                                     @php
                                                         $videoUrl = trim($cont->contenido);
@@ -294,7 +301,7 @@
                                                 @endif
                                             @endif
 
-                                            @if($cont->ruta_archivo)
+                                            @if($cont->ruta_archivo && $cont->tipo !== 'VIDEO')
                                                 <div class="pt-1">
                                                     @if(!$haIniciado)
                                                         <div class="inline-flex max-w-full items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 text-xs font-medium">

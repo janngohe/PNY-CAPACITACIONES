@@ -5,6 +5,7 @@
     $input = 'w-full px-4 py-2.5 rounded-xl border border-line bg-white text-xs sm:text-[13px] font-sans text-brand-dark placeholder:text-slate-400 focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all';
     $fechaDisp = old('fecha_disponibilidad', $capacitacion?->fecha_disponibilidad?->format('Y-m-d'));
     $fechaLim = old('fecha_limite', $capacitacion?->fecha_limite?->format('Y-m-d'));
+    $tieneFechaFin = old('tiene_fecha_fin', !empty($fechaLim) ? 'si' : 'no');
     $porcentaje = old('porcentaje_aprobacion', $capacitacion ? rtrim(rtrim(number_format((float) $capacitacion->porcentaje_aprobacion, 2, '.', ''), '0'), '.') : 80);
     $imagenActual = $capacitacion?->ruta_imagen ? asset($capacitacion->ruta_imagen) : asset('images/Img-login.jpg');
 @endphp
@@ -164,16 +165,48 @@
 
                             <div>
                                 <label for="fecha_disponibilidad" class="block text-xs font-bold text-brand-dark mb-1.5">
-                                    Disponible desde
+                                    Disponible desde <span class="font-normal text-muted">(opcional)</span>
                                 </label>
                                 <input id="fecha_disponibilidad" type="date" name="fecha_disponibilidad" value="{{ $fechaDisp }}" class="{{ $input }}">
                             </div>
 
-                            <div>
-                                <label for="fecha_limite" class="block text-xs font-bold text-brand-dark mb-1.5">
-                                    Fecha límite
-                                </label>
-                                <input id="fecha_limite" type="date" name="fecha_limite" value="{{ $fechaLim }}" class="{{ $input }}">
+                            <!-- Interruptor opcional: ¿Tiene fecha de fin? -->
+                            <div class="sm:col-span-2 p-4 rounded-2xl bg-slate-50 border border-line/80 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-brand-dark">
+                                            ¿Esta capacitación tiene una fecha de fin / límite?
+                                        </label>
+                                        <p class="text-[11px] text-muted">
+                                            Selecciona si la capacitación permanecerá indefinida o si tendrá una fecha de cierre obligatoria.
+                                        </p>
+                                    </div>
+                                    <div class="inline-flex p-1 bg-white rounded-xl border border-line shadow-2xs shrink-0" role="radiogroup">
+                                        <label class="relative cursor-pointer">
+                                            <input type="radio" name="tiene_fecha_fin" value="no" class="sr-only peer" @checked($tieneFechaFin === 'no') onchange="toggleFechaFin(this.value)">
+                                            <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 peer-checked:bg-brand-light peer-checked:text-brand-blue peer-checked:border peer-checked:border-brand-blue/30 transition-all">
+                                                <i class="fa-solid fa-infinity text-[11px]"></i> No (Indefinida)
+                                            </span>
+                                        </label>
+                                        <label class="relative cursor-pointer">
+                                            <input type="radio" name="tiene_fecha_fin" value="si" class="sr-only peer" @checked($tieneFechaFin === 'si') onchange="toggleFechaFin(this.value)">
+                                            <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 peer-checked:bg-brand-blue peer-checked:text-white transition-all">
+                                                <i class="fa-regular fa-calendar-check text-[11px]"></i> Sí (Con fecha fin)
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="contenedor-fecha-limite" class="{{ $tieneFechaFin === 'si' ? '' : 'hidden' }} pt-2 border-t border-line/60">
+                                    <label for="fecha_limite" class="block text-xs font-bold text-brand-dark mb-1.5">
+                                        Fecha límite de finalización <span class="text-red-500">*</span>
+                                    </label>
+                                    <input id="fecha_limite" type="date" name="fecha_limite" value="{{ $fechaLim }}" class="{{ $input }}" {{ $tieneFechaFin === 'si' ? '' : 'disabled' }}>
+                                    <p class="text-[11px] text-muted mt-1">Los colaboradores no podrán acceder o enviar evaluaciones luego de este plazo.</p>
+                                    @error('fecha_limite')
+                                        <p class="text-xs text-red-600 mt-1 font-semibold">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -251,8 +284,8 @@
 
                     <div class="bg-gradient-to-br from-emerald-50 via-teal-50/40 to-blue-50/30 p-5 rounded-2xl border border-emerald-200/80 space-y-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-xs">
-                                ✓
+                            <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs">
+                                <i class="fa-solid fa-check"></i>
                             </div>
                             <div>
                                 <h3 class="font-heading font-bold text-sm text-emerald-950">¡Tu capacitación está lista para publicarse!</h3>
@@ -262,15 +295,15 @@
 
                         <ul class="text-xs space-y-2 text-slate-700 pt-2 border-t border-emerald-200/60">
                             <li class="flex items-center gap-2">
-                                <span class="text-emerald-600 font-bold">✓</span>
+                                <i class="fa-solid fa-circle-check text-emerald-600 text-xs shrink-0"></i>
                                 <span>Se habilitará automáticamente para los colaboradores del área <strong>{{ $usuario->area->nombre ?? 'Tu Área' }}</strong>.</span>
                             </li>
                             <li class="flex items-center gap-2">
-                                <span class="text-emerald-600 font-bold">✓</span>
+                                <i class="fa-solid fa-circle-check text-emerald-600 text-xs shrink-0"></i>
                                 <span>Los empleados podrán registrar su avance por cada módulo completado.</span>
                             </li>
                             <li class="flex items-center gap-2">
-                                <span class="text-emerald-600 font-bold">✓</span>
+                                <i class="fa-solid fa-circle-check text-emerald-600 text-xs shrink-0"></i>
                                 <span>Podrás crear la evaluación o cuestionario final inmediatamente después de guardar.</span>
                             </li>
                         </ul>
@@ -474,8 +507,34 @@
             porcentaje.textContent = 'Paso 3/3';
         }
 
+        const mainCol = document.querySelector('.lg\\:overflow-y-auto');
+        if (mainCol) mainCol.scrollTo({ top: 0, behavior: 'smooth' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    window.toggleFechaFin = function(val) {
+        const contenedor = document.getElementById('contenedor-fecha-limite');
+        const inputLimite = document.getElementById('fecha_limite');
+        if (!contenedor || !inputLimite) return;
+
+        if (val === 'si') {
+            contenedor.classList.remove('hidden');
+            inputLimite.disabled = false;
+            try {
+                inputLimite.focus({ preventScroll: true });
+            } catch (e) {
+                inputLimite.focus();
+            }
+        } else {
+            contenedor.classList.add('hidden');
+            inputLimite.disabled = true;
+            inputLimite.value = '';
+            // Restablecer de inmediato si la ventana o el panel quedaron desplazados
+            if (window.scrollY > 0) {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+            }
+        }
+    };
 
     (function () {
         const lista = document.getElementById('lista-modulos');
@@ -569,12 +628,91 @@
 
         function aplicarTipo(item) {
             const tipo = item.querySelector('[data-tipo-select]').value;
+            const esVideo = tipo === 'VIDEO';
             const esArchivo = tipo === 'IMAGEN' || tipo === 'PDF';
-            item.querySelector('[data-grupo-archivo]').classList.toggle('hidden', !esArchivo);
-            item.querySelector('[data-label-texto]').textContent = etiquetas[tipo];
-            const campo = item.querySelector('[data-campo-texto]');
-            campo.required = !esArchivo;
-            campo.rows = (tipo === 'VIDEO' || tipo === 'ENLACE' || esArchivo) ? 2 : 4;
+
+            const grupoVideo = item.querySelector('[data-grupo-video]');
+            const grupoTexto = item.querySelector('[data-grupo-texto]');
+            const grupoArchivo = item.querySelector('[data-grupo-archivo]');
+
+            if (grupoVideo) grupoVideo.classList.toggle('hidden', !esVideo);
+            if (grupoTexto) grupoTexto.classList.toggle('hidden', esVideo);
+            if (grupoArchivo) grupoArchivo.classList.toggle('hidden', !esArchivo);
+
+            if (grupoTexto) {
+                const labelTexto = item.querySelector('[data-label-texto]');
+                if (labelTexto) labelTexto.textContent = etiquetas[tipo] || 'Contenido';
+                const campo = item.querySelector('[data-campo-texto]');
+                if (campo) {
+                    campo.required = (tipo === 'TEXTO' || tipo === 'ENLACE');
+                    campo.rows = (tipo === 'ENLACE' || esArchivo) ? 2 : 4;
+                }
+            }
+        }
+
+        function validarArchivoVideo(input) {
+            const file = input.files[0];
+            const feedback = input.closest('[data-grupo-video]')?.querySelector('[data-video-feedback]');
+            if (!file) {
+                if (feedback) {
+                    feedback.className = 'hidden';
+                    feedback.textContent = '';
+                }
+                return;
+            }
+
+            // Peso máximo: 250 MB (250 * 1024 * 1024 bytes)
+            const maxBytes = 250 * 1024 * 1024;
+            const pesoMb = (file.size / (1024 * 1024)).toFixed(1);
+            if (file.size > maxBytes) {
+                input.value = '';
+                if (feedback) {
+                    feedback.className = 'text-[11px] font-semibold mt-1.5 p-2 rounded-lg bg-red-100 text-red-800 border border-red-200 block';
+                    feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-red-600"></i> El archivo pesa <strong>${pesoMb} MB</strong>, superando el límite máximo permitido de <strong>250 MB</strong>. Selecciona un archivo optimizado o comprimido en 720p HD.`;
+                }
+                return;
+            }
+
+            // Duración máxima: 10 minutos (600 segundos)
+            if (feedback) {
+                feedback.className = 'text-[11px] font-semibold mt-1.5 p-2 rounded-lg bg-blue-50 text-brand-blue border border-blue-200 block';
+                feedback.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Comprobando duración y especificaciones (${pesoMb} MB)...`;
+            }
+
+            const videoElement = document.createElement('video');
+            videoElement.preload = 'metadata';
+            const objectUrl = URL.createObjectURL(file);
+
+            videoElement.onloadedmetadata = function() {
+                URL.revokeObjectURL(objectUrl);
+                const duracionSegundos = Math.round(videoElement.duration);
+                const minutos = Math.floor(duracionSegundos / 60);
+                const segundos = duracionSegundos % 60;
+                const duracionFormateada = `${minutos}m ${segundos < 10 ? '0' : ''}${segundos}s`;
+
+                if (duracionSegundos > 600) {
+                    input.value = '';
+                    if (feedback) {
+                        feedback.className = 'text-[11px] font-semibold mt-1.5 p-2 rounded-lg bg-red-100 text-red-800 border border-red-200 block';
+                        feedback.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1 text-red-600"></i> El video seleccionado dura <strong>${duracionFormateada}</strong> (${duracionSegundos}s), superando el límite máximo de <strong>10 minutos (600 segundos)</strong>. Por favor sube un video de menor duración.`;
+                    }
+                } else {
+                    if (feedback) {
+                        feedback.className = 'text-[11px] font-semibold mt-1.5 p-2 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 block';
+                        feedback.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i> Video válido: <strong>${duracionFormateada}</strong> (${pesoMb} MB) · Cumple los requisitos (máx. 10 min / 250 MB).`;
+                    }
+                }
+            };
+
+            videoElement.onerror = function() {
+                URL.revokeObjectURL(objectUrl);
+                if (feedback) {
+                    feedback.className = 'text-[11px] font-semibold mt-1.5 p-2 rounded-lg bg-amber-100 text-amber-800 border border-amber-200 block';
+                    feedback.innerHTML = `<i class="fa-solid fa-circle-info mr-1 text-amber-600"></i> Archivo cargado (${pesoMb} MB). Asegúrate de que el video esté codificado en MP4 (H.264 + AAC) en resolución recomendada 720p HD.`;
+                }
+            };
+
+            videoElement.src = objectUrl;
         }
 
         function renumerar() {
@@ -642,6 +780,8 @@
             if (e.target.matches('[data-tipo-select]')) {
                 aplicarTipo(e.target.closest('[data-contenido]'));
                 actualizarVistaPrevia();
+            } else if (e.target.matches('[data-video-file]')) {
+                validarArchivoVideo(e.target);
             }
         });
 

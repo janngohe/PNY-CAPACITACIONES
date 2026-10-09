@@ -249,6 +249,11 @@ class CapacitacionController extends Controller
 
     private function atributosCapacitacion(array $datos): array
     {
+        $tieneFechaFin = ($datos['tiene_fecha_fin'] ?? 'no') === 'si';
+        $fechaLimite = ($tieneFechaFin && ! empty($datos['fecha_limite']))
+            ? Carbon::parse($datos['fecha_limite'])->endOfDay()
+            : null;
+
         return [
             'titulo' => $datos['titulo'],
             'descripcion' => $datos['descripcion'],
@@ -257,7 +262,7 @@ class CapacitacionController extends Controller
             'duracion_estimada' => $datos['duracion_estimada'] ?? null,
             'incentivo' => $datos['incentivo'] ?? null,
             'fecha_disponibilidad' => ! empty($datos['fecha_disponibilidad']) ? Carbon::parse($datos['fecha_disponibilidad'])->startOfDay() : null,
-            'fecha_limite' => ! empty($datos['fecha_limite']) ? Carbon::parse($datos['fecha_limite'])->endOfDay() : null,
+            'fecha_limite' => $fechaLimite,
         ];
     }
 
@@ -271,8 +276,14 @@ class CapacitacionController extends Controller
             'intentos_permitidos' => ['required', 'integer', 'between:1,20'],
             'duracion_estimada' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'incentivo' => ['nullable', 'string', 'max:2000'],
+            'tiene_fecha_fin' => ['nullable', 'in:si,no'],
             'fecha_disponibilidad' => ['nullable', 'date'],
-            'fecha_limite' => ['nullable', 'date', $request->filled('fecha_disponibilidad') ? 'after_or_equal:fecha_disponibilidad' : 'date'],
+            'fecha_limite' => [
+                'nullable',
+                'required_if:tiene_fecha_fin,si',
+                'date',
+                $request->filled('fecha_disponibilidad') ? 'after_or_equal:fecha_disponibilidad' : 'date',
+            ],
 
             'modulos' => ['required', 'array', 'min:1'],
             'modulos.*.id' => ['nullable', 'integer'],
@@ -282,8 +293,8 @@ class CapacitacionController extends Controller
             'modulos.*.contenidos.*.id' => ['nullable', 'integer'],
             'modulos.*.contenidos.*.titulo' => ['required', 'string', 'max:255'],
             'modulos.*.contenidos.*.tipo' => ['required', 'in:' . implode(',', self::TIPOS_CONTENIDO)],
-            'modulos.*.contenidos.*.contenido' => ['nullable', 'string', 'max:20000', 'required_if:modulos.*.contenidos.*.tipo,TEXTO,VIDEO,ENLACE'],
-            'modulos.*.contenidos.*.archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:20480'],
+            'modulos.*.contenidos.*.contenido' => ['nullable', 'string', 'max:20000'],
+            'modulos.*.contenidos.*.archivo' => ['nullable', 'file', 'max:262144'],
             'modulos.*.contenidos.*.ruta_archivo_actual' => ['nullable', 'string', 'max:255'],
         ], [
             'titulo.required' => 'El título de la capacitación es obligatorio.',
@@ -292,28 +303,60 @@ class CapacitacionController extends Controller
             'imagen.max' => 'La portada no puede superar los 4 MB.',
             'porcentaje_aprobacion.between' => 'El porcentaje de aprobación debe estar entre 1 y 100.',
             'intentos_permitidos.between' => 'Los intentos permitidos deben estar entre 1 y 20.',
+            'fecha_limite.required_if' => 'Indica la fecha límite de finalización o selecciona que no tiene fecha de fin.',
             'fecha_limite.after_or_equal' => 'La fecha límite no puede ser anterior a la fecha de disponibilidad.',
             'modulos.required' => 'Agrega al menos un módulo a la capacitación.',
             'modulos.min' => 'Agrega al menos un módulo a la capacitación.',
             'modulos.*.titulo.required' => 'Cada módulo debe tener un título.',
             'modulos.*.descripcion.required' => 'Cada módulo debe tener una descripción.',
             'modulos.*.contenidos.*.titulo.required' => 'Cada contenido debe tener un título.',
-            'modulos.*.contenidos.*.contenido.required_if' => 'Completa el texto o enlace del contenido (según su tipo).',
-            'modulos.*.contenidos.*.archivo.mimes' => 'Los archivos deben ser PDF, JPG, PNG o WEBP.',
-            'modulos.*.contenidos.*.archivo.max' => 'Cada archivo no puede superar los 20 MB.',
+            'modulos.*.contenidos.*.archivo.max' => 'El archivo no puede superar los 250 MB.',
         ]);
 
-        // Los contenidos IMAGEN / PDF exigen archivo nuevo o uno ya cargado
+        // Validación específica por tipo de contenido
         $errores = [];
         foreach ($datos['modulos'] as $key => $modulo) {
             foreach ($modulo['contenidos'] ?? [] as $ckey => $contenido) {
-                if (! in_array($contenido['tipo'], ['IMAGEN', 'PDF'], true)) {
-                    continue;
-                }
+                $tipo = $contenido['tipo'] ?? 'TEXTO';
+                $archivoSubido = $request->file("modulos.$key.contenidos.$ckey.archivo");
+                $rutaActual = $contenido['ruta_archivo_actual'] ?? null;
+                $textoContenido = trim($contenido['contenido'] ?? '');
+                $tituloContenido = $contenido['titulo'] ?? 'sin título';
 
-                $tieneNuevo = $request->hasFile("modulos.$key.contenidos.$ckey.archivo");
-                if (! $tieneNuevo && empty($contenido['ruta_archivo_actual'])) {
-                    $errores["modulos.$key.contenidos.$ckey.archivo"] = 'Adjunta el archivo del contenido "' . $contenido['titulo'] . '".';
+                if ($tipo === 'VIDEO') {
+                    if ($archivoSubido) {
+                        $ext = strtolower($archivoSubido->getClientOriginalExtension());
+                        $validExts = ['mp4', 'mov', 'webm', 'm4v'];
+                        if (! in_array($ext, $validExts, true)) {
+                            $errores["modulos.$key.contenidos.$ckey.archivo"] = 'El video debe estar en formato MP4, MOV o WEBM (recomendado MP4 con codec H.264 + AAC).';
+                        }
+                        if ($archivoSubido->getSize() > 250 * 1024 * 1024) {
+                            $errores["modulos.$key.contenidos.$ckey.archivo"] = 'El archivo de video supera el límite de 250 MB.';
+                        }
+                    }
+
+                    if (! $archivoSubido && empty($rutaActual) && empty($textoContenido)) {
+                        $errores["modulos.$key.contenidos.$ckey.contenido"] = 'Para el video "' . $tituloContenido . '", adjunta un archivo de video (máx. 250 MB) o proporciona una URL.';
+                    }
+                } elseif (in_array($tipo, ['IMAGEN', 'PDF'], true)) {
+                    if ($archivoSubido) {
+                        $ext = strtolower($archivoSubido->getClientOriginalExtension());
+                        $validExts = $tipo === 'PDF' ? ['pdf'] : ['jpg', 'jpeg', 'png', 'webp'];
+                        if (! in_array($ext, $validExts, true)) {
+                            $errores["modulos.$key.contenidos.$ckey.archivo"] = $tipo === 'PDF'
+                                ? 'El documento debe ser un archivo PDF.'
+                                : 'La imagen debe ser JPG, PNG o WEBP.';
+                        }
+                        if ($archivoSubido->getSize() > 20 * 1024 * 1024) {
+                            $errores["modulos.$key.contenidos.$ckey.archivo"] = 'El archivo no puede superar los 20 MB.';
+                        }
+                    } elseif (empty($rutaActual)) {
+                        $errores["modulos.$key.contenidos.$ckey.archivo"] = 'Adjunta el archivo del contenido "' . $tituloContenido . '".';
+                    }
+                } elseif (in_array($tipo, ['TEXTO', 'ENLACE'], true)) {
+                    if (empty($textoContenido)) {
+                        $errores["modulos.$key.contenidos.$ckey.contenido"] = 'Completa el ' . ($tipo === 'ENLACE' ? 'enlace' : 'texto') . ' del contenido "' . $tituloContenido . '".';
+                    }
                 }
             }
         }
@@ -388,7 +431,7 @@ class CapacitacionController extends Controller
             $orden++;
             $contenido = isset($datos['id']) ? $existentes->get((int) $datos['id']) : null;
             $tipo = $datos['tipo'];
-            $esArchivo = in_array($tipo, ['IMAGEN', 'PDF'], true);
+            $esArchivo = in_array($tipo, ['IMAGEN', 'PDF', 'VIDEO'], true);
 
             $ruta = $contenido?->ruta_archivo;
             if ($esArchivo && $request->hasFile("modulos.$moduloKey.contenidos.$ckey.archivo")) {
