@@ -21,3 +21,4 @@ Route::post('/password/primer-ingreso', [LoginController::class, 'actualizarPass
 
 // Módulos del sistema
 require __DIR__ . '/empleado.php';
+require __DIR__ . '/jefe.php';

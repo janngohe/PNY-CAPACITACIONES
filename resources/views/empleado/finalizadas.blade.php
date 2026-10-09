@@ -50,15 +50,13 @@
                         $titulo = $item->titulo ?? ($item['titulo'] ?? 'Capacitación');
                         $fecha = is_object($item->pivot->fecha_finalizacion ?? null) ? $item->pivot->fecha_finalizacion->format('d M Y') : ($item['fecha_finalizacion'] ?? 'Finalizado');
                         $horas = $item->duracion_estimada ? $item->duracion_estimada . ' hrs' : ($item['horas'] ?? '4 hrs');
-                        $tieneCert = isset($item->certificados) ? $item->certificados->isNotEmpty() : ($item['tiene_certificado'] ?? false);
+                        $certObj = isset($item->certificados) ? $item->certificados->first() : null;
                     @endphp
                     <tr class="hover:bg-slate-50/60 transition-colors">
                         <td class="py-4 px-6 font-semibold text-brand-dark max-w-xs">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                                    <i class="fa-solid fa-circle-check text-sm"></i>
                                 </div>
                                 <span class="leading-snug">{{ $titulo }}</span>
                             </div>
@@ -76,16 +74,16 @@
                             </span>
                         </td>
                         <td class="py-4 px-6 text-right whitespace-nowrap">
-                            @if($tieneCert)
-                                <a href="{{ route('empleado.certificados') }}" 
+                            @if($certObj)
+                                <a href="{{ route('empleado.certificados.ver', $certObj) }}" 
                                    class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-blue hover:text-brand-deep hover:underline">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.004 0H9.496m5.004 0a3 3 0 002.996-2.67V5.625A2.625 2.625 0 0014.875 3h-5.75A2.625 2.625 0 006.5 5.625v7.08a3 3 0 002.996 2.67" />
-                                    </svg>
+                                    <i class="fa-solid fa-graduation-cap text-sm"></i>
                                     <span>Ver Certificado</span>
                                 </a>
                             @else
-                                <span class="text-slate-400 text-xs italic">Aprobado</span>
+                                <a href="{{ route('empleado.certificados') }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-blue hover:underline">
+                                    <i class="fa-solid fa-award text-sm"></i> Mis Certificados
+                                </a>
                             @endif
                         </td>
                     </tr>

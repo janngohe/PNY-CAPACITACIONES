@@ -74,22 +74,7 @@ class LoginController extends Controller
      */
     public function redireccionarPorRol(Usuario $usuario)
     {
-        switch ($usuario->rol) {
-            case 'ADMINISTRADOR':
-                // Si existe ruta de administrador redirigir allí, si no al panel de capacitaciones
-                return redirect()->intended(
-                    route('admin.dashboard', [], false) ? route('admin.dashboard') : route('empleado.capacitaciones')
-                );
-
-            case 'JEFE_AREA':
-                return redirect()->intended(
-                    route('jefe.dashboard', [], false) ? route('jefe.dashboard') : route('empleado.capacitaciones')
-                );
-
-            case 'EMPLEADO':
-            default:
-                return redirect()->intended(route('empleado.capacitaciones'));
-        }
+        return redirect()->intended(route($usuario->rutaPanel()));
     }
 
     /**

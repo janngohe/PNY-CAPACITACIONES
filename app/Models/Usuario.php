@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Route;
 
 class Usuario extends Authenticatable
 {
@@ -51,6 +52,29 @@ class Usuario extends Authenticatable
     public function asignaciones(): HasMany
     {
         return $this->hasMany(UsuarioCapacitacion::class, 'usuario_id');
+    }
+
+    /**
+     * Capacitaciones publicadas por este usuario (Jefe de Área).
+     */
+    public function capacitacionesCreadas(): HasMany
+    {
+        return $this->hasMany(Capacitacion::class, 'creado_por');
+    }
+
+    /**
+     * Nombre de la ruta del panel principal según el rol.
+     * Si el panel del rol aún no existe, cae en el panel del empleado.
+     */
+    public function rutaPanel(): string
+    {
+        $ruta = match ($this->rol) {
+            'ADMINISTRADOR' => 'admin.dashboard',
+            'JEFE_AREA' => 'jefe.dashboard',
+            default => 'empleado.capacitaciones',
+        };
+
+        return Route::has($ruta) ? $ruta : 'empleado.capacitaciones';
     }
 
     public function progresoModulos(): HasMany

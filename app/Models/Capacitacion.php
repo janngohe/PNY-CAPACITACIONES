@@ -24,6 +24,7 @@ class Capacitacion extends Model
         'fecha_disponibilidad',
         'fecha_limite',
         'plantilla_certificado_id',
+        'creado_por',
         'estado',
     ];
 
@@ -37,9 +38,31 @@ class Capacitacion extends Model
         ];
     }
 
+    public function getUrlImagenAttribute(): string
+    {
+        $ruta = $this->ruta_imagen;
+
+        if (empty($ruta)) {
+            return asset('images/Img-login.jpg');
+        }
+
+        if (str_starts_with($ruta, 'http://') || str_starts_with($ruta, 'https://')) {
+            return $ruta;
+        }
+
+        $rutaLimpia = ltrim($ruta, '/');
+
+        return asset($rutaLimpia);
+    }
+
     public function plantillaCertificado(): BelongsTo
     {
         return $this->belongsTo(PlantillaCertificado::class, 'plantilla_certificado_id');
+    }
+
+    public function creador(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'creado_por');
     }
 
     public function modulos(): HasMany

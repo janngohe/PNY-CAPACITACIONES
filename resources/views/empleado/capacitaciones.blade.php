@@ -11,30 +11,24 @@
          ======================================================== -->
     <div class="relative rounded-3xl bg-gradient-to-r from-brand-dark via-brand-deep to-[#0056b3] text-white p-6 sm:p-8 md:p-10 overflow-hidden shadow-lg border border-brand-blue/20">
         
-        <!-- Elementos orgánicos y ondas decorativas de fondo -->
         <div class="absolute -right-10 -top-10 w-64 h-64 rounded-full bg-brand-sky/15 blur-2xl pointer-events-none"></div>
         <div class="absolute right-1/3 -bottom-16 w-80 h-80 rounded-full bg-brand-blue/20 blur-3xl pointer-events-none"></div>
 
-        <!-- Contenido del Banner -->
         <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div class="max-w-2xl">
-                <!-- Insignia del Área del Empleado -->
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-brand-sky mb-3">
                     <span class="w-2 h-2 rounded-full bg-brand-sky animate-ping"></span>
                     <span>Área: {{ $usuario->area->nombre ?? ($usuario->area_nombre ?? 'Producción Piscícola') }}</span>
                 </div>
 
-                <!-- SALUDO Y NOMBRE COMPLETO DEL USUARIO (Destacado) -->
                 <h1 class="font-heading font-extrabold text-2xl sm:text-3xl md:text-4xl tracking-tight leading-tight text-white">
                     ¡Bienvenido, <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-brand-sky">{{ $usuario->nombre_completo ?? 'Colaborador' }}</span>!
                 </h1>
 
-                <!-- Subtítulo -->
                 <p class="mt-2 text-sm sm:text-base text-slate-200/90 leading-relaxed font-normal">
                     Tienes asignadas las siguientes <strong class="text-white font-semibold">capacitaciones e inducciones</strong> para fortalecer los estándares de calidad y bioseguridad en <strong class="text-white font-semibold">C.I. Piscícola New York</strong>.
                 </p>
 
-                <!-- Datos Rápidos del Colaborador -->
                 <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-300">
                     <span class="inline-flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-lg">
                         <svg class="w-3.5 h-3.5 text-brand-sky" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -51,7 +45,6 @@
                 </div>
             </div>
 
-            <!-- Miniatura / Tarjeta de progreso general -->
             <div class="lg:w-72 bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/15 flex flex-col justify-between shrink-0">
                 <div class="flex items-center justify-between text-xs text-white/90 mb-2">
                     <span class="font-semibold uppercase tracking-wider text-[11px] text-brand-sky">Resumen Formativo</span>
@@ -70,13 +63,31 @@
             </div>
         </div>
 
-        <!-- OLA INFERIOR DECORATIVA DEL BANNER DE BIENVENIDA -->
         <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none pointer-events-none opacity-30">
             <svg class="relative block w-full h-5 text-white" viewBox="0 0 1200 40" preserveAspectRatio="none">
                 <path d="M0,0 C150,35 350,10 500,25 C650,40 850,5 1000,20 C1100,30 1160,15 1200,25 L1200,40 L0,40 Z" fill="currentColor"/>
             </svg>
         </div>
     </div>
+
+    <!-- NOTIFICACIONES FLASH -->
+    @if(session('success_modulo'))
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center gap-2.5 shadow-2xs" role="status">
+            <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ session('success_modulo') }}</span>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm font-semibold flex items-center gap-2.5 shadow-2xs" role="alert">
+            <svg class="w-5 h-5 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
 
     <!-- ========================================================
          TARJETAS DE RESUMEN KPI
@@ -144,18 +155,16 @@
          ======================================================== -->
     <div class="space-y-4">
         
-        <!-- Barra de título y filtros -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
                 <h2 class="font-heading font-bold text-lg sm:text-xl text-brand-dark">
                     Cursos e Inducciones Asignadas
                 </h2>
                 <p class="text-xs text-muted">
-                    Completa los módulos y aprueba las evaluaciones para recibir tu certificado digital.
+                    Ingresa a cualquier curso para visualizar libremente el contenido. Los módulos se desbloquean en secuencia.
                 </p>
             </div>
 
-            <!-- Filtros informativos -->
             <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs font-semibold">
                 <span class="px-3 py-1.5 rounded-lg bg-brand-blue text-white shadow-xs">
                     Todas ({{ count($capacitaciones) }})
@@ -169,7 +178,7 @@
             @php
                 $titulo = $cap->titulo ?? ($cap['titulo'] ?? 'Capacitación');
                 $descripcion = $cap->descripcion ?? ($cap['descripcion'] ?? '');
-                $imagen = $cap->ruta_imagen ?? ($cap['imagen'] ?? 'images/Img-login.jpg');
+                $imagen = is_object($cap) ? $cap->url_imagen : (empty($cap['imagen']) ? asset('images/Img-login.jpg') : asset(ltrim($cap['imagen'], '/')));
                 $duracion = $cap->duracion_estimada ? $cap->duracion_estimada . ' horas' : ($cap['duracion'] ?? '4 horas');
                 $modulosCount = isset($cap->modulos) ? $cap->modulos->count() : ($cap['modulos_count'] ?? 0);
                 $modulosCompletados = $cap->modulos_completados_count ?? ($cap['modulos_completados'] ?? 0);
@@ -180,116 +189,125 @@
             @endphp
             <div class="bg-white rounded-3xl border border-line/75 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between group">
                 
-                <!-- Parte superior con imagen y etiquetas -->
-                <div>
-                    <!-- Contenedor de Imagen con Overlay y Olas -->
-                    <div class="relative h-44 sm:h-48 w-full overflow-hidden bg-brand-light">
-                        <img src="{{ asset($imagen) }}" 
-                             alt="{{ $titulo }}" 
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        
-                        <!-- Gradiente ambiental oscuro -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/85 via-brand-dark/30 to-transparent"></div>
+                <!-- Hacer clic en cualquier parte del cuadro redirige a la visualización del contenido de la capacitación -->
+                <a href="{{ route('empleado.capacitaciones.ver', $cap) }}" class="block text-inherit flex-1 group/card" title="Haz clic para ver el contenido y módulos de {{ $titulo }}">
+                    <div>
+                        <!-- Contenedor de Imagen -->
+                        <div class="relative h-44 sm:h-48 w-full overflow-hidden bg-brand-light">
+                            <img src="{{ $imagen }}" 
+                                 alt="{{ $titulo }}" 
+                                 class="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500">
+                            
+                            <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/85 via-brand-dark/30 to-transparent"></div>
 
-                        <!-- Categoría / Tipo Badge -->
-                        <div class="absolute top-3.5 left-3.5">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border backdrop-blur-md bg-white/20 text-white border-white/30">
-                                Capacitación Oficial
-                            </span>
-                        </div>
-
-                        <!-- Estado Badge -->
-                        <div class="absolute top-3.5 right-3.5">
-                            @if($estadoUsuario === 'EN_PROGRESO' || $porcentaje > 0)
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/90 text-white backdrop-blur-xs">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                                    En Progreso
+                            <div class="absolute top-3.5 left-3.5">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border backdrop-blur-md bg-white/20 text-white border-white/30">
+                                    <i class="fa-solid fa-award text-brand-sky text-xs"></i> Capacitación Oficial
                                 </span>
-                            @elseif($estadoUsuario === 'COMPLETADA')
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-600 text-white backdrop-blur-xs">
-                                    Completada
+                            </div>
+
+                            <div class="absolute top-3.5 right-3.5">
+                                @if($estadoUsuario === 'COMPLETADA')
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-600 text-white backdrop-blur-xs">
+                                        <i class="fa-solid fa-circle-check text-xs"></i> Aprobada
+                                    </span>
+                                @elseif($porcentaje >= 100 || $estadoUsuario === 'MODULOS_COMPLETOS')
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-600 text-white backdrop-blur-xs">
+                                        <i class="fa-solid fa-list-check text-xs"></i> Módulos Completos
+                                    </span>
+                                @elseif($estadoUsuario === 'EN_PROGRESO' || $porcentaje > 0)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/90 text-white backdrop-blur-xs">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                        En Progreso
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-600/90 text-white backdrop-blur-xs">
+                                        <i class="fa-solid fa-sparkles text-xs"></i> Disponible
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="absolute bottom-3 left-4 right-4 text-white">
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-brand-sky flex items-center gap-1.5">
+                                    <i class="fa-regular fa-clock text-xs"></i> Duración: {{ $duracion }} · {{ $modulosCount }} Módulos
                                 </span>
-                            @else
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-700/80 text-white backdrop-blur-xs">
-                                    Pendiente
-                                </span>
-                            @endif
+                                <h3 class="font-heading font-extrabold text-base sm:text-lg leading-tight mt-0.5 line-clamp-1 group-hover/card:text-brand-sky transition-colors">
+                                    {{ $titulo }}
+                                </h3>
+                            </div>
+
+                            <svg class="absolute -bottom-1 left-0 w-full h-4 text-white" viewBox="0 0 600 20" preserveAspectRatio="none">
+                                <path d="M0,5 C100,18 200,3 300,14 C400,22 500,6 600,15 L600,20 L0,20 Z" fill="currentColor"/>
+                            </svg>
                         </div>
 
-                        <!-- Título superpuesto en la base de la imagen con la ola decorativa -->
-                        <div class="absolute bottom-3 left-4 right-4 text-white">
-                            <span class="text-[10px] uppercase font-bold tracking-wider text-brand-sky flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Duración: {{ $duracion }} · {{ $modulosCount }} Módulos
-                            </span>
-                            <h3 class="font-heading font-extrabold text-base sm:text-lg leading-tight mt-0.5 line-clamp-1">
-                                {{ $titulo }}
-                            </h3>
-                        </div>
+                        <!-- Cuerpo de la tarjeta -->
+                        <div class="p-5 sm:p-6 space-y-4">
+                            <p class="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                                {{ $descripcion }}
+                            </p>
 
-                        <!-- Ola decorativa recortando la parte inferior de la foto -->
-                        <svg class="absolute -bottom-1 left-0 w-full h-4 text-white" viewBox="0 0 600 20" preserveAspectRatio="none">
-                            <path d="M0,5 C100,18 200,3 300,14 C400,22 500,6 600,15 L600,20 L0,20 Z" fill="currentColor"/>
-                        </svg>
-                    </div>
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="font-semibold text-slate-700">Progreso del curso</span>
+                                    <span class="font-bold text-brand-blue">{{ $porcentaje }}%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-brand-blue h-2 rounded-full transition-all duration-300" style="width: {{ $porcentaje }}%"></div>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] text-muted">
+                                    <span>{{ $modulosCompletados }} de {{ $modulosCount }} módulos completados</span>
+                                    <span>Mínimo aprobación: {{ $aprobacion }}%</span>
+                                </div>
+                            </div>
 
-                    <!-- Cuerpo de la tarjeta -->
-                    <div class="p-5 sm:p-6 space-y-4">
-                        <p class="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
-                            {{ $descripcion }}
-                        </p>
-
-                        <!-- Barra de progreso -->
-                        <div class="space-y-1.5">
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="font-semibold text-slate-700">Progreso del curso</span>
-                                <span class="font-bold text-brand-blue">{{ $porcentaje }}%</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                <div class="bg-brand-blue h-2 rounded-full transition-all duration-300" style="width: {{ $porcentaje }}%"></div>
-                            </div>
-                            <div class="flex items-center justify-between text-[11px] text-muted">
-                                <span>{{ $modulosCompletados }} de {{ $modulosCount }} módulos completados</span>
-                                <span>Mínimo aprobación: {{ $aprobacion }}%</span>
-                            </div>
-                        </div>
-
-                        <!-- Metadatos de la capacitación -->
-                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-line/60 text-[11px] text-slate-500">
-                            <div class="flex items-center gap-1.5">
-                                <svg class="w-3.5 h-3.5 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
-                                </svg>
-                                <span>{{ $intentos }} intentos de examen</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 justify-end">
-                                <svg class="w-3.5 h-3.5 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
-                                </svg>
-                                <span>Certificado Oficial</span>
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-line/60 text-[11px] text-slate-500">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-rotate-right text-brand-blue"></i>
+                                    <span>{{ $intentos }} intentos de examen</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 justify-end">
+                                    <i class="fa-solid fa-graduation-cap text-brand-blue"></i>
+                                    <span>Certificado Oficial</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
 
-                <!-- Botón de acción al pie de la tarjeta -->
+                <!-- Botón de Acción Principal: Iniciar, Continuar o Finalizar la Capacitación -->
                 <div class="px-5 pb-5 sm:px-6 sm:pb-6 pt-0">
-                    <button type="button"
-                            class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-xs {{ $porcentaje > 0 ? 'bg-brand-blue hover:bg-brand-deep text-white shadow-brand-blue/20 hover:shadow-brand-blue/30 hover:-translate-y-0.5' : 'bg-slate-100 hover:bg-brand-blue hover:text-white text-slate-700' }}">
-                        @if($porcentaje > 0)
-                            <span>Continuar Capacitación</span>
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                            </svg>
-                        @else
-                            <span>Iniciar Inducción</span>
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
-                            </svg>
-                        @endif
-                    </button>
+                    @if($estadoUsuario === 'COMPLETADA')
+                        <a href="{{ route('empleado.certificados') }}"
+                           class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5">
+                            <i class="fa-solid fa-graduation-cap text-base"></i>
+                            <span>Capacitación Finalizada · Ver Certificado</span>
+                        </a>
+                    @elseif($porcentaje >= 100 || $estadoUsuario === 'MODULOS_COMPLETOS')
+                        <form method="POST" action="{{ route('empleado.capacitaciones.finalizar', $cap) }}" class="w-full">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5 cursor-pointer">
+                                <i class="fa-solid fa-circle-check text-base"></i>
+                                <span>Finalizar Capacitación</span>
+                            </button>
+                        </form>
+                    @elseif($estadoUsuario === 'EN_PROGRESO' || $porcentaje > 0)
+                        <a href="{{ route('empleado.capacitaciones.ver', $cap) }}"
+                           class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-brand-blue hover:bg-brand-deep text-white shadow-brand-blue/20 hover:shadow-brand-blue/30 hover:-translate-y-0.5">
+                            <i class="fa-solid fa-circle-play text-base"></i>
+                            <span>Continuar Capacitación ({{ $porcentaje }}%)</span>
+                        </a>
+                    @else
+                        <form method="POST" action="{{ route('empleado.capacitaciones.iniciar', $cap) }}" class="w-full">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-brand-blue hover:bg-brand-deep text-white shadow-brand-blue/20 hover:shadow-brand-blue/30 hover:-translate-y-0.5 cursor-pointer">
+                                <i class="fa-solid fa-play text-base"></i>
+                                <span>Iniciar Capacitación</span>
+                            </button>
+                        </form>
+                    @endif
                 </div>
 
             </div>
