@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Jefe\CapacitacionController;
 use App\Http\Controllers\Jefe\EvaluacionController;
+use App\Http\Controllers\Jefe\PersonalController;
 use App\Http\Controllers\Jefe\ResultadoController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,4 +36,7 @@ Route::prefix('jefe')->name('jefe.')->middleware(['auth', 'rol:JEFE_AREA'])->gro
     // Consultar resultados (submenú de evaluaciones)
     Route::get('/resultados', [ResultadoController::class, 'index'])->name('resultados.index');
     Route::get('/resultados/{evaluacion}', [ResultadoController::class, 'show'])->name('resultados.show');
+
+    // Personal de Área
+    Route::get('/personal', [PersonalController::class, 'index'])->name('personal.index');
 });

@@ -162,18 +162,18 @@
                             {{ $usuario->area->nombre ?? ($usuario->area_nombre ?? 'Área de Producción') }}
                         </p>
                     </div>
-                    <!-- Botón Cerrar Sesión -->
-                    <form method="POST" action="{{ route('logout') }}" class="m-0">
-                        @csrf
-                        <button type="submit" 
-                                class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0 cursor-pointer" 
-                                title="Cerrar sesión">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                            </svg>
-                        </button>
-                    </form>
                 </div>
+
+                <!-- Botón Cerrar Sesión prominente y accesible para móvil y escritorio -->
+                <form method="POST" action="{{ route('logout') }}" class="m-0 mt-3">
+                    @csrf
+                    <button type="submit" id="btn-sidebar-logout-empleado"
+                            class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200/70 font-heading font-bold text-xs shadow-2xs transition-all cursor-pointer group"
+                            title="Cerrar sesión" aria-label="Cerrar sesión">
+                        <i class="fa-solid fa-arrow-right-from-bracket text-xs transition-transform group-hover:translate-x-0.5"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </form>
             </div>
 
         </aside>

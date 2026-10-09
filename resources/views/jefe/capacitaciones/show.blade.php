@@ -73,14 +73,71 @@
         @if ($participantes->isEmpty())
             <div class="p-10 text-center text-xs text-muted">No hay empleados activos registrados en el área de esta capacitación.</div>
         @else
-            <div class="overflow-x-auto">
+            <!-- Vista Móvil: Columna vertical con la información de cada participante (sin scroll horizontal) -->
+            <div class="block md:hidden divide-y divide-line/60">
+                @foreach ($participantes as $p)
+                    @php [$etiqueta, $clase] = $estados[$p->estado] ?? [$p->estado, 'bg-slate-100 text-slate-600']; @endphp
+                    <div class="p-4 space-y-3.5 hover:bg-slate-50/70 transition-colors">
+                        <!-- Empleado y Estado -->
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-xl bg-brand-light text-brand-blue font-heading font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                                    {{ strtoupper(substr($p->usuario->nombre_completo, 0, 1)) }}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-bold text-brand-dark text-sm leading-tight truncate">{{ $p->usuario->nombre_completo }}</p>
+                                    <p class="text-[11px] text-muted mt-0.5">C.C. {{ $p->usuario->identificacion }}</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 {{ $clase }}">
+                                {{ $etiqueta }}
+                            </span>
+                        </div>
+
+                        <!-- Barra de Progreso del temario -->
+                        <div class="p-3 bg-slate-50 rounded-xl border border-line/70 space-y-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-slate-700">Progreso del temario</span>
+                                <span class="font-extrabold text-brand-blue">{{ $p->porcentaje }}%</span>
+                            </div>
+                            <div class="w-full bg-slate-200/80 rounded-full h-2 overflow-hidden">
+                                <div class="bg-brand-blue h-2 rounded-full transition-all duration-300" style="width: {{ $p->porcentaje }}%"></div>
+                            </div>
+                            <p class="text-[11px] text-muted">{{ $p->completados }} de {{ $modulos->count() }} {{ $modulos->count() === 1 ? 'módulo completado' : 'módulos completados' }}</p>
+                        </div>
+
+                        <!-- Certificado y Última actividad -->
+                        <div class="grid grid-cols-2 gap-2 pt-0.5 text-xs">
+                            <div class="bg-white p-2.5 rounded-xl border border-line/60">
+                                <span class="block text-[10px] text-muted font-medium mb-1">Certificado:</span>
+                                @if ($p->certificado)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                                        <i class="fa-solid fa-certificate text-[10px]"></i> Emitido
+                                    </span>
+                                @else
+                                    <span class="text-slate-400 font-semibold text-[11px]">No disponible</span>
+                                @endif
+                            </div>
+
+                            <div class="bg-white p-2.5 rounded-xl border border-line/60">
+                                <span class="block text-[10px] text-muted font-medium mb-1">Última actividad:</span>
+                                <span class="text-slate-700 font-semibold text-[11px] block truncate">
+                                    {{ $p->ultima_actividad ? \Illuminate\Support\Carbon::parse($p->ultima_actividad)->format('d/m/Y H:i') : 'Sin actividad' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- Vista Desktop: Tabla tradicional estructurada (sin la columna de mejor nota) -->
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted">
                         <tr>
                             <th class="px-5 sm:px-6 py-3 font-bold">Empleado</th>
                             <th class="px-4 py-3 font-bold min-w-[180px]">Progreso</th>
                             <th class="px-4 py-3 font-bold">Estado</th>
-                            <th class="px-4 py-3 font-bold text-center">Mejor nota</th>
                             <th class="px-4 py-3 font-bold text-center">Certificado</th>
                             <th class="px-4 py-3 font-bold">Última actividad</th>
                         </tr>
@@ -111,9 +168,6 @@
                                 </td>
                                 <td class="px-4 py-3.5">
                                     <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold {{ $clase }}">{{ $etiqueta }}</span>
-                                </td>
-                                <td class="px-4 py-3.5 text-center font-bold text-brand-dark">
-                                    {{ $p->mejor_nota !== null ? rtrim(rtrim(number_format((float) $p->mejor_nota, 1), '0'), '.') . '%' : '—' }}
                                 </td>
                                 <td class="px-4 py-3.5 text-center">
                                     @if ($p->certificado)

@@ -29,18 +29,15 @@
                 </p>
 
                 <div class="mt-5 flex flex-wrap gap-2.5">
-                    <button type="button" onclick="abrirModalCrear()" id="btn-hero-crear"
-                            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-brand-blue hover:bg-brand-light font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+                    <a href="{{ route('jefe.capacitaciones.create') }}" id="btn-hero-crear"
+                       class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-brand-blue hover:bg-brand-light font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-plus"></i>
-                        <span>Nueva Capacitación (Modal)</span>
-                    </button>
-                    <a href="{{ route('jefe.capacitaciones.create') }}"
-                       class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-heading font-bold text-xs sm:text-sm transition-colors">
-                        Estudio a Pantalla Completa
+                        <span>Nueva Capacitación</span>
                     </a>
                     <a href="{{ route('jefe.resultados.index') }}"
                        class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-heading font-bold text-xs sm:text-sm transition-colors">
-                        Consultar Resultados
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Consultar Resultados</span>
                     </a>
                 </div>
             </div>
@@ -87,10 +84,11 @@
                 <p class="text-xs text-muted">Edita el contenido, consulta a los participantes o desactiva una capacitación (nunca se elimina).</p>
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" onclick="abrirModalCrear()"
-                        class="px-3.5 py-2 rounded-xl bg-brand-blue text-white text-xs font-bold shadow-xs hover:bg-brand-deep transition-colors cursor-pointer">
-                    + Nueva Capacitación
-                </button>
+                <a href="{{ route('jefe.capacitaciones.create') }}"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-blue text-white text-xs font-bold shadow-xs hover:bg-brand-deep transition-colors">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Nueva Capacitación</span>
+                </a>
                 <span class="px-3 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold border border-line">
                     Total ({{ $estadisticas['total'] }})
                 </span>
@@ -195,78 +193,14 @@
                     </div>
                     <h3 class="font-heading font-extrabold text-base text-brand-dark">Aún no has publicado capacitaciones</h3>
                     <p class="text-xs text-muted max-w-sm mx-auto">Crea tu primera capacitación o inducción: se habilitará automáticamente para los empleados de tu área.</p>
-                    <button type="button" onclick="abrirModalCrear()"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer">
-                        Crear Capacitación (Modal)
-                    </button>
+                    <a href="{{ route('jefe.capacitaciones.create') }}"
+                       class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs transition-colors">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Crear Capacitación</span>
+                    </a>
                 </div>
             @endforelse
         </div>
     </div>
 </div>
-
-<!-- ========================================================
-     MODAL INTERACTIVO DE CREACIÓN CON PASOS Y VISTA PREVIA LATERAL EN TIEMPO REAL
-     ======================================================== -->
-<div id="modal-crear-capacitacion" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <!-- Backdrop -->
-    <div class="fixed inset-0 bg-brand-dark/70 backdrop-blur-sm transition-opacity" onclick="cerrarModalCrear()"></div>
-
-    <div class="flex min-h-screen items-center justify-center p-3 sm:p-6 text-center">
-        <div class="relative w-full max-w-6xl rounded-3xl bg-slate-50 text-left shadow-2xl transition-all transform border border-line/80 overflow-hidden flex flex-col max-h-[92vh]">
-            
-            <!-- Cabecera del Modal con Progreso -->
-            <div class="bg-gradient-to-r from-brand-dark via-brand-deep to-brand-blue p-5 text-white flex items-center justify-between shrink-0 relative">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-lg text-brand-sky">
-                        <i class="fa-solid fa-rocket"></i>
-                    </div>
-                    <div>
-                        <span id="modal-step-badge" class="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-[10px] font-bold text-brand-sky uppercase tracking-wider">
-                            Paso 1 de 3: Empezando...
-                        </span>
-                        <h3 class="font-heading font-extrabold text-base sm:text-lg leading-tight text-white mt-0.5">
-                            Crear Nueva Capacitación
-                        </h3>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('jefe.capacitaciones.create') }}" class="hidden sm:inline-flex text-xs font-bold text-brand-sky hover:underline">
-                        Abrir a pantalla completa ↗
-                    </a>
-                    <button type="button" onclick="cerrarModalCrear()" class="p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Barra de Progreso del Modal -->
-            <div class="w-full bg-slate-200 h-1.5 shrink-0 overflow-hidden">
-                <div id="modal-barra-progreso" class="bg-gradient-to-r from-cyan-400 to-brand-blue h-full transition-all duration-300" style="width: 33.33%"></div>
-            </div>
-
-            <!-- Cuerpo del Modal: Split Studio -->
-            <div class="p-5 sm:p-7 overflow-y-auto flex-1">
-                <iframe id="iframe-studio" src="{{ route('jefe.capacitaciones.create') }}" class="w-full h-[72vh] border-0 rounded-2xl bg-white shadow-xs"></iframe>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
-
-@push('scripts')
-<script>
-    function abrirModalCrear() {
-        const modal = document.getElementById('modal-crear-capacitacion');
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function cerrarModalCrear() {
-        const modal = document.getElementById('modal-crear-capacitacion');
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-</script>
-@endpush
