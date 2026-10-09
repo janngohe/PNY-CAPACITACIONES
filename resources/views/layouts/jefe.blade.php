@@ -18,7 +18,7 @@
     <!-- Tailwind CSS compilado por Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-full font-sans text-ink bg-slate-50 antialiased selection:bg-brand-blue/20 selection:text-brand-dark">
+<body class="h-full font-sans text-ink bg-[#f8fafc] antialiased selection:bg-brand-blue/20 selection:text-brand-dark lg:overflow-hidden">
 @php
     $enCapacitaciones = request()->routeIs('jefe.dashboard', 'jefe.capacitaciones.index', 'jefe.capacitaciones.show', 'jefe.capacitaciones.edit');
     $enCrearCapacitacion = request()->routeIs('jefe.capacitaciones.create');
@@ -261,7 +261,7 @@
             @endforeach
 
             <!-- CONTENIDO DE LA PÁGINA -->
-            <main class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+            <main class="flex-1 p-4 sm:p-6 md:p-8">
                 @yield('content')
             </main>
 

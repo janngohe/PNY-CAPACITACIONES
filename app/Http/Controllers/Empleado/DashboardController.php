@@ -243,6 +243,13 @@ class DashboardController extends Controller
         $porcentajeProgreso = $totalModulos > 0 ? (int) round(($modulosCompletados / $totalModulos) * 100) : 0;
         $todosModulosCompletados = $totalModulos > 0 && $modulosCompletados >= $totalModulos;
 
+        $asignacion = $usuario->asignaciones()->where('capacitacion_id', $capacitacion->id)->first();
+        $haIniciado = (bool) (
+            ($asignacion && in_array($asignacion->estado, ['EN_PROGRESO', 'MODULOS_COMPLETOS', 'COMPLETADA'])) ||
+            ($asignacion && $asignacion->fecha_inicio !== null) ||
+            $progresosUsuario->contains(fn ($p) => $p->completado)
+        );
+
         $evaluaciones = $capacitacion->evaluaciones;
         foreach ($evaluaciones as $eval) {
             $intentos = IntentoEvaluacion::where('usuario_id', $usuario->id)
@@ -264,7 +271,8 @@ class DashboardController extends Controller
             'modulosCompletados',
             'totalModulos',
             'todosModulosCompletados',
-            'evaluaciones'
+            'evaluaciones',
+            'haIniciado'
         ));
     }
 
@@ -285,6 +293,16 @@ class DashboardController extends Controller
 
         if (!$capacitacion || !$capacitacion->estado) {
             return back()->with('error', 'La capacitación no está disponible.');
+        }
+
+        $asignacion = $usuario->asignaciones()->where('capacitacion_id', $capacitacion->id)->first();
+        $haIniciado = (bool) (
+            ($asignacion && in_array($asignacion->estado, ['EN_PROGRESO', 'MODULOS_COMPLETOS', 'COMPLETADA'])) ||
+            ($asignacion && $asignacion->fecha_inicio !== null)
+        );
+
+        if (!$haIniciado) {
+            return back()->with('error', 'Debes iniciar la capacitación antes de poder registrar avance o completar módulos.');
         }
 
         $modulosOrdenados = $capacitacion->modulos()->where('estado', true)->orderBy('numero_seccion')->get();
@@ -322,14 +340,63 @@ class DashboardController extends Controller
             ->where('completado', true)
             ->count();
 
-        $nuevoEstado = ($completadosCount >= $totalModulos) ? 'MODULOS_COMPLETOS' : 'EN_PROGRESO';
-
+        $todosCompletados = ($totalModulos > 0 && $completadosCount >= $totalModulos);
         $pivotExistente = $usuario->capacitaciones()->where('capacitacion_id', $capacitacion->id)->first()?->pivot;
+
+        if ($todosCompletados) {
+            $evaluaciones = $capacitacion->evaluaciones()->where('estado', true)->get();
+            $tieneEvaluacion = $evaluaciones->isNotEmpty();
+            $evaluacionesAprobadas = $tieneEvaluacion && $evaluaciones->every(function ($eval) use ($usuario) {
+                return IntentoEvaluacion::where('usuario_id', $usuario->id)
+                    ->where('evaluacion_id', $eval->id)
+                    ->where('estado', 'APROBADO')
+                    ->exists();
+            });
+
+            if (!$tieneEvaluacion || $evaluacionesAprobadas) {
+                $usuario->capacitaciones()->syncWithoutDetaching([
+                    $capacitacion->id => [
+                        'fecha_asignacion' => $pivotExistente?->fecha_asignacion ?: now(),
+                        'fecha_finalizacion' => now(),
+                        'estado' => 'COMPLETADA',
+                    ]
+                ]);
+
+                $plantilla = PlantillaCertificado::first();
+                Certificado::firstOrCreate(
+                    [
+                        'usuario_id' => $usuario->id,
+                        'capacitacion_id' => $capacitacion->id,
+                    ],
+                    [
+                        'plantilla_certificado_id' => $plantilla?->id,
+                        'codigo' => 'PNY-' . strtoupper(Str::random(8)),
+                        'nombre_empleado' => $usuario->nombre_completo,
+                        'identificacion' => $usuario->identificacion,
+                        'nombre_capacitacion' => $capacitacion->titulo,
+                        'area_nombre' => $usuario->area->nombre ?? 'Producción Piscícola',
+                        'porcentaje' => 100,
+                        'fecha_emision' => now(),
+                    ]
+                );
+
+                return back()->with('success_modulo', '🎉 ¡Felicitaciones! Has finalizado exitosamente la capacitación "' . $capacitacion->titulo . '". Tu certificado digital ha sido emitido.');
+            } else {
+                $usuario->capacitaciones()->syncWithoutDetaching([
+                    $capacitacion->id => [
+                        'fecha_asignacion' => $pivotExistente?->fecha_asignacion ?: now(),
+                        'estado' => 'MODULOS_COMPLETOS',
+                    ]
+                ]);
+
+                return back()->with('success_modulo', '¡Has finalizado todos los módulos de la capacitación! Ya puedes presentar la evaluación de aprendizaje a continuación.');
+            }
+        }
 
         $usuario->capacitaciones()->syncWithoutDetaching([
             $capacitacion->id => [
                 'fecha_asignacion' => $pivotExistente?->fecha_asignacion ?: now(),
-                'estado' => $nuevoEstado,
+                'estado' => 'EN_PROGRESO',
             ]
         ]);
 
@@ -351,6 +418,20 @@ class DashboardController extends Controller
 
         $evaluacion->loadMissing('capacitacion', 'preguntas.opciones');
         $capacitacion = $evaluacion->capacitacion;
+
+        if (!$capacitacion || !$capacitacion->estado) {
+            return back()->with('error_evaluacion', 'La capacitación no está disponible.');
+        }
+
+        $asignacion = $usuario->asignaciones()->where('capacitacion_id', $capacitacion->id)->first();
+        $haIniciado = (bool) (
+            ($asignacion && in_array($asignacion->estado, ['EN_PROGRESO', 'MODULOS_COMPLETOS', 'COMPLETADA'])) ||
+            ($asignacion && $asignacion->fecha_inicio !== null)
+        );
+
+        if (!$haIniciado) {
+            return back()->with('error_evaluacion', 'Debes iniciar la capacitación y completar todos los módulos antes de presentar la evaluación.');
+        }
 
         $intentosPrevios = IntentoEvaluacion::where('usuario_id', $usuario->id)
             ->where('evaluacion_id', $evaluacion->id)
