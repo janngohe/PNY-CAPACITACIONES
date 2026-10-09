@@ -25,9 +25,6 @@
                     ¡Bienvenido, <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-brand-sky">{{ $usuario->nombre_completo ?? 'Colaborador' }}</span>!
                 </h1>
 
-                <p class="mt-2 text-sm sm:text-base text-slate-200/90 leading-relaxed font-normal">
-                    Tienes asignadas las siguientes <strong class="text-white font-semibold">capacitaciones e inducciones</strong> para fortalecer los estándares de calidad y bioseguridad en <strong class="text-white font-semibold">C.I. Piscícola New York</strong>.
-                </p>
 
                 <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-300">
                     <span class="inline-flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-lg">
@@ -42,23 +39,6 @@
                         </svg>
                         Rol: <strong class="text-white">{{ $usuario->rol ?? 'EMPLEADO' }}</strong>
                     </span>
-                </div>
-            </div>
-
-            <div class="lg:w-72 bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/15 flex flex-col justify-between shrink-0">
-                <div class="flex items-center justify-between text-xs text-white/90 mb-2">
-                    <span class="font-semibold uppercase tracking-wider text-[11px] text-brand-sky">Resumen Formativo</span>
-                    <span class="font-bold text-sm text-white">{{ $estadisticas['activas'] ?? 0 }} Cursos</span>
-                </div>
-                <div class="grid grid-cols-2 gap-2 text-center text-xs mt-2">
-                    <div class="bg-white/10 rounded-xl p-2.5">
-                        <span class="block text-xl font-heading font-extrabold text-white">{{ $estadisticas['activas'] ?? 0 }}</span>
-                        <span class="text-[10px] text-slate-300">Asignadas</span>
-                    </div>
-                    <div class="bg-white/10 rounded-xl p-2.5">
-                        <span class="block text-xl font-heading font-extrabold text-emerald-300">{{ $estadisticas['completadas'] ?? 0 }}</span>
-                        <span class="text-[10px] text-slate-300">Aprobadas</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -294,7 +274,8 @@
                         </form>
                     @elseif($estadoUsuario === 'EN_PROGRESO' || $porcentaje > 0)
                         <a href="{{ route('empleado.capacitaciones.ver', $cap) }}"
-                           class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-brand-blue hover:bg-brand-deep text-white shadow-brand-blue/20 hover:shadow-brand-blue/30 hover:-translate-y-0.5">
+                           style="background-color: #0056b3; color: #ffffff;"
+                           class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-[#0056b3] hover:bg-[#003d80] text-white hover:-translate-y-0.5">
                             <i class="fa-solid fa-circle-play text-base"></i>
                             <span>Continuar Capacitación ({{ $porcentaje }}%)</span>
                         </a>
@@ -302,7 +283,8 @@
                         <form method="POST" action="{{ route('empleado.capacitaciones.iniciar', $cap) }}" class="w-full">
                             @csrf
                             <button type="submit"
-                                    class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-brand-blue hover:bg-brand-deep text-white shadow-brand-blue/20 hover:shadow-brand-blue/30 hover:-translate-y-0.5 cursor-pointer">
+                                    style="background-color: #0056b3; color: #ffffff;"
+                                    class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-[#0056b3] hover:bg-[#003d80] text-white hover:-translate-y-0.5 cursor-pointer">
                                 <i class="fa-solid fa-play text-base"></i>
                                 <span>Iniciar Capacitación</span>
                             </button>
