@@ -7,6 +7,10 @@
     <title>@yield('title', 'Capacitaciones') · Portal del Empleado · C.I. Piscícola New York</title>
     <meta name="description" content="Portal de capacitación y formación continua de colaboradores de C.I. Piscícola New York.">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/Logo.png') }}">
+
     <!-- Tipografía Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
