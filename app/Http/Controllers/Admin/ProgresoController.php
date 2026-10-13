@@ -20,20 +20,21 @@ class ProgresoController extends Controller
             'estado' => $request->query('estado'),
         ];
 
-        $filas = Seguimiento::progreso($filtros);
+        $colaboradores = Seguimiento::progresoPorColaborador($filtros);
+        $todasLasAsignaciones = $colaboradores->flatMap(fn ($c) => $c->asignaciones);
 
         $resumen = [
-            'registros' => $filas->count(),
-            'participantes' => $filas->pluck('usuario.id')->unique()->count(),
-            'completadas' => $filas->where('estado', 'COMPLETADA')->count(),
-            'promedio' => $filas->isNotEmpty() ? (int) round($filas->avg('porcentaje')) : 0,
+            'registros' => $todasLasAsignaciones->count(),
+            'participantes' => $colaboradores->count(),
+            'completadas' => $todasLasAsignaciones->where('estado', 'COMPLETADA')->count(),
+            'promedio' => $colaboradores->isNotEmpty() ? (int) round($colaboradores->avg('porcentaje_global')) : 0,
         ];
 
         $porPagina = 15;
         $pagina = LengthAwarePaginator::resolveCurrentPage();
         $paginado = new LengthAwarePaginator(
-            $filas->forPage($pagina, $porPagina)->values(),
-            $filas->count(),
+            $colaboradores->forPage($pagina, $porPagina)->values(),
+            $colaboradores->count(),
             $porPagina,
             $pagina,
             ['path' => $request->url(), 'query' => $request->query()]

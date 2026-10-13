@@ -3,17 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\Certificado;
+use App\Models\CertificadoExterno;
 use App\Models\IntentoEvaluacion;
 use App\Models\PlantillaCertificado;
 use App\Models\UsuarioCapacitacion;
 use App\Support\Seguimiento;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
- * Consulta de certificados emitidos y emisión manual de los que correspondan
- * (capacitaciones COMPLETADAS cuyo certificado aún no existe).
+ * Consulta de certificados emitidos, emisión manual de los pendientes,
+ * gestión de plantillas de certificados y aprobación/rechazo de certificados externos.
  */
 class CertificadoController extends Controller
 {
@@ -22,7 +25,7 @@ class CertificadoController extends Controller
         $q = trim((string) $request->query('q'));
 
         $certificados = Certificado::query()
-            ->with(['capacitacion:id,titulo', 'usuario:id,area_id'])
+            ->with(['capacitacion:id,titulo,duracion_estimada', 'usuario:id,area_id', 'plantillaCertificado'])
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
                 ->where('nombre_empleado', 'like', "%$q%")
                 ->orWhere('identificacion', 'like', "%$q%")
@@ -34,12 +37,188 @@ class CertificadoController extends Controller
 
         $pendientes = $this->pendientes()->load(['usuario.area', 'capacitacion']);
 
+        $certificadosExternos = CertificadoExterno::query()
+            ->with('usuario.area')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where('entidad_emisora', 'like', "%$q%")
+                    ->orWhereHas('usuario', fn ($u) => $u->where('nombre_completo', 'like', "%$q%")
+                        ->orWhere('identificacion', 'like', "%$q%"));
+            })
+            ->orderByRaw("CASE WHEN estado = 'PENDIENTE' THEN 1 ELSE 2 END")
+            ->orderByDesc('id')
+            ->get();
+
+        $plantillas = PlantillaCertificado::query()
+            ->with('area')
+            ->orderByDesc('id')
+            ->get();
+
+        $areas = Area::where('estado', true)->orderBy('nombre')->get();
+
         return view('admin.certificados.index', [
             'certificados' => $certificados,
             'pendientes' => $pendientes,
+            'certificadosExternos' => $certificadosExternos,
+            'plantillas' => $plantillas,
+            'areas' => $areas,
             'q' => $q,
             'totalEmitidos' => Certificado::count(),
+            'totalExternos' => CertificadoExterno::count(),
+            'externosPendientes' => CertificadoExterno::where('estado', 'PENDIENTE')->count(),
+            'totalPlantillas' => $plantillas->count(),
         ]);
+    }
+
+    public function guardarPlantilla(Request $request): RedirectResponse
+    {
+        $datos = $request->validate([
+            'nombre' => ['required', 'string', 'max:150'],
+            'descripcion' => ['nullable', 'string', 'max:255'],
+            'area_id' => ['nullable', 'integer', 'exists:areas,id'],
+            'archivo_plantilla' => ['required', 'file', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'firma_1_nombre' => ['nullable', 'string', 'max:150'],
+            'firma_1_cargo' => ['nullable', 'string', 'max:150'],
+            'firma_1_archivo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
+            'firma_2_nombre' => ['nullable', 'string', 'max:150'],
+            'firma_2_cargo' => ['nullable', 'string', 'max:150'],
+            'firma_2_archivo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
+            'nombre_organizacion' => ['nullable', 'string', 'max:200'],
+            'texto_certificado' => ['nullable', 'string'],
+            'estado' => ['nullable'],
+        ]);
+
+        $rutaPlantilla = $request->file('archivo_plantilla')->store('plantillas', 'public');
+
+        $rutaFirma1 = $request->hasFile('firma_1_archivo')
+            ? $request->file('firma_1_archivo')->store('firmas', 'public')
+            : null;
+
+        $rutaFirma2 = $request->hasFile('firma_2_archivo')
+            ? $request->file('firma_2_archivo')->store('firmas', 'public')
+            : null;
+
+        PlantillaCertificado::create([
+            'nombre' => $datos['nombre'],
+            'descripcion' => $datos['descripcion'] ?? null,
+            'area_id' => !empty($datos['area_id']) ? $datos['area_id'] : null,
+            'ruta_plantilla' => $rutaPlantilla,
+            'nombre_organizacion' => $datos['nombre_organizacion'] ?? 'C.I. Piscícola New York S.A.S.',
+            'texto_certificado' => $datos['texto_certificado'] ?? null,
+            'firma_1_nombre' => $datos['firma_1_nombre'] ?? 'Jefe Inmediato',
+            'firma_1_cargo' => $datos['firma_1_cargo'] ?? 'Jefe de Área',
+            'firma_1_ruta' => $rutaFirma1,
+            'firma_2_nombre' => $datos['firma_2_nombre'] ?? 'Gerente General',
+            'firma_2_cargo' => $datos['firma_2_cargo'] ?? 'Gerencia General',
+            'firma_2_ruta' => $rutaFirma2,
+            'estado' => $request->has('estado') ? (bool) $request->input('estado') : true,
+        ]);
+
+        return redirect()->route('admin.certificados.index', ['tab' => 'plantillas'])
+            ->with('success', '¡La plantilla de certificado fue creada y configurada exitosamente!');
+    }
+
+    public function actualizarPlantilla(Request $request, PlantillaCertificado $plantilla): RedirectResponse
+    {
+        $datos = $request->validate([
+            'nombre' => ['required', 'string', 'max:150'],
+            'descripcion' => ['nullable', 'string', 'max:255'],
+            'area_id' => ['nullable', 'integer', 'exists:areas,id'],
+            'archivo_plantilla' => ['nullable', 'file', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'firma_1_nombre' => ['nullable', 'string', 'max:150'],
+            'firma_1_cargo' => ['nullable', 'string', 'max:150'],
+            'firma_1_archivo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
+            'firma_2_nombre' => ['nullable', 'string', 'max:150'],
+            'firma_2_cargo' => ['nullable', 'string', 'max:150'],
+            'firma_2_archivo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
+            'nombre_organizacion' => ['nullable', 'string', 'max:200'],
+            'texto_certificado' => ['nullable', 'string'],
+            'estado' => ['nullable'],
+        ]);
+
+        $camposActualizar = [
+            'nombre' => $datos['nombre'],
+            'descripcion' => $datos['descripcion'] ?? null,
+            'area_id' => !empty($datos['area_id']) ? $datos['area_id'] : null,
+            'nombre_organizacion' => $datos['nombre_organizacion'] ?? 'C.I. Piscícola New York S.A.S.',
+            'texto_certificado' => $datos['texto_certificado'] ?? null,
+            'firma_1_nombre' => $datos['firma_1_nombre'] ?? null,
+            'firma_1_cargo' => $datos['firma_1_cargo'] ?? null,
+            'firma_2_nombre' => $datos['firma_2_nombre'] ?? null,
+            'firma_2_cargo' => $datos['firma_2_cargo'] ?? null,
+            'estado' => $request->has('estado') ? (bool) $request->input('estado') : $plantilla->estado,
+        ];
+
+        if ($request->hasFile('archivo_plantilla')) {
+            if ($plantilla->ruta_plantilla && Storage::disk('public')->exists($plantilla->ruta_plantilla)) {
+                Storage::disk('public')->delete($plantilla->ruta_plantilla);
+            }
+            $camposActualizar['ruta_plantilla'] = $request->file('archivo_plantilla')->store('plantillas', 'public');
+        }
+
+        if ($request->hasFile('firma_1_archivo')) {
+            if ($plantilla->firma_1_ruta && Storage::disk('public')->exists($plantilla->firma_1_ruta)) {
+                Storage::disk('public')->delete($plantilla->firma_1_ruta);
+            }
+            $camposActualizar['firma_1_ruta'] = $request->file('firma_1_archivo')->store('firmas', 'public');
+        }
+
+        if ($request->hasFile('firma_2_archivo')) {
+            if ($plantilla->firma_2_ruta && Storage::disk('public')->exists($plantilla->firma_2_ruta)) {
+                Storage::disk('public')->delete($plantilla->firma_2_ruta);
+            }
+            $camposActualizar['firma_2_ruta'] = $request->file('firma_2_archivo')->store('firmas', 'public');
+        }
+
+        $plantilla->update($camposActualizar);
+
+        return redirect()->route('admin.certificados.index', ['tab' => 'plantillas'])
+            ->with('success', 'La plantilla de certificado fue actualizada exitosamente.');
+    }
+
+    public function togglePlantillaEstado(PlantillaCertificado $plantilla): RedirectResponse
+    {
+        $plantilla->update(['estado' => !$plantilla->estado]);
+
+        $mensaje = $plantilla->estado ? 'Plantilla activada correctamente.' : 'Plantilla desactivada correctamente.';
+
+        return redirect()->route('admin.certificados.index', ['tab' => 'plantillas'])->with('success', $mensaje);
+    }
+
+    public function eliminarPlantilla(PlantillaCertificado $plantilla): RedirectResponse
+    {
+        if ($plantilla->certificados()->exists()) {
+            return redirect()->route('admin.certificados.index', ['tab' => 'plantillas'])
+                ->with('error', 'No se puede eliminar la plantilla porque ya tiene certificados emitidos asociados. Puedes desactivarla para que no se use en nuevas emisiones.');
+        }
+
+        if ($plantilla->ruta_plantilla && Storage::disk('public')->exists($plantilla->ruta_plantilla)) {
+            Storage::disk('public')->delete($plantilla->ruta_plantilla);
+        }
+        if ($plantilla->firma_1_ruta && Storage::disk('public')->exists($plantilla->firma_1_ruta)) {
+            Storage::disk('public')->delete($plantilla->firma_1_ruta);
+        }
+        if ($plantilla->firma_2_ruta && Storage::disk('public')->exists($plantilla->firma_2_ruta)) {
+            Storage::disk('public')->delete($plantilla->firma_2_ruta);
+        }
+
+        $plantilla->delete();
+
+        return redirect()->route('admin.certificados.index', ['tab' => 'plantillas'])
+            ->with('success', 'Plantilla eliminada exitosamente.');
+    }
+
+    public function aprobarExterno(Request $request, CertificadoExterno $certificadoExterno): RedirectResponse
+    {
+        $certificadoExterno->update(['estado' => 'APROBADO']);
+
+        return back()->with('success', 'El certificado externo ha sido APROBADO exitosamente.');
+    }
+
+    public function rechazarExterno(Request $request, CertificadoExterno $certificadoExterno): RedirectResponse
+    {
+        $certificadoExterno->update(['estado' => 'RECHAZADO']);
+
+        return back()->with('success', 'El certificado externo ha sido marcado como RECHAZADO.');
     }
 
     public function generar(Request $request): RedirectResponse

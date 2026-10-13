@@ -126,6 +126,45 @@ class Seguimiento
     }
 
     /**
+     * Agrupa el progreso por cada colaborador activo.
+     * Incluye conteo de capacitaciones asignadas y la colección completa de asignaciones.
+     *
+     * @param  array{area_id?:int|string|null, capacitacion_id?:int|string|null, estado?:string|null, q?:string|null}  $filtros
+     */
+    public static function progresoPorColaborador(array $filtros = []): Collection
+    {
+        $filas = self::progreso($filtros);
+
+        if ($filas->isEmpty()) {
+            return collect();
+        }
+
+        return $filas
+            ->groupBy(fn ($fila) => $fila->usuario->id)
+            ->map(function (Collection $asignaciones) {
+                $primerFila = $asignaciones->first();
+                $totalAsignadas = $asignaciones->count();
+                $completadas = $asignaciones->where('estado', 'COMPLETADA')->count();
+                $enProgreso = $asignaciones->whereIn('estado', ['EN_PROGRESO', 'MODULOS_COMPLETOS'])->count();
+                $pendientes = $asignaciones->where('estado', 'PENDIENTE')->count();
+                $porcentajeGlobal = (int) round($asignaciones->avg('porcentaje') ?? 0);
+                $certificadosTotal = $asignaciones->where('certificado', true)->count();
+
+                return (object) [
+                    'usuario' => $primerFila->usuario,
+                    'total_asignadas' => $totalAsignadas,
+                    'completadas' => $completadas,
+                    'en_progreso' => $enProgreso,
+                    'pendientes' => $pendientes,
+                    'porcentaje_global' => $porcentajeGlobal,
+                    'certificados_total' => $certificadosTotal,
+                    'asignaciones' => $asignaciones->values(),
+                ];
+            })
+            ->values();
+    }
+
+    /**
      * Código único legible para certificados.
      */
     public static function codigoCertificado(): string

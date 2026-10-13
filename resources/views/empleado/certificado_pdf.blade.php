@@ -26,15 +26,16 @@
         h1 { margin: 12px 0 6px; font-size: 25px; color: #0f2a4a; text-transform: uppercase; letter-spacing: 0.5px; }
         .lead { font-size: 11px; color: #64748b; margin: 0 0 8px; }
         .nombre { font-size: 29px; font-weight: bold; color: #0f2a4a; border-bottom: 3px solid #0056b3; display: inline-block; padding: 0 22px 4px; margin: 4px 0 8px; }
-        .doc { font-size: 11px; color: #475569; margin: 0 0 12px; }
+        .doc { font-size: 11px; color: #475569; margin: 0 0 10px; }
         .doc strong { color: #0f2a4a; }
-        .curso { width: 78%; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc; padding: 12px 20px; }
-        .curso small { font-size: 9px; letter-spacing: 1.5px; font-weight: bold; color: #0ea5e9; text-transform: uppercase; }
-        .curso h3 { margin: 6px 0 8px; font-size: 20px; color: #0056b3; }
-        .pill { display: inline-block; border-radius: 20px; padding: 3px 12px; font-size: 9px; font-weight: bold; margin: 0 4px; }
-        .pill-ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-        .pill-date { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-        .firmas { width: 80%; margin: 14px auto 0; border-collapse: collapse; }
+        .curso { width: 84%; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 14px; background: #f8fafc; padding: 12px 24px; }
+        .curso small { font-size: 9px; letter-spacing: 1.5px; font-weight: bold; color: #0284c7; text-transform: uppercase; }
+        .curso h3 { margin: 5px 0 6px; font-size: 18px; color: #003d80; text-transform: uppercase; }
+        .curso-texto { font-size: 10px; color: #334155; line-height: 1.45; margin: 0 0 6px; }
+        .curso-constancia { font-size: 9px; color: #64748b; font-style: italic; margin: 0 0 8px; }
+        .pill { display: inline-block; border-radius: 20px; padding: 3px 14px; font-size: 9px; font-weight: bold; margin: 0 4px; }
+        .pill-date { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+        .firmas { width: 80%; margin: 12px auto 0; border-collapse: collapse; }
         .firmas td { width: 50%; text-align: center; vertical-align: bottom; }
         .firma-nombre { font-family: DejaVu Serif, serif; font-style: italic; font-size: 17px; font-weight: bold; height: 34px; }
         .firma-id { font-size: 7px; color: #94a3b8; }
@@ -48,13 +49,30 @@
 @php
     $logoPath = public_path('images/Logo.png');
     $logoSrc = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;
-    $plantilla = $certificado->plantillaCertificado;
+    $plantilla = $certificado->plantillaCertificado ?? \App\Models\PlantillaCertificado::where('estado', true)->first();
     $f1n = $plantilla->firma_1_nombre ?? 'Ing. Carlos Mendoza';
-    $f1c = $plantilla->firma_1_cargo ?? 'Director de Gestión Humana y Bioseguridad';
+    $f1c = $plantilla->firma_1_cargo ?? 'Jefe de Área / Gestión de Operaciones';
+    $f1rPath = ($plantilla && $plantilla->firma_1_ruta) ? public_path('storage/' . $plantilla->firma_1_ruta) : null;
+    $f1rSrc = ($f1rPath && file_exists($f1rPath)) ? 'data:image/' . pathinfo($f1rPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($f1rPath)) : null;
+
     $f2n = $plantilla->firma_2_nombre ?? 'Dra. Elena Ramos';
-    $f2c = $plantilla->firma_2_cargo ?? 'Gerente de Calidad y Procesos';
+    $f2c = $plantilla->firma_2_cargo ?? 'Gerente General';
+    $f2rPath = ($plantilla && $plantilla->firma_2_ruta) ? public_path('storage/' . $plantilla->firma_2_ruta) : null;
+    $f2rSrc = ($f2rPath && file_exists($f2rPath)) ? 'data:image/' . pathinfo($f2rPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($f2rPath)) : null;
+
+    $plantillaBgPath = ($plantilla && $plantilla->ruta_plantilla) ? public_path('storage/' . $plantilla->ruta_plantilla) : null;
+    $plantillaBgSrc = ($plantillaBgPath && file_exists($plantillaBgPath)) ? 'data:image/' . pathinfo($plantillaBgPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($plantillaBgPath)) : null;
+
+    $org = $plantilla->nombre_organizacion ?? 'C.I. Piscícola New York S.A.S.';
+    $textoCert = $plantilla->texto_certificado ?? ('La Dirección General de ' . $org . ' hace constar formalmente que:');
+    $duracionHoras = $certificado->capacitacion?->duracion_estimada ?? 4;
+    $fechaRealizada = $certificado->fecha_emision ? $certificado->fecha_emision->format('d/m/Y') : date('d/m/Y');
 @endphp
 <div class="page">
+    @if($plantillaBgSrc)
+        <img src="{{ $plantillaBgSrc }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.12;" alt="">
+    @endif
+
     <div class="header">
         <table class="header-table">
             <tr>
@@ -62,55 +80,66 @@
                     @if($logoSrc)<div class="logo-box"><img src="{{ $logoSrc }}" alt="Logo"></div>@endif
                 </td>
                 <td class="brand">
-                    <h2>C.I. Piscícola <span>New York</span> S.A.S.</h2>
+                    <h2>{{ $org }}</h2>
                     <p>Sistema Institucional de Gestión del Talento Humano y Capacitación Continuada</p>
-                </td>
-                <td class="code-box">
-                    <small>Código de autenticidad</small>
-                    <strong>{{ $certificado->codigo }}</strong>
                 </td>
             </tr>
         </table>
     </div>
     <div class="wave"></div>
 
-    @if($logoSrc)<img class="watermark" src="{{ $logoSrc }}" alt="">@endif
+    @if(!$plantillaBgSrc && $logoSrc)
+        <img class="watermark" src="{{ $logoSrc }}" alt="">
+    @endif
 
     <div class="body">
         <span class="badge">Acreditación Institucional Oficial</span>
         <h1>Certificado de Capacitación y Aprobación</h1>
-        <p class="lead">La Dirección General de C.I. Piscícola New York S.A.S. hace constar formalmente que:</p>
+        <p class="lead">{{ $textoCert }}</p>
 
-        <div class="nombre">{{ $certificado->nombre_empleado }}</div>
+        <div class="nombre">{{ strtoupper($certificado->nombre_empleado) }}</div>
         <p class="doc">
-            Con documento de identificación Nº <strong>{{ $certificado->identificacion }}</strong>,
-            adscrito al área de <strong>{{ $certificado->area_nombre ?? 'Producción Piscícola' }}</strong>.
+            Con documento de identificación N.º <strong>{{ $certificado->identificacion }}</strong>,
+            adscrito al área de <strong>{{ $certificado->area_nombre ?? 'Producción Piscícola' }}</strong>,
         </p>
 
         <div class="curso">
-            <small>Ha cumplido satisfactoriamente el programa formativo</small>
-            <h3>{{ $certificado->nombre_capacitacion }}</h3>
-            <span class="pill pill-ok">Calificación: {{ rtrim(rtrim(number_format((float) $certificado->porcentaje, 2), '0'), '.') }}% (Aprobado)</span>
-            <span class="pill pill-date">Fecha de emisión: {{ $certificado->fecha_emision ? $certificado->fecha_emision->format('d/m/Y') : date('d/m/Y') }}</span>
+            <small>Ha cumplido satisfactoriamente la capacitación formativa en:</small>
+            <h3>{{ strtoupper($certificado->nombre_capacitacion) }}</h3>
+            <p class="curso-texto">
+                Con una intensidad horaria de <strong>{{ $duracionHoras }} {{ $duracionHoras == 1 ? 'hora' : 'horas' }}</strong>, realizada el día <strong>{{ $fechaRealizada }}</strong>, con el propósito de fortalecer sus conocimientos y competencias en el área correspondiente.
+            </p>
+            <p class="curso-constancia">
+                Se expide el presente certificado como constancia de su participación y cumplimiento de la actividad formativa.
+            </p>
+            <span class="pill pill-date">Rivera - Huila, {{ $fechaRealizada }}</span>
         </div>
 
         <table class="firmas">
             <tr>
                 <td>
-                    <div class="firma-nombre">C. Mendoza</div>
-                    <div class="firma-id">Digital Sign: #PNY-AUTH-8821</div>
-                    <div class="linea"><b>{{ $f1n }}</b><span>{{ $f1c }}</span></div>
+                    @if($f1rSrc)
+                        <img src="{{ $f1rSrc }}" style="max-height: 45px; max-width: 170px; display: block; margin: 0 auto 3px;" alt="Firma Jefe Inmediato">
+                    @else
+                        <div class="firma-nombre">{{ Str::limit($f1n, 22) }}</div>
+                        <div class="firma-id">Digital Sign: #PNY-JEFE-{{ substr(md5($f1n), 0, 5) }}</div>
+                    @endif
+                    <div class="linea"><b>{{ $f1n }}</b><span>{{ $f1c }} (Jefe Inmediato)</span></div>
                 </td>
                 <td>
-                    <div class="firma-nombre" style="color:#0056b3;">E. Ramos H.</div>
-                    <div class="firma-id">Digital Sign: #PNY-QUAL-9943</div>
-                    <div class="linea"><b>{{ $f2n }}</b><span>{{ $f2c }}</span></div>
+                    @if($f2rSrc)
+                        <img src="{{ $f2rSrc }}" style="max-height: 45px; max-width: 170px; display: block; margin: 0 auto 3px;" alt="Firma Gerente">
+                    @else
+                        <div class="firma-nombre" style="color:#0056b3;">{{ Str::limit($f2n, 22) }}</div>
+                        <div class="firma-id">Digital Sign: #PNY-GER-{{ substr(md5($f2n), 0, 5) }}</div>
+                    @endif
+                    <div class="linea"><b>{{ $f2n }}</b><span>{{ $f2c }} (Gerencia General)</span></div>
                 </td>
             </tr>
         </table>
     </div>
 
-    <div class="footer">Documento de Acreditación Interna emitido por el Sistema de Capacitación de C.I. Piscícola New York S.A.S.</div>
+    <div class="footer">Documento de Acreditación Oficial emitido por el Sistema de Capacitación de {{ $org }}</div>
 </div>
 </body>
 </html>

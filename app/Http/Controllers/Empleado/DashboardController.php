@@ -174,7 +174,7 @@ class DashboardController extends Controller
             ]
         ]);
 
-        $plantilla = PlantillaCertificado::first();
+        $plantilla = $this->resolverPlantilla($usuario->area_id);
 
         Certificado::firstOrCreate(
             [
@@ -362,7 +362,7 @@ class DashboardController extends Controller
                     ]
                 ]);
 
-                $plantilla = PlantillaCertificado::first();
+                $plantilla = $this->resolverPlantilla($usuario->area_id);
                 Certificado::firstOrCreate(
                     [
                         'usuario_id' => $usuario->id,
@@ -486,7 +486,7 @@ class DashboardController extends Controller
                 ]
             ]);
 
-            $plantilla = PlantillaCertificado::first();
+            $plantilla = $this->resolverPlantilla($usuario->area_id);
 
             Certificado::firstOrCreate(
                 [
@@ -532,18 +532,7 @@ class DashboardController extends Controller
             ->get();
 
         if ($capacitacionesCompletadas->isNotEmpty()) {
-            $plantilla = PlantillaCertificado::first() ?? PlantillaCertificado::create([
-                'nombre' => 'Plantilla Oficial C.I. Piscícola New York',
-                'descripcion' => 'Plantilla corporativa predeterminada para emisión de certificados de capacitación',
-                'ruta_plantilla' => 'plantillas/default.pdf',
-                'nombre_organizacion' => 'C.I. Piscícola New York S.A.S.',
-                'texto_certificado' => 'Certifica que el colaborador ha completado y aprobado satisfactoriamente la capacitación.',
-                'firma_1_nombre' => 'Ing. Carlos Mendoza',
-                'firma_1_cargo' => 'Director de Gestión Humana & Bioseguridad',
-                'firma_2_nombre' => 'Dra. Elena Ramos',
-                'firma_2_cargo' => 'Gerente de Calidad C.I. Piscícola New York',
-                'estado' => true,
-            ]);
+            $plantilla = $this->resolverPlantilla($usuario->area_id);
 
             foreach ($capacitacionesCompletadas as $cap) {
                 Certificado::firstOrCreate(
@@ -610,7 +599,7 @@ class DashboardController extends Controller
             abort(403, 'No tienes permiso para descargar este certificado.');
         }
 
-        $certificado->loadMissing('plantillaCertificado');
+        $certificado->loadMissing('plantillaCertificado', 'capacitacion');
 
         return Pdf::loadView('empleado.certificado_pdf', compact('certificado'))
             ->setPaper('letter', 'landscape')
@@ -697,5 +686,29 @@ class DashboardController extends Controller
         ]);
 
         return back()->with('success_anexo', 'Certificado externo radicado exitosamente. Pendiente de revisión por Talento Humano.');
+    }
+
+    /**
+     * Resuelve la plantilla de certificado activa para el área o general.
+     */
+    private function resolverPlantilla(?int $areaId): ?PlantillaCertificado
+    {
+        $activas = PlantillaCertificado::where('estado', true)->get();
+
+        return $activas->firstWhere('area_id', $areaId)
+            ?? $activas->firstWhere('area_id', null)
+            ?? $activas->first()
+            ?? PlantillaCertificado::create([
+                'nombre' => 'Plantilla Oficial C.I. Piscícola New York',
+                'descripcion' => 'Plantilla corporativa predeterminada para emisión de certificados de capacitación',
+                'ruta_plantilla' => 'plantillas/default.png',
+                'nombre_organizacion' => 'C.I. Piscícola New York S.A.S.',
+                'texto_certificado' => 'Certifica que el colaborador ha completado y aprobado satisfactoriamente la capacitación.',
+                'firma_1_nombre' => 'Ing. Carlos Mendoza',
+                'firma_1_cargo' => 'Director de Gestión Humana & Bioseguridad',
+                'firma_2_nombre' => 'Dra. Elena Ramos',
+                'firma_2_cargo' => 'Gerente de Calidad C.I. Piscícola New York',
+                'estado' => true,
+            ]);
     }
 }

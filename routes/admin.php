@@ -64,6 +64,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
     // Certificados
     Route::get('/certificados', [CertificadoController::class, 'index'])->name('certificados.index');
     Route::post('/certificados/generar', [CertificadoController::class, 'generar'])->name('certificados.generar');
+    Route::patch('/certificados/externos/{certificadoExterno}/aprobar', [CertificadoController::class, 'aprobarExterno'])->name('certificados.externos.aprobar');
+    Route::patch('/certificados/externos/{certificadoExterno}/rechazar', [CertificadoController::class, 'rechazarExterno'])->name('certificados.externos.rechazar');
+
+    // Plantillas de Certificados
+    Route::post('/certificados/plantillas', [CertificadoController::class, 'guardarPlantilla'])->name('certificados.plantillas.store');
+    Route::put('/certificados/plantillas/{plantilla}', [CertificadoController::class, 'actualizarPlantilla'])->name('certificados.plantillas.update');
+    Route::patch('/certificados/plantillas/{plantilla}/estado', [CertificadoController::class, 'togglePlantillaEstado'])->name('certificados.plantillas.estado');
+    Route::delete('/certificados/plantillas/{plantilla}', [CertificadoController::class, 'eliminarPlantilla'])->name('certificados.plantillas.destroy');
 
     // Reportes
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
