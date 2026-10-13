@@ -25,6 +25,7 @@
     $enCrearEvaluacion = request()->routeIs('jefe.evaluaciones.create');
     $enMisEvaluaciones = request()->routeIs('jefe.evaluaciones.index', 'jefe.evaluaciones.edit');
     $enResultados = request()->routeIs('jefe.resultados.*');
+    $enPersonal = request()->routeIs('jefe.personal.*');
     $grupoEvaluacionAbierto = $enCrearEvaluacion || $enMisEvaluaciones || $enResultados;
 
     $claseItemActivo = 'bg-brand-light text-brand-blue shadow-2xs font-bold border-l-4 border-brand-blue pl-2.5';
@@ -155,6 +156,18 @@
                             </li>
                         </ul>
                     </div>
+
+                    <!-- 4. Personal de Área -->
+                    <a href="{{ route('jefe.personal.index') }}" id="nav-personal"
+                       class="group flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-150 {{ $enPersonal ? $claseItemActivo : $claseItemInactivo }}">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-users text-sm w-5 text-center transition-colors {{ $enPersonal ? 'text-brand-blue' : 'text-slate-400 group-hover:text-brand-blue' }}"></i>
+                            <span>Personal de Área</span>
+                        </div>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full {{ $enPersonal ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-brand-light group-hover:text-brand-blue' }}">
+                            Equipo
+                        </span>
+                    </a>
                 </nav>
             </div>
 
@@ -178,17 +191,18 @@
                             Jefe · {{ $usuario->area->nombre ?? 'Sin área asignada' }}
                         </p>
                     </div>
-                    <form method="POST" action="{{ route('logout') }}" class="m-0">
-                        @csrf
-                        <button type="submit"
-                                class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0 cursor-pointer"
-                                title="Cerrar sesión">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                            </svg>
-                        </button>
-                    </form>
                 </div>
+
+                <!-- Botón Cerrar Sesión prominente y accesible para móvil y escritorio -->
+                <form method="POST" action="{{ route('logout') }}" class="m-0 mt-3">
+                    @csrf
+                    <button type="submit" id="btn-sidebar-logout-jefe"
+                            class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200/70 font-heading font-bold text-xs shadow-2xs transition-all cursor-pointer group"
+                            title="Cerrar sesión" aria-label="Cerrar sesión">
+                        <i class="fa-solid fa-arrow-right-from-bracket text-xs transition-transform group-hover:translate-x-0.5"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </form>
             </div>
         </aside>
 

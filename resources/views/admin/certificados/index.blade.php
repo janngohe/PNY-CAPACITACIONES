@@ -689,20 +689,33 @@
 
                 <!-- SECCIÓN: JEFE INMEDIATO -->
                 <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
-                    <div class="flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-lg bg-blue-100 text-brand-blue flex items-center justify-center text-xs font-bold">1</span>
-                        <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Jefe Inmediato</h5>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-blue-100 text-brand-blue flex items-center justify-center text-xs font-bold">1</span>
+                            <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Jefe Inmediato</h5>
+                        </div>
+                        <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                            Solo usuarios con rol Jefe de Área
+                        </span>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Nombre Completo</label>
-                            <input type="text" name="firma_1_nombre" placeholder="Ej: Ing. Carlos Mendoza"
-                                   class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                            <label class="block font-bold text-slate-700 mb-1">Seleccionar Jefe de Área <span class="text-rose-500">*</span></label>
+                            <select id="crear-jefe-select" name="firma_1_nombre" required
+                                    onchange="actualizarCargoJefe('crear')"
+                                    class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
+                                <option value="">-- Seleccionar Jefe de Área --</option>
+                                @foreach($jefes as $jf)
+                                    <option value="{{ $jf->nombre_completo }}" data-area="{{ $jf->area?->nombre ?? 'Área General' }}">
+                                        {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }})
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
-                            <input type="text" name="firma_1_cargo" placeholder="Ej: Director de Bioseguridad y Operaciones"
+                            <input type="text" id="crear-jefe-cargo" name="firma_1_cargo" placeholder="Ej: Jefe de Área / Sistemas"
                                    class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
                         </div>
                     </div>
@@ -842,16 +855,29 @@
 
                 <!-- SECCIÓN: JEFE INMEDIATO -->
                 <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
-                    <div class="flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-lg bg-blue-100 text-brand-blue flex items-center justify-center text-xs font-bold">1</span>
-                        <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Jefe Inmediato</h5>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-blue-100 text-brand-blue flex items-center justify-center text-xs font-bold">1</span>
+                            <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Jefe Inmediato</h5>
+                        </div>
+                        <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                            Solo usuarios con rol Jefe de Área
+                        </span>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Nombre Completo</label>
-                            <input type="text" id="edit-jefe-nombre" name="firma_1_nombre"
-                                   class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                            <label class="block font-bold text-slate-700 mb-1">Seleccionar Jefe de Área <span class="text-rose-500">*</span></label>
+                            <select id="edit-jefe-select" name="firma_1_nombre" required
+                                    onchange="actualizarCargoJefe('edit')"
+                                    class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
+                                <option value="">-- Seleccionar Jefe de Área --</option>
+                                @foreach($jefes as $jf)
+                                    <option value="{{ $jf->nombre_completo }}" data-area="{{ $jf->area?->nombre ?? 'Área General' }}">
+                                        {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }})
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
@@ -963,6 +989,20 @@ function cambiarPestana(tipo) {
     }
 }
 
+function actualizarCargoJefe(tipo) {
+    const select = document.getElementById(tipo === 'crear' ? 'crear-jefe-select' : 'edit-jefe-select');
+    const inputCargo = document.getElementById(tipo === 'crear' ? 'crear-jefe-cargo' : 'edit-jefe-cargo');
+    if (!select || !inputCargo) return;
+
+    const opt = select.options[select.selectedIndex];
+    if (opt && opt.value) {
+        const areaNombre = opt.getAttribute('data-area') || 'Área';
+        if (!inputCargo.value || inputCargo.value.startsWith('Jefe de')) {
+            inputCargo.value = `Jefe de Área / ${areaNombre}`;
+        }
+    }
+}
+
 function abrirModalCrearPlantilla() {
     const modal = document.getElementById('modal-crear-plantilla');
     const backdrop = document.getElementById('modal-crear-backdrop');
@@ -1006,7 +1046,21 @@ function abrirModalEditarPlantilla(datos) {
     document.getElementById('edit-descripcion').value = datos.descripcion || '';
     document.getElementById('edit-organizacion').value = datos.organizacion || 'C.I. Piscícola New York S.A.S.';
     document.getElementById('edit-texto').value = datos.texto || '';
-    document.getElementById('edit-jefe-nombre').value = datos.jefe_nombre || datos.firma_1_nombre || '';
+
+    const selectJefe = document.getElementById('edit-jefe-select');
+    const jefeBuscado = datos.jefe_nombre || datos.firma_1_nombre || '';
+    if (selectJefe) {
+        selectJefe.value = jefeBuscado;
+        if (!selectJefe.value && jefeBuscado) {
+            // Si el jefe anterior no estaba en la lista, agregar opción temporalmente
+            const optTemp = document.createElement('option');
+            optTemp.value = jefeBuscado;
+            optTemp.textContent = `${jefeBuscado} (Previamente guardado)`;
+            optTemp.selected = true;
+            selectJefe.appendChild(optTemp);
+        }
+    }
+
     document.getElementById('edit-jefe-cargo').value = datos.jefe_cargo || datos.firma_1_cargo || '';
     document.getElementById('edit-gerente-nombre').value = datos.gerente_nombre || datos.firma_2_nombre || '';
     document.getElementById('edit-gerente-cargo').value = datos.gerente_cargo || datos.firma_2_cargo || '';

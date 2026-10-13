@@ -18,6 +18,10 @@ class AreaController extends Controller
                 'usuarios as jefes_count' => fn ($q) => $q->where('rol', 'JEFE_AREA')->where('estado', true),
                 'capacitaciones',
             ])
+            ->with([
+                'usuarios' => fn ($q) => $q->where('estado', true)->select('id', 'identificacion', 'nombre_completo', 'rol', 'area_id')->orderBy('nombre_completo'),
+                'capacitaciones' => fn ($q) => $q->select('capacitaciones.id', 'titulo', 'duracion_estimada', 'porcentaje_aprobacion', 'capacitaciones.estado')->orderBy('titulo'),
+            ])
             ->orderBy('nombre')
             ->get();
 

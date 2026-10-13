@@ -55,12 +55,19 @@ class CertificadoController extends Controller
 
         $areas = Area::where('estado', true)->orderBy('nombre')->get();
 
+        $jefes = \App\Models\Usuario::where('rol', 'JEFE_AREA')
+            ->where('estado', true)
+            ->with('area')
+            ->orderBy('nombre_completo')
+            ->get();
+
         return view('admin.certificados.index', [
             'certificados' => $certificados,
             'pendientes' => $pendientes,
             'certificadosExternos' => $certificadosExternos,
             'plantillas' => $plantillas,
             'areas' => $areas,
+            'jefes' => $jefes,
             'q' => $q,
             'totalEmitidos' => Certificado::count(),
             'totalExternos' => CertificadoExterno::count(),

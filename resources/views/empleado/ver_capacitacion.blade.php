@@ -148,6 +148,16 @@
                     $esBloqueado = $haIniciado ? (bool) $mod->bloqueado_usuario : false;
                     $esCompletado = $haIniciado ? (bool) $mod->completado_usuario : false;
                     $esUltimoModulo = ($idx + 1 === $totalModulos) || $loop->last;
+
+                    $contenidosVideo = $mod->contenidos->filter(function($c) {
+                        if ($c->tipo !== 'VIDEO') return false;
+                        if ($c->ruta_archivo) return true;
+                        if (filter_var(trim($c->contenido), FILTER_VALIDATE_URL)) {
+                            return (bool) preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i', trim($c->contenido));
+                        }
+                        return false;
+                    });
+                    $totalVideosModulo = $contenidosVideo->count();
                 @endphp
 
                 <div id="modulo-{{ $mod->id }}" class="rounded-3xl border transition-all overflow-hidden {{ $esBloqueado ? 'bg-slate-100/70 border-slate-200 opacity-85' : ($esCompletado ? 'bg-emerald-50/40 border-emerald-200 shadow-2xs' : 'bg-white border-line shadow-xs') }}">
@@ -250,10 +260,33 @@
                                                     </div>
                                                 @elseif($cont->ruta_archivo)
                                                     <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-xs border border-line/80 my-2 bg-black flex items-center justify-center">
-                                                        <video controls controlsList="nodownload" preload="metadata" class="w-full h-full object-contain">
+                                                        <video controls controlsList="nodownload" preload="metadata"
+                                                               class="w-full h-full object-contain pny-video-local"
+                                                               data-modulo-id="{{ $mod->id }}"
+                                                               data-contenido-id="{{ $cont->id }}"
+                                                               data-capacitacion-id="{{ $capacitacion->id }}">
                                                             <source src="{{ asset($cont->ruta_archivo) }}" type="video/mp4">
                                                             Tu navegador no soporta la reproducción de video HTML5.
                                                         </video>
+                                                    </div>
+                                                    <!-- Barra de seguimiento del requisito del video -->
+                                                    <div id="progreso-video-{{ $cont->id }}"
+                                                         class="p-3 rounded-xl bg-slate-100 border border-slate-200/80 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all"
+                                                         data-modulo-id="{{ $mod->id }}"
+                                                         data-contenido-id="{{ $cont->id }}">
+                                                        <div class="flex items-center gap-2 min-w-0">
+                                                            <i id="icono-progreso-{{ $cont->id }}" class="fa-solid fa-circle-play text-red-500 shrink-0 text-sm"></i>
+                                                            <div class="min-w-0">
+                                                                <span class="font-bold text-slate-800 block sm:inline">Requisito de Visualización:</span>
+                                                                <span id="texto-progreso-{{ $cont->id }}" class="text-slate-600 font-medium">0% visto (Mínimo 50% requerido para desbloquear avance)</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex items-center gap-2 shrink-0">
+                                                            <div class="w-28 sm:w-36 bg-slate-200 rounded-full h-2 overflow-hidden">
+                                                                <div id="barra-progreso-{{ $cont->id }}" class="bg-brand-blue h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                                                            </div>
+                                                            <span id="badge-pct-{{ $cont->id }}" class="text-[11px] font-mono font-bold text-brand-dark px-1.5 py-0.5 rounded bg-white border border-slate-200">0%</span>
+                                                        </div>
                                                     </div>
                                                 @elseif(filter_var(trim($cont->contenido), FILTER_VALIDATE_URL))
                                                     @php
@@ -265,7 +298,35 @@
                                                     @endphp
                                                     @if($youtubeId)
                                                         <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-xs border border-line/80 my-2 bg-black">
-                                                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/{{ $youtubeId }}" title="{{ $cont->titulo }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                                            <iframe id="yt-player-{{ $cont->id }}"
+                                                                    class="w-full h-full pny-video-youtube"
+                                                                    src="https://www.youtube.com/embed/{{ $youtubeId }}?enablejsapi=1"
+                                                                    title="{{ $cont->titulo }}"
+                                                                    frameborder="0"
+                                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                                    allowfullscreen
+                                                                    data-modulo-id="{{ $mod->id }}"
+                                                                    data-contenido-id="{{ $cont->id }}"
+                                                                    data-capacitacion-id="{{ $capacitacion->id }}"></iframe>
+                                                        </div>
+                                                        <!-- Barra de seguimiento del requisito del video de YouTube -->
+                                                        <div id="progreso-video-{{ $cont->id }}"
+                                                             class="p-3 rounded-xl bg-slate-100 border border-slate-200/80 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all"
+                                                             data-modulo-id="{{ $mod->id }}"
+                                                             data-contenido-id="{{ $cont->id }}">
+                                                            <div class="flex items-center gap-2 min-w-0">
+                                                                <i id="icono-progreso-{{ $cont->id }}" class="fa-brands fa-youtube text-red-600 shrink-0 text-sm"></i>
+                                                                <div class="min-w-0">
+                                                                    <span class="font-bold text-slate-800 block sm:inline">Requisito de Visualización:</span>
+                                                                    <span id="texto-progreso-{{ $cont->id }}" class="text-slate-600 font-medium">0% visto (Mínimo 50% requerido para desbloquear avance)</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex items-center gap-2 shrink-0">
+                                                                <div class="w-28 sm:w-36 bg-slate-200 rounded-full h-2 overflow-hidden">
+                                                                    <div id="barra-progreso-{{ $cont->id }}" class="bg-red-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                                                                </div>
+                                                                <span id="badge-pct-{{ $cont->id }}" class="text-[11px] font-mono font-bold text-brand-dark px-1.5 py-0.5 rounded bg-white border border-slate-200">0%</span>
+                                                            </div>
                                                         </div>
                                                     @else
                                                         <div class="text-slate-700 text-xs sm:text-sm bg-white p-3.5 rounded-xl border border-line/60 break-all leading-relaxed">
@@ -353,25 +414,43 @@
                                         @endif
                                     </span>
                                 @else
-                                    <div></div>
-                                    <form method="POST" action="{{ route('empleado.modulos.completar', $mod) }}">
-                                        @csrf
-                                        @if($esUltimoModulo)
-                                            <button type="submit"
-                                                    style="background-color: #0056b3; color: #ffffff;"
-                                                    class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
-                                                <i class="fa-solid fa-flag-checkered text-sm"></i>
-                                                <span>Finalizar Capacitación</span>
-                                            </button>
+                                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
+                                        @if($totalVideosModulo > 0)
+                                            <!-- Aviso de bloqueo hasta cumplir 50% -->
+                                            <div id="aviso-bloqueo-modulo-{{ $mod->id }}"
+                                                 class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold transition-all shadow-2xs">
+                                                <i id="aviso-icono-modulo-{{ $mod->id }}" class="fa-solid fa-lock text-amber-600 text-sm"></i>
+                                                <span id="aviso-texto-modulo-{{ $mod->id }}">Debes reproducir al menos el 50% del video para desbloquear este paso.</span>
+                                            </div>
                                         @else
-                                            <button type="submit"
-                                                    style="background-color: #0056b3; color: #ffffff;"
-                                                    class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
-                                                <i class="fa-solid fa-arrow-right text-xs"></i>
-                                                <span>Continuar al Siguiente Módulo</span>
-                                            </button>
+                                            <div></div>
                                         @endif
-                                    </form>
+
+                                        <form method="POST" action="{{ route('empleado.modulos.completar', $mod) }}" class="shrink-0 m-0" id="form-completar-modulo-{{ $mod->id }}">
+                                            @csrf
+                                            @if($esUltimoModulo)
+                                                <button type="submit"
+                                                        id="btn-completar-modulo-{{ $mod->id }}"
+                                                        data-modulo-id="{{ $mod->id }}"
+                                                        data-requiere-videos="{{ $totalVideosModulo }}"
+                                                        style="background-color: #0056b3; color: #ffffff;"
+                                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer btn-completar-modulo">
+                                                    <i id="btn-icono-modulo-{{ $mod->id }}" class="fa-solid fa-flag-checkered text-sm"></i>
+                                                    <span>Finalizar Capacitación</span>
+                                                </button>
+                                            @else
+                                                <button type="submit"
+                                                        id="btn-completar-modulo-{{ $mod->id }}"
+                                                        data-modulo-id="{{ $mod->id }}"
+                                                        data-requiere-videos="{{ $totalVideosModulo }}"
+                                                        style="background-color: #0056b3; color: #ffffff;"
+                                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer btn-completar-modulo">
+                                                    <i id="btn-icono-modulo-{{ $mod->id }}" class="fa-solid fa-arrow-right text-xs"></i>
+                                                    <span>Continuar al Siguiente Módulo</span>
+                                                </button>
+                                            @endif
+                                        </form>
+                                    </div>
                                 @endif
                             </div>
                         @endif
@@ -558,3 +637,255 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const REQUISITO_PORCENTAJE = 50;
+    const capacitacionId = {{ (int) $capacitacion->id }};
+
+    // Mapa de videos por módulo: moduloId -> Set de contenidoIds
+    const modulosVideos = {};
+    // Mapa de videos cumplidos: moduloId -> Set de contenidoIds cumplidos
+    const modulosCompletados = {};
+
+    // 1. Detectar videos locales (<video>)
+    const videosLocales = document.querySelectorAll('video.pny-video-local');
+    videosLocales.forEach(video => {
+        const modId = video.dataset.moduloId;
+        const contId = video.dataset.contenidoId;
+        if (!modId || !contId) return;
+
+        if (!modulosVideos[modId]) {
+            modulosVideos[modId] = new Set();
+            modulosCompletados[modId] = new Set();
+        }
+        modulosVideos[modId].add(contId);
+
+        // Verificar persistencia previa en la sesión
+        const storageKey = `pny_vid_50_${capacitacionId}_${modId}_${contId}`;
+        if (sessionStorage.getItem(storageKey) === 'true') {
+            marcarVideoCumplido(modId, contId, true);
+        }
+
+        // Listener de progreso
+        video.addEventListener('timeupdate', function () {
+            if (!video.duration || isNaN(video.duration) || video.duration === 0) return;
+            const pct = Math.min(100, Math.floor((video.currentTime / video.duration) * 100));
+            actualizarUIProgreso(contId, pct);
+
+            if (pct >= REQUISITO_PORCENTAJE) {
+                marcarVideoCumplido(modId, contId);
+            }
+        });
+
+        video.addEventListener('ended', function () {
+            actualizarUIProgreso(contId, 100);
+            marcarVideoCumplido(modId, contId);
+        });
+    });
+
+    // 2. Detectar videos de YouTube (<iframe>)
+    const ytIframes = document.querySelectorAll('iframe.pny-video-youtube');
+    const ytPlayers = {};
+    const ytIntervals = {};
+
+    ytIframes.forEach(iframe => {
+        const modId = iframe.dataset.moduloId;
+        const contId = iframe.dataset.contenidoId;
+        if (!modId || !contId) return;
+
+        if (!modulosVideos[modId]) {
+            modulosVideos[modId] = new Set();
+            modulosCompletados[modId] = new Set();
+        }
+        modulosVideos[modId].add(contId);
+
+        const storageKey = `pny_vid_50_${capacitacionId}_${modId}_${contId}`;
+        if (sessionStorage.getItem(storageKey) === 'true') {
+            marcarVideoCumplido(modId, contId, true);
+        }
+    });
+
+    // Cargar API de YouTube si hay iframes presentes
+    if (ytIframes.length > 0) {
+        function initYTPlayers() {
+            ytIframes.forEach(iframe => {
+                const contId = iframe.dataset.contenidoId;
+                const modId = iframe.dataset.moduloId;
+                if (!contId || !window.YT || !window.YT.Player) return;
+
+                try {
+                    ytPlayers[contId] = new YT.Player(iframe.id, {
+                        events: {
+                            'onStateChange': function (event) {
+                                onYTStateChange(event, modId, contId);
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Error inicializando YT.Player:', e);
+                }
+            });
+        }
+
+        if (window.YT && window.YT.Player) {
+            initYTPlayers();
+        } else {
+            const previousOnReady = window.onYouTubeIframeAPIReady;
+            window.onYouTubeIframeAPIReady = function () {
+                if (typeof previousOnReady === 'function') previousOnReady();
+                initYTPlayers();
+            };
+
+            if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                const firstScript = document.getElementsByTagName('script')[0];
+                firstScript.parentNode.insertBefore(tag, firstScript);
+            }
+        }
+    }
+
+    function onYTStateChange(event, modId, contId) {
+        const player = ytPlayers[contId];
+        if (!player) return;
+
+        // YT.PlayerState.PLAYING === 1
+        if (event.data === 1) {
+            if (ytIntervals[contId]) clearInterval(ytIntervals[contId]);
+            ytIntervals[contId] = setInterval(() => {
+                try {
+                    const dur = player.getDuration();
+                    const cur = player.getCurrentTime();
+                    if (dur && dur > 0) {
+                        const pct = Math.min(100, Math.floor((cur / dur) * 100));
+                        actualizarUIProgreso(contId, pct);
+                        if (pct >= REQUISITO_PORCENTAJE) {
+                            marcarVideoCumplido(modId, contId);
+                            clearInterval(ytIntervals[contId]);
+                        }
+                    }
+                } catch (e) {}
+            }, 500);
+        } else {
+            if (ytIntervals[contId]) {
+                clearInterval(ytIntervals[contId]);
+            }
+            if (event.data === 0) { // Finalizado
+                actualizarUIProgreso(contId, 100);
+                marcarVideoCumplido(modId, contId);
+            }
+        }
+    }
+
+    // 3. Funciones de UI
+    function actualizarUIProgreso(contId, pct) {
+        const barra = document.getElementById(`barra-progreso-${contId}`);
+        const texto = document.getElementById(`texto-progreso-${contId}`);
+        const badge = document.getElementById(`badge-pct-${contId}`);
+        const contenedor = document.getElementById(`progreso-video-${contId}`);
+        const icono = document.getElementById(`icono-progreso-${contId}`);
+
+        if (barra) {
+            barra.style.width = `${Math.min(100, pct)}%`;
+            if (pct >= REQUISITO_PORCENTAJE) {
+                barra.classList.remove('bg-brand-blue', 'bg-red-600');
+                barra.classList.add('bg-emerald-500');
+            }
+        }
+        if (badge) {
+            badge.textContent = `${pct}%`;
+        }
+
+        if (pct >= REQUISITO_PORCENTAJE) {
+            if (texto) {
+                texto.innerHTML = `<strong class="text-emerald-700">✓ Requisito cumplido (${pct}% visto)</strong>. Ya puedes completar este módulo.`;
+            }
+            if (contenedor) {
+                contenedor.classList.remove('bg-slate-100', 'border-slate-200/80');
+                contenedor.classList.add('bg-emerald-50', 'border-emerald-200');
+            }
+            if (icono) {
+                icono.className = 'fa-solid fa-circle-check text-emerald-600 shrink-0 text-sm';
+            }
+        } else {
+            if (texto) {
+                texto.textContent = `${pct}% visto (Mínimo 50% requerido para desbloquear avance)`;
+            }
+        }
+    }
+
+    function marcarVideoCumplido(modId, contId, silent = false) {
+        const storageKey = `pny_vid_50_${capacitacionId}_${modId}_${contId}`;
+        sessionStorage.setItem(storageKey, 'true');
+
+        if (modulosCompletados[modId]) {
+            modulosCompletados[modId].add(contId);
+        }
+
+        actualizarUIProgreso(contId, Math.max(50, silent ? 100 : 50));
+        verificarDesbloqueoModulo(modId);
+    }
+
+    function verificarDesbloqueoModulo(modId) {
+        const totalRequeridos = modulosVideos[modId] ? modulosVideos[modId].size : 0;
+        const totalCumplidos = modulosCompletados[modId] ? modulosCompletados[modId].size : 0;
+
+        if (totalRequeridos > 0 && totalCumplidos >= totalRequeridos) {
+            desbloquearBotonModulo(modId);
+        }
+    }
+
+    function desbloquearBotonModulo(modId) {
+        const btn = document.getElementById(`btn-completar-modulo-${modId}`);
+        const aviso = document.getElementById(`aviso-bloqueo-modulo-${modId}`);
+        const avisoTexto = document.getElementById(`aviso-texto-modulo-${modId}`);
+        const avisoIcono = document.getElementById(`aviso-icono-modulo-${modId}`);
+
+        if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+            btn.classList.add('cursor-pointer', 'shadow-md', 'hover:-translate-y-0.5');
+            btn.removeAttribute('title');
+        }
+
+        if (aviso) {
+            aviso.classList.remove('bg-amber-50', 'border-amber-200', 'text-amber-900');
+            aviso.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
+        }
+        if (avisoIcono) {
+            avisoIcono.className = 'fa-solid fa-circle-check text-emerald-600 text-sm';
+        }
+        if (avisoTexto) {
+            avisoTexto.innerHTML = '<strong>✓ Requisito cumplido:</strong> Videos reproducidos al 50%. Ya puedes avanzar.';
+        }
+    }
+
+    function bloquearBotonModulo(modId) {
+        const btn = document.getElementById(`btn-completar-modulo-${modId}`);
+        if (btn) {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+            btn.classList.remove('hover:-translate-y-0.5');
+            btn.setAttribute('title', 'Debes reproducir al menos el 50% de los videos para continuar.');
+        }
+    }
+
+    // 4. Bloqueo inicial para módulos con videos pendientes
+    document.querySelectorAll('.btn-completar-modulo').forEach(btn => {
+        const modId = btn.dataset.moduloId;
+        const reqVideos = parseInt(btn.dataset.requiereVideos || '0', 10);
+
+        if (reqVideos > 0 && modulosVideos[modId]) {
+            const totalCumplidos = modulosCompletados[modId] ? modulosCompletados[modId].size : 0;
+            if (totalCumplidos < modulosVideos[modId].size) {
+                bloquearBotonModulo(modId);
+            } else {
+                desbloquearBotonModulo(modId);
+            }
+        }
+    });
+});
+</script>
+@endpush
