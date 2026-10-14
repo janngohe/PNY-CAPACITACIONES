@@ -7,6 +7,10 @@
     <title>Iniciar sesión · C.I. Piscícola New York</title>
     <meta name="description" content="Plataforma de capacitaciones de C.I. Piscícola New York. Ingresa tu número de identificación para acceder.">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/Logo.png') }}">
+
     <!-- Tipografía Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

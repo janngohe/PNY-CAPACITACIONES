@@ -7,6 +7,10 @@
     <title>@yield('title', 'Capacitaciones') · Portal del Jefe de Área · C.I. Piscícola New York</title>
     <meta name="description" content="Panel del Jefe de Área para publicar capacitaciones, crear evaluaciones y consultar el progreso y resultados del personal de C.I. Piscícola New York.">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/Logo.png') }}">
+
     <!-- Tipografía Google Fonts (misma del panel del empleado) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

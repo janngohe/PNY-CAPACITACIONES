@@ -7,6 +7,10 @@
     <title>@yield('title', 'Panel') · Administración · C.I. Piscícola New York</title>
     <meta name="description" content="Panel de administración de la plataforma de inducción y capacitación de C.I. Piscícola New York: usuarios, capacitaciones, evaluaciones, progreso, certificados y reportes.">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/Logo.png') }}">
+
     <!-- Tipografía Google Fonts (misma de los paneles de empleado y jefe) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
