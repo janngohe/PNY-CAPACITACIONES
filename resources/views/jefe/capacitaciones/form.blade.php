@@ -729,6 +729,57 @@
             }
         });
 
+        const iconosTipo = {
+            TEXTO: '<i class="fa-solid fa-align-left text-brand-blue"></i>',
+            VIDEO: '<i class="fa-solid fa-circle-play text-red-500"></i>',
+            IMAGEN: '<i class="fa-solid fa-image text-emerald-600"></i>',
+            PDF: '<i class="fa-solid fa-file-pdf text-red-600"></i>',
+            ENLACE: '<i class="fa-solid fa-arrow-up-right-from-square text-cyan-600"></i>'
+        };
+
+        const nombresTipo = {
+            TEXTO: 'Texto explicativo',
+            VIDEO: 'Video',
+            IMAGEN: 'Imagen',
+            PDF: 'PDF',
+            ENLACE: 'Enlace'
+        };
+
+        function autoAjustarTextarea(ta) {
+            if (!ta) return;
+            ta.style.height = 'auto';
+            const nuevoAlto = Math.max(76, ta.scrollHeight);
+            ta.style.height = nuevoAlto + 'px';
+        }
+
+        function expandirContenido(item) {
+            if (!item) return;
+            const cuerpo = item.querySelector('[data-contenido-cuerpo]');
+            const chevron = item.querySelector('[data-contenido-chevron]');
+            if (cuerpo) cuerpo.classList.remove('hidden');
+            if (chevron) chevron.classList.add('rotate-180');
+            const ta = item.querySelector('[data-campo-texto]');
+            if (ta) autoAjustarTextarea(ta);
+        }
+
+        function minimizarContenido(item) {
+            if (!item) return;
+            const cuerpo = item.querySelector('[data-contenido-cuerpo]');
+            const chevron = item.querySelector('[data-contenido-chevron]');
+            if (cuerpo) cuerpo.classList.add('hidden');
+            if (chevron) chevron.classList.remove('rotate-180');
+        }
+
+        function toggleContenido(item) {
+            if (!item) return;
+            const cuerpo = item.querySelector('[data-contenido-cuerpo]');
+            if (cuerpo && cuerpo.classList.contains('hidden')) {
+                expandirContenido(item);
+            } else {
+                minimizarContenido(item);
+            }
+        }
+
         function aplicarTipo(item) {
             const tipo = item.querySelector('[data-tipo-select]').value;
             const esVideo = tipo === 'VIDEO';
@@ -748,8 +799,19 @@
                 const campo = item.querySelector('[data-campo-texto]');
                 if (campo) {
                     campo.required = (tipo === 'TEXTO' || tipo === 'ENLACE');
-                    campo.rows = (tipo === 'ENLACE' || esArchivo) ? 2 : 4;
+                    campo.rows = (tipo === 'ENLACE' || esArchivo) ? 2 : 2;
+                    autoAjustarTextarea(campo);
                 }
+            }
+
+            // Actualizar icono y badge del encabezado del contenido
+            const iconContainer = item.querySelector('[data-contenido-icono]');
+            const badgeTipo = item.querySelector('[data-contenido-resumen-tipo]');
+            if (iconContainer && iconosTipo[tipo]) {
+                iconContainer.innerHTML = iconosTipo[tipo];
+            }
+            if (badgeTipo && nombresTipo[tipo]) {
+                badgeTipo.textContent = nombresTipo[tipo];
             }
         }
 
@@ -829,7 +891,28 @@
         }
 
         function iniciar(elemento) {
-            elemento.querySelectorAll('[data-contenido]').forEach(aplicarTipo);
+            elemento.querySelectorAll('[data-contenido]').forEach(item => {
+                aplicarTipo(item);
+                const ta = item.querySelector('[data-campo-texto]');
+                if (ta) autoAjustarTextarea(ta);
+            });
+
+            // En cada módulo, si hay más de 1 contenido, minimizar los anteriores y dejar el último (o el que tenga error) abierto
+            elemento.querySelectorAll('[data-modulo]').forEach(mod => {
+                const items = mod.querySelectorAll('[data-contenido]');
+                if (items.length > 1) {
+                    items.forEach((it, idx) => {
+                        const tieneError = it.querySelector('.text-red-600, input:invalid');
+                        if (tieneError || idx === items.length - 1) {
+                            expandirContenido(it);
+                        } else {
+                            minimizarContenido(it);
+                        }
+                    });
+                } else if (items.length === 1) {
+                    expandirContenido(items[0]);
+                }
+            });
         }
 
         function actualizarAsistenteModulos(nuevoIndice = null) {
@@ -852,6 +935,9 @@
             });
 
             const modActual = modulos[moduloActivoIndex];
+            if (modActual) {
+                modActual.querySelectorAll('[data-campo-texto]').forEach(ta => autoAjustarTextarea(ta));
+            }
             const inputTitulo = modActual ? modActual.querySelector('input[name*="[titulo]"]') : null;
             const tituloActual = inputTitulo && inputTitulo.value.trim() ? inputTitulo.value.trim() : `Módulo ${moduloActivoIndex + 1}`;
 
@@ -1015,6 +1101,14 @@
         }
 
         lista.addEventListener('click', (e) => {
+            // Toggle para abrir o minimizar un contenido al pulsar su encabezado
+            const headerToggle = e.target.closest('[data-toggle-contenido]');
+            if (headerToggle && !e.target.closest('[data-remove-contenido]')) {
+                const item = headerToggle.closest('[data-contenido]');
+                toggleContenido(item);
+                return;
+            }
+
             const quitarModulo = e.target.closest('[data-remove-modulo]');
             const agregarContenido = e.target.closest('[data-add-contenido]');
             const quitarContenido = e.target.closest('[data-remove-contenido]');
@@ -1044,12 +1138,31 @@
 
             if (agregarContenido) {
                 const modulo = agregarContenido.closest('[data-modulo]');
+
+                // 1. Minimizar todos los contenidos anteriores en este módulo
+                modulo.querySelectorAll('[data-contenido]').forEach(item => {
+                    minimizarContenido(item);
+                });
+
+                // 2. Insertar nuevo contenido limpio
                 const html = tplContenido
                     .replaceAll('__M__', modulo.dataset.index)
                     .replaceAll('__C__', ++contador);
                 const contenedor = modulo.querySelector('[data-contenidos]');
                 contenedor.insertAdjacentHTML('beforeend', html);
-                aplicarTipo(contenedor.lastElementChild);
+
+                const nuevoItem = contenedor.lastElementChild;
+                aplicarTipo(nuevoItem);
+
+                // 3. Dejar el nuevo contenido expandido y listo
+                expandirContenido(nuevoItem);
+
+                // 4. Enfocar el campo de título del nuevo contenido
+                const inputTit = nuevoItem.querySelector('[data-input-titulo-contenido]');
+                if (inputTit) {
+                    try { inputTit.focus({ preventScroll: true }); } catch (err) { inputTit.focus(); }
+                }
+
                 actualizarVistaPrevia();
             }
 
@@ -1060,6 +1173,22 @@
         });
 
         lista.addEventListener('input', (e) => {
+            // Auto-agrandar textarea a medida que se escribe
+            if (e.target.matches('[data-campo-texto]')) {
+                autoAjustarTextarea(e.target);
+            }
+
+            // Sincronizar título en la barra compacta del contenido
+            if (e.target.matches('[data-input-titulo-contenido]')) {
+                const item = e.target.closest('[data-contenido]');
+                if (item) {
+                    const spanTit = item.querySelector('[data-contenido-resumen-titulo]');
+                    if (spanTit) {
+                        spanTit.textContent = e.target.value.trim() || 'Nuevo recurso / contenido';
+                    }
+                }
+            }
+
             if (e.target.matches('input') || e.target.matches('textarea')) {
                 actualizarVistaPrevia();
                 if (e.target.matches('input[name*="[titulo]"]')) {
