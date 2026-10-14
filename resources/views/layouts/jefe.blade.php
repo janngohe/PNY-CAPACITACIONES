@@ -7,6 +7,10 @@
     <title>@yield('title', 'Capacitaciones') · Portal del Jefe de Área · C.I. Piscícola New York</title>
     <meta name="description" content="Panel del Jefe de Área para publicar capacitaciones, crear evaluaciones y consultar el progreso y resultados del personal de C.I. Piscícola New York.">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/Logo.png') }}">
+
     <!-- Tipografía Google Fonts (misma del panel del empleado) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,12 +24,18 @@
 </head>
 <body class="h-full font-sans text-ink bg-[#f8fafc] antialiased selection:bg-brand-blue/20 selection:text-brand-dark lg:overflow-hidden">
 @php
-    $enCapacitaciones = request()->routeIs('jefe.dashboard', 'jefe.capacitaciones.index', 'jefe.capacitaciones.show', 'jefe.capacitaciones.edit');
+    /** @var \App\Models\Usuario $usuario */
+    $usuario = $usuario ?? auth()->user();
+
+
+    $enBorradores = request()->routeIs('jefe.capacitaciones.borradores');
+    $enCapacitaciones = request()->routeIs('jefe.dashboard', 'jefe.capacitaciones.index', 'jefe.capacitaciones.show', 'jefe.capacitaciones.edit') && ! $enBorradores;
     $enCrearCapacitacion = request()->routeIs('jefe.capacitaciones.create');
     $enCrearEvaluacion = request()->routeIs('jefe.evaluaciones.create');
     $enMisEvaluaciones = request()->routeIs('jefe.evaluaciones.index', 'jefe.evaluaciones.edit');
     $enResultados = request()->routeIs('jefe.resultados.*');
     $enPersonal = request()->routeIs('jefe.personal.*');
+    $enPlantillas = request()->routeIs('jefe.plantillas.*');
     $grupoEvaluacionAbierto = $enCrearEvaluacion || $enMisEvaluaciones || $enResultados;
 
     $claseItemActivo = 'bg-brand-light text-brand-blue shadow-2xs font-bold border-l-4 border-brand-blue pl-2.5';
@@ -99,7 +109,19 @@
                         </span>
                     </a>
 
-                    <!-- 2. Crear Capacitación -->
+                    <!-- 2. Borradores de Capacitaciones -->
+                    <a href="{{ route('jefe.capacitaciones.borradores') }}" id="nav-borradores"
+                       class="group flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-150 {{ $enBorradores ? $claseItemActivo : $claseItemInactivo }}">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-file-pen text-sm w-5 text-center transition-colors {{ $enBorradores ? 'text-brand-blue' : 'text-slate-400 group-hover:text-brand-blue' }}"></i>
+                            <span>Borradores</span>
+                        </div>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full {{ $enBorradores ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-brand-light group-hover:text-brand-blue' }}">
+                            Borrador
+                        </span>
+                    </a>
+
+                    <!-- 3. Crear Capacitación -->
                     <a href="{{ route('jefe.capacitaciones.create') }}" id="nav-crear-capacitacion"
                        class="group flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-150 {{ $enCrearCapacitacion ? $claseItemActivo : $claseItemInactivo }}">
                         <div class="flex items-center gap-3">
@@ -168,6 +190,20 @@
                             Equipo
                         </span>
                     </a>
+
+                    <!-- 5. Mis Plantillas de Certificados -->
+                    <a href="{{ route('jefe.plantillas.index') }}" id="nav-plantillas"
+                       class="group flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-150 {{ $enPlantillas ? $claseItemActivo : $claseItemInactivo }}">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-stamp text-sm w-5 text-center transition-colors {{ $enPlantillas ? 'text-brand-blue' : 'text-slate-400 group-hover:text-brand-blue' }}"></i>
+                            <span>Mis Plantillas</span>
+                        </div>
+                        @if($usuario->tieneFirmaRegistrada())
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                Firma Lista
+                            </span>
+                        @endif
+                    </a>
                 </nav>
             </div>
 
@@ -211,12 +247,12 @@
              ======================================================== -->
         <div class="flex-1 flex flex-col min-w-0 lg:h-full lg:overflow-y-auto">
 
-            <!-- BARRA SUPERIOR -->
-            <header class="h-16 bg-white border-b border-line/70 px-4 sm:px-6 md:px-8 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
+            <!-- BARRA SUPERIOR CON MAYOR ALTURA Y ESPACIO -->
+            <header style="min-height: 84px;" class="min-h-[84px] py-4 sm:py-5 bg-white border-b border-line/70 px-4 sm:px-6 md:px-8 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
                 <div class="flex items-center gap-3">
                     <button type="button"
                             onclick="toggleSidebar(true)"
-                            class="p-2 -ml-2 text-slate-600 hover:text-brand-blue hover:bg-slate-100 rounded-lg lg:hidden cursor-pointer"
+                            class="p-2.5 -ml-2 text-slate-600 hover:text-brand-blue hover:bg-slate-100 rounded-xl lg:hidden cursor-pointer"
                             aria-label="Abrir menú lateral">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -232,12 +268,36 @@
                 </div>
 
                 <div class="flex items-center gap-3 sm:gap-4">
-                    <span class="hidden md:inline-flex items-center gap-1.5 text-xs text-muted font-medium bg-slate-50 px-3 py-1.5 rounded-full border border-line/60">
+                    <span class="hidden md:inline-flex items-center gap-1.5 text-xs text-muted font-medium bg-slate-50 px-3.5 py-2 rounded-full border border-line/60">
                         <svg class="w-3.5 h-3.5 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                         </svg>
                         {{ date('d M Y') }}
                     </span>
+
+                    <!-- BOTÓN DE FIRMA DIGITAL DEL JEFE DE ÁREA -->
+                    @if($usuario->tieneFirmaRegistrada())
+                        <button type="button" onclick="abrirModalConfigurarFirmaInicial()"
+                                class="inline-flex items-center gap-2 px-3 py-2 sm:px-3.5 sm:py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold transition-all shadow-2xs hover:shadow-xs group cursor-pointer"
+                                title="Firma oficial registrada. Haz clic para actualizarla o modificarla.">
+                            <span class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs border border-emerald-200 shrink-0">
+                                <i class="fa-solid fa-signature"></i>
+                            </span>
+                            <div class="text-left hidden sm:block">
+                                <p class="text-[11px] font-bold text-brand-dark leading-tight">Mi Firma Oficial</p>
+                                <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Registrada
+                                </span>
+                            </div>
+                        </button>
+                    @else
+                        <button type="button" onclick="abrirModalConfigurarFirmaInicial()"
+                                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold transition-all shadow-2xs hover:shadow-xs cursor-pointer animate-pulse"
+                                title="Aún no has registrado tu firma digital oficial">
+                            <i class="fa-solid fa-signature text-amber-600 text-sm"></i>
+                            <span>Registrar Mi Firma Oficial</span>
+                        </button>
+                    @endif
 
                     <div class="flex items-center gap-2 pl-2 border-l border-line/60">
                         <div class="text-right hidden sm:block">
@@ -285,8 +345,11 @@
         </div>
     </div>
 
-    <!-- MODAL OBLIGATORIO DE PRIMER INGRESO (compartido con el panel del empleado) -->
+    <!-- MODAL OBLIGATORIO DE PRIMER INGRESO (cambio de contraseña) -->
     @include('layouts.partials.primer-ingreso')
+
+    <!-- MODAL DE FIRMA DIGITAL OFICIAL DEL JEFE DE ÁREA -->
+    @include('layouts.partials.modal-firma-jefe-inicial')
 
     <script>
         function toggleSidebar(open) {
@@ -309,6 +372,9 @@
             btn.setAttribute('aria-expanded', String(!abierto));
             btn.querySelector('[data-chevron]').classList.toggle('rotate-180', !abierto);
         }
+
+
+
     </script>
     @stack('scripts')
 </body>

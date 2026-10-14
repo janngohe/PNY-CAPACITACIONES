@@ -10,6 +10,19 @@
     $f1c = $plantilla->firma_1_cargo ?? 'Jefe de Área / Operaciones';
     $f1r = $plantilla->firma_1_ruta ?? null;
 
+    // Si la plantilla no tiene firma estampada, buscar la firma registrada del Jefe de Área del colaborador
+    if (empty($f1r) && $certificado->usuario?->area_id) {
+        $jefeArea = \App\Models\Usuario::where('area_id', $certificado->usuario->area_id)
+            ->where('rol', 'JEFE_AREA')
+            ->whereNotNull('firma_digital')
+            ->first();
+        if ($jefeArea && $jefeArea->tieneFirmaRegistrada()) {
+            $f1n = $jefeArea->nombre_completo;
+            $f1c = $jefeArea->cargoOficial();
+            $f1r = $jefeArea->firma_digital;
+        }
+    }
+
     $f2n = $plantilla->firma_2_nombre ?? 'Dra. Elena Ramos';
     $f2c = $plantilla->firma_2_cargo ?? 'Gerente General';
     $f2r = $plantilla->firma_2_ruta ?? null;

@@ -105,12 +105,18 @@
                 </div>
 
                 <div>
-                    <label for="porcentaje_aprobacion" class="block text-xs font-bold text-brand-dark mb-1.5">Porcentaje mínimo de aprobación (%)</label>
+                    <label for="porcentaje_aprobacion" class="block text-xs font-bold text-brand-dark mb-1.5">
+                        Porcentaje mínimo de aprobación (%) <span class="text-red-500">*</span>
+                    </label>
                     <input id="porcentaje_aprobacion" type="number" name="porcentaje_aprobacion" value="{{ $porcentaje }}" min="1" max="100" step="0.01" required class="{{ $input }}">
+                    <p class="text-[11px] text-muted mt-1">Calificación porcentual mínima exigida para aprobar y certificar.</p>
                 </div>
                 <div>
-                    <label for="intentos_permitidos" class="block text-xs font-bold text-brand-dark mb-1.5">Intentos permitidos</label>
+                    <label for="intentos_permitidos" class="block text-xs font-bold text-brand-dark mb-1.5">
+                        Intentos permitidos de examen <span class="text-red-500">*</span>
+                    </label>
                     <input id="intentos_permitidos" type="number" name="intentos_permitidos" value="{{ old('intentos_permitidos', $evaluacion?->intentos_permitidos ?? 3) }}" min="1" max="20" required class="{{ $input }}">
+                    <p class="text-[11px] text-muted mt-1">Oportunidades máximas de presentación asignadas al colaborador.</p>
                 </div>
             </div>
         </section>

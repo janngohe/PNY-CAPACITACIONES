@@ -55,6 +55,19 @@
     $f1rPath = ($plantilla && $plantilla->firma_1_ruta) ? public_path('storage/' . $plantilla->firma_1_ruta) : null;
     $f1rSrc = ($f1rPath && file_exists($f1rPath)) ? 'data:image/' . pathinfo($f1rPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($f1rPath)) : null;
 
+    if (!$f1rSrc && $certificado->usuario?->area_id) {
+        $jefeArea = \App\Models\Usuario::where('area_id', $certificado->usuario->area_id)
+            ->where('rol', 'JEFE_AREA')
+            ->whereNotNull('firma_digital')
+            ->first();
+        if ($jefeArea && $jefeArea->tieneFirmaRegistrada()) {
+            $f1n = $jefeArea->nombre_completo;
+            $f1c = $jefeArea->cargoOficial();
+            $f1rPath = public_path('storage/' . $jefeArea->firma_digital);
+            $f1rSrc = ($f1rPath && file_exists($f1rPath)) ? 'data:image/' . pathinfo($f1rPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($f1rPath)) : null;
+        }
+    }
+
     $f2n = $plantilla->firma_2_nombre ?? 'Dra. Elena Ramos';
     $f2c = $plantilla->firma_2_cargo ?? 'Gerente General';
     $f2rPath = ($plantilla && $plantilla->firma_2_ruta) ? public_path('storage/' . $plantilla->firma_2_ruta) : null;

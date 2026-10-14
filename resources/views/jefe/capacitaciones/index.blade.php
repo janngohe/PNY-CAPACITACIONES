@@ -50,11 +50,11 @@
                 <div class="grid grid-cols-2 gap-2 text-center text-xs mt-2">
                     <div class="bg-white/10 rounded-xl p-2.5">
                         <span class="block text-xl font-heading font-extrabold text-white">{{ $estadisticas['activas'] }}</span>
-                        <span class="text-[10px] text-slate-300">Activas</span>
+                        <span class="text-[10px] text-slate-300">Publicadas</span>
                     </div>
                     <div class="bg-white/10 rounded-xl p-2.5">
-                        <span class="block text-xl font-heading font-extrabold text-amber-300">{{ $estadisticas['inactivas'] }}</span>
-                        <span class="text-[10px] text-slate-300">Desactivadas</span>
+                        <span class="block text-xl font-heading font-extrabold text-amber-300">{{ $estadisticas['borradores'] ?? $estadisticas['inactivas'] ?? 0 }}</span>
+                        <span class="text-[10px] text-slate-300">Borradores</span>
                     </div>
                 </div>
             </div>
@@ -75,6 +75,38 @@
     @endunless
 
     <!-- ========================================================
+         PESTAÑAS DE NAVEGACIÓN RÁPIDA: PUBLICADAS / BORRADORES
+         ======================================================== -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-4">
+        <div class="inline-flex p-1 bg-slate-100 rounded-2xl border border-line shadow-2xs">
+            <a href="{{ route('jefe.capacitaciones.index') }}"
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-heading font-bold bg-white text-brand-blue shadow-xs border border-line/60 transition-all">
+                <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i>
+                <span>Publicadas</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700 font-bold">
+                    {{ $estadisticas['activas'] }}
+                </span>
+            </a>
+            <a href="{{ route('jefe.capacitaciones.borradores') }}"
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-heading font-bold text-slate-600 hover:text-brand-blue hover:bg-white/60 transition-all">
+                <i class="fa-solid fa-file-pen text-amber-500 text-xs"></i>
+                <span>Borradores</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-800 font-bold">
+                    {{ $estadisticas['borradores'] }}
+                </span>
+            </a>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="{{ route('jefe.capacitaciones.create') }}"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-blue text-white text-xs font-bold shadow-xs hover:bg-brand-deep transition-colors">
+                <i class="fa-solid fa-plus"></i>
+                <span>Nueva Capacitación</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ========================================================
          LISTADO DE CAPACITACIONES PUBLICADAS
          ======================================================== -->
     <div class="space-y-4">
@@ -83,16 +115,9 @@
                 <h2 class="font-heading font-bold text-lg sm:text-xl text-brand-dark">Capacitaciones e Inducciones Publicadas</h2>
                 <p class="text-xs text-muted">Edita el contenido, consulta a los participantes o desactiva una capacitación (nunca se elimina).</p>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('jefe.capacitaciones.create') }}"
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-blue text-white text-xs font-bold shadow-xs hover:bg-brand-deep transition-colors">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Nueva Capacitación</span>
-                </a>
-                <span class="px-3 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold border border-line">
-                    Total ({{ $estadisticas['total'] }})
-                </span>
-            </div>
+            <span class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold border border-line">
+                Total ({{ $estadisticas['activas'] }})
+            </span>
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-6">

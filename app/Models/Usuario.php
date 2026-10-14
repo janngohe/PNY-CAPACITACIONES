@@ -23,6 +23,9 @@ class Usuario extends Authenticatable
         'password',
         'rol',
         'area_id',
+        'firma_digital',
+        'cargo',
+        'firma_actualizada_el',
         'usuario_nuevo',
         'estado',
     ];
@@ -35,7 +38,44 @@ class Usuario extends Authenticatable
             'password' => 'hashed',
             'usuario_nuevo' => 'boolean',
             'estado' => 'boolean',
+            'firma_actualizada_el' => 'datetime',
         ];
+    }
+
+    /**
+     * Determina si el usuario tiene una firma digital registrada en su perfil.
+     */
+    public function tieneFirmaRegistrada(): bool
+    {
+        return !empty($this->firma_digital);
+    }
+
+    /**
+     * Retorna la URL pública de la firma digital almacenada.
+     */
+    public function firmaUrl(): ?string
+    {
+        return $this->firma_digital ? asset('storage/' . $this->firma_digital) : null;
+    }
+
+    /**
+     * Retorna el cargo oficial del usuario (personalizado o deducido de su área).
+     */
+    public function cargoOficial(): string
+    {
+        if (!empty($this->cargo)) {
+            return $this->cargo;
+        }
+
+        if ($this->rol === 'JEFE_AREA') {
+            return 'Jefe de Área ' . ($this->area?->nombre ?? '');
+        }
+
+        if ($this->rol === 'ADMINISTRADOR') {
+            return 'Administrador del Sistema';
+        }
+
+        return 'Colaborador ' . ($this->area?->nombre ?? '');
     }
 
     public function area(): BelongsTo

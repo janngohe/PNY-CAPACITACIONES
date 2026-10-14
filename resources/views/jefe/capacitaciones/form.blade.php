@@ -6,7 +6,6 @@
     $fechaDisp = old('fecha_disponibilidad', $capacitacion?->fecha_disponibilidad?->format('Y-m-d'));
     $fechaLim = old('fecha_limite', $capacitacion?->fecha_limite?->format('Y-m-d'));
     $tieneFechaFin = old('tiene_fecha_fin', !empty($fechaLim) ? 'si' : 'no');
-    $porcentaje = old('porcentaje_aprobacion', $capacitacion ? rtrim(rtrim(number_format((float) $capacitacion->porcentaje_aprobacion, 2, '.', ''), '0'), '.') : 80);
     $imagenActual = $capacitacion?->ruta_imagen ? asset($capacitacion->ruta_imagen) : asset('images/Img-login.jpg');
 @endphp
 
@@ -35,7 +34,7 @@
                 </h1>
 
                 <p id="subtitulo-paso-actual" class="text-xs sm:text-sm text-slate-200/90 max-w-2xl leading-relaxed">
-                    Empezando: Ingresa el título, portada y condiciones generales de aprobación.
+                    Empezando: Ingresa el título, portada, duración e información general.
                 </p>
             </div>
 
@@ -136,20 +135,6 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                             <div>
-                                <label for="porcentaje_aprobacion" class="block text-xs font-bold text-brand-dark mb-1.5">
-                                    Porcentaje mínimo de aprobación (%) <span class="text-red-500">*</span>
-                                </label>
-                                <input id="porcentaje_aprobacion" type="number" name="porcentaje_aprobacion" value="{{ $porcentaje }}" min="1" max="100" step="0.01" required class="{{ $input }}">
-                            </div>
-
-                            <div>
-                                <label for="intentos_permitidos" class="block text-xs font-bold text-brand-dark mb-1.5">
-                                    Intentos permitidos de examen <span class="text-red-500">*</span>
-                                </label>
-                                <input id="intentos_permitidos" type="number" name="intentos_permitidos" value="{{ old('intentos_permitidos', $capacitacion?->intentos_permitidos ?? 3) }}" min="1" max="20" required class="{{ $input }}">
-                            </div>
-
-                            <div>
                                 <label for="duracion_estimada" class="block text-xs font-bold text-brand-dark mb-1.5">
                                     Duración estimada (horas)
                                 </label>
@@ -168,6 +153,13 @@
                                     Disponible desde <span class="font-normal text-muted">(opcional)</span>
                                 </label>
                                 <input id="fecha_disponibilidad" type="date" name="fecha_disponibilidad" value="{{ $fechaDisp }}" class="{{ $input }}">
+                            </div>
+
+                            <div class="rounded-2xl bg-cyan-50/70 border border-cyan-200/70 p-3.5 flex items-start gap-2.5">
+                                <span class="text-brand-blue text-xs mt-0.5 shrink-0"><i class="fa-solid fa-circle-info"></i></span>
+                                <div class="text-[11px] text-slate-600 leading-relaxed">
+                                    <strong class="text-brand-dark font-heading">Evaluación de la capacitación:</strong> El porcentaje mínimo de aprobación y los intentos de examen se configurarán directamente al crear la evaluación correspondiente.
+                                </div>
                             </div>
 
                             <!-- Interruptor opcional: ¿Tiene fecha de fin? -->
@@ -216,11 +208,19 @@
                            class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs transition-colors">
                             Cancelar
                         </a>
-                        <button type="button" onclick="irAPaso(2)"
-                                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
-                            <span>Siguiente: Módulos y Recursos</span>
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="submit" name="accion" value="borrador"
+                                    class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs border border-line transition-all cursor-pointer"
+                                    title="Guardar los datos actuales como borrador">
+                                <i class="fa-solid fa-file-pen text-amber-600 text-xs"></i>
+                                <span>Guardar Borrador</span>
+                            </button>
+                            <button type="button" onclick="irAPaso(2)"
+                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
+                                <span>Siguiente: Módulos y Recursos</span>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -260,11 +260,19 @@
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
                             <span>Anterior</span>
                         </button>
-                        <button type="button" onclick="irAPaso(3)"
-                                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
-                            <span>Siguiente: Ya Casi Terminas</span>
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="submit" name="accion" value="borrador"
+                                    class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs border border-line transition-all cursor-pointer"
+                                    title="Guardar avances en borrador">
+                                <i class="fa-solid fa-file-pen text-amber-600 text-xs"></i>
+                                <span>Guardar Borrador</span>
+                            </button>
+                            <button type="button" onclick="irAPaso(3)"
+                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
+                                <span>Siguiente: Ya Casi Terminas</span>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -330,32 +338,40 @@
                         <h4 class="font-heading font-bold text-xs text-brand-dark uppercase tracking-wider">Estado inicial de publicación</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <label class="relative flex items-start p-3.5 rounded-2xl border border-line bg-slate-50 hover:bg-slate-100/80 cursor-pointer transition-colors">
-                                <input type="radio" name="estado_publicacion" value="1" checked class="mt-0.5 text-brand-blue focus:ring-brand-blue">
+                                <input type="radio" name="estado_publicacion" value="1" @checked(! $capacitacion || (bool)$capacitacion->estado) class="mt-0.5 text-brand-blue focus:ring-brand-blue">
                                 <div class="ml-3">
-                                    <span class="block text-xs font-bold text-brand-dark">Publicar e Iniciar Inmediatamente</span>
-                                    <span class="block text-[11px] text-muted">Visible desde hoy en el panel de los empleados.</span>
+                                    <span class="block text-xs font-bold text-brand-dark">Publicar Inmediatamente</span>
+                                    <span class="block text-[11px] text-muted">Visible desde hoy en el catálogo de los colaboradores.</span>
                                 </div>
                             </label>
                             <label class="relative flex items-start p-3.5 rounded-2xl border border-line bg-slate-50 hover:bg-slate-100/80 cursor-pointer transition-colors">
-                                <input type="radio" name="estado_publicacion" value="0" class="mt-0.5 text-brand-blue focus:ring-brand-blue">
+                                <input type="radio" name="estado_publicacion" value="0" @checked($capacitacion && ! (bool)$capacitacion->estado) class="mt-0.5 text-brand-blue focus:ring-brand-blue">
                                 <div class="ml-3">
-                                    <span class="block text-xs font-bold text-brand-dark">Guardar como Borrador (Desactivada)</span>
-                                    <span class="block text-[11px] text-muted">Podrás activarla más adelante desde tu panel.</span>
+                                    <span class="block text-xs font-bold text-brand-dark">Guardar como Borrador</span>
+                                    <span class="block text-[11px] text-muted">Se guarda en tu bandeja de borradores sin ser pública.</span>
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between pt-4 border-t border-line/60">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-line/60">
                         <button type="button" onclick="irAPaso(2)"
                                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs transition-colors cursor-pointer">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
                             <span>Volver a Módulos</span>
                         </button>
-                        <button type="submit" id="btn-guardar-capacitacion"
-                                class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-brand-blue via-brand-deep to-brand-dark hover:brightness-110 text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
-                            <span><i class="fa-solid fa-paper-plane mr-1.5"></i> {{ $editando ? 'Guardar Cambios' : 'Publicar Capacitación Ahora' }}</span>
-                        </button>
+                        <div class="flex items-center gap-2.5">
+                            <button type="submit" name="accion" value="borrador"
+                                    class="inline-flex items-center gap-1.5 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs sm:text-sm border border-line transition-all cursor-pointer">
+                                <i class="fa-solid fa-file-pen text-amber-600 text-xs"></i>
+                                <span>Guardar en Borradores</span>
+                            </button>
+                            <button type="submit" name="accion" value="publicar" id="btn-guardar-capacitacion"
+                                    class="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-r from-brand-blue via-brand-deep to-brand-dark hover:brightness-110 text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+                                <i class="fa-solid fa-paper-plane mr-0.5"></i>
+                                <span>{{ $editando ? 'Guardar Cambios' : 'Publicar Capacitación' }}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -404,29 +420,11 @@
                         <!-- Píldoras de parámetros -->
                         <div class="grid grid-cols-2 gap-2 pt-1">
                             <div class="bg-slate-50 p-2 rounded-xl border border-line/60 flex items-center gap-2">
-                                <span class="text-brand-blue text-sm"><i class="fa-solid fa-bullseye"></i></span>
-                                <div>
-                                    <span class="block text-[10px] text-muted font-medium">Aprobación</span>
-                                    <span id="pv-aprobacion" class="font-heading font-bold text-xs text-brand-blue">
-                                        {{ $porcentaje }}%
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="bg-slate-50 p-2 rounded-xl border border-line/60 flex items-center gap-2">
                                 <span class="text-brand-blue text-sm"><i class="fa-regular fa-clock"></i></span>
                                 <div>
                                     <span class="block text-[10px] text-muted font-medium">Duración</span>
                                     <span id="pv-duracion" class="font-heading font-bold text-xs text-slate-700">
                                         {{ old('duracion_estimada', $capacitacion?->duracion_estimada) ? old('duracion_estimada', $capacitacion?->duracion_estimada) . ' hrs' : 'Por definir' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="bg-slate-50 p-2 rounded-xl border border-line/60 flex items-center gap-2">
-                                <span class="text-brand-blue text-sm"><i class="fa-solid fa-rotate-right"></i></span>
-                                <div>
-                                    <span class="block text-[10px] text-muted font-medium">Intentos</span>
-                                    <span id="pv-intentos" class="font-heading font-bold text-xs text-slate-700">
-                                        {{ old('intentos_permitidos', $capacitacion?->intentos_permitidos ?? 3) }} máximos
                                     </span>
                                 </div>
                             </div>
@@ -438,6 +436,22 @@
                                         {{ old('incentivo', $capacitacion?->incentivo) ?: 'Certificado' }}
                                     </span>
                                 </div>
+                            </div>
+                            <div class="col-span-2 bg-slate-50 p-2 rounded-xl border border-line/60 flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-brand-blue text-sm"><i class="fa-solid fa-graduation-cap"></i></span>
+                                    <div>
+                                        <span class="block text-[10px] text-muted font-medium">Evaluación / Examen</span>
+                                        <span class="font-heading font-bold text-xs text-brand-dark">
+                                            @if($capacitacion && $capacitacion->evaluaciones->isNotEmpty())
+                                                {{ rtrim(rtrim(number_format((float) $capacitacion->evaluaciones->first()->porcentaje_aprobacion, 2, '.', ''), '0'), '.') }}% mín. · {{ $capacitacion->evaluaciones->first()->intentos_permitidos }} intentos
+                                            @else
+                                                Se define al crear la evaluación
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="text-[9px] px-2 py-0.5 rounded-full bg-cyan-100 text-brand-blue font-bold tracking-wide uppercase">Cuestionario</span>
                             </div>
                         </div>
 
@@ -562,9 +576,7 @@
         // Elementos de la vista previa lateral
         const pvTitulo = document.getElementById('pv-titulo');
         const pvDesc = document.getElementById('pv-descripcion');
-        const pvAprob = document.getElementById('pv-aprobacion');
         const pvDuracion = document.getElementById('pv-duracion');
-        const pvIntentos = document.getElementById('pv-intentos');
         const pvIncentivo = document.getElementById('pv-incentivo');
         const pvImg = document.getElementById('pv-imagen');
         const pvImgThumb = document.getElementById('img-preview-thumb');
@@ -582,18 +594,16 @@
         function actualizarVistaPrevia() {
             const inputTitulo = document.getElementById('titulo').value.trim();
             const inputDesc = document.getElementById('descripcion').value.trim();
-            const inputAprob = document.getElementById('porcentaje_aprobacion').value;
             const inputDuracion = document.getElementById('duracion_estimada').value;
-            const inputIntentos = document.getElementById('intentos_permitidos').value;
             const inputIncentivo = document.getElementById('incentivo').value.trim();
 
             pvTitulo.textContent = inputTitulo || 'Título de la capacitación...';
             pvDesc.textContent = inputDesc || 'Aquí se visualizará la descripción y objetivos de la capacitación para los empleados de tu área.';
-            pvAprob.textContent = (inputAprob || 80) + '%';
-            pvDuracion.textContent = inputDuracion ? inputDuracion + ' hrs' : 'Por definir';
-            pvIntentos.textContent = (inputIntentos || 3) + ' máximos';
-            pvIncentivo.textContent = inputIncentivo || 'Certificado';
-            pvIncentivo.title = inputIncentivo || 'Certificado';
+            if (pvDuracion) pvDuracion.textContent = inputDuracion ? inputDuracion + ' hrs' : 'Por definir';
+            if (pvIncentivo) {
+                pvIncentivo.textContent = inputIncentivo || 'Certificado';
+                pvIncentivo.title = inputIncentivo || 'Certificado';
+            }
 
             // Actualizar lista de módulos en live preview
             const modulos = lista.querySelectorAll('[data-modulo]');
@@ -636,7 +646,7 @@
         });
 
         // Escuchadores de eventos para tiempo real
-        ['titulo', 'descripcion', 'porcentaje_aprobacion', 'duracion_estimada', 'intentos_permitidos', 'incentivo'].forEach(id => {
+        ['titulo', 'descripcion', 'duracion_estimada', 'incentivo'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.addEventListener('input', actualizarVistaPrevia);

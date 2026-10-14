@@ -140,7 +140,6 @@
                         if (response.ok && data.success) {
                             const modal = document.getElementById('modal-primer-ingreso');
                             if (modal) modal.remove();
-                            alert(data.message || 'Contraseña actualizada con éxito.');
                             window.location.reload();
                         } else {
                             submitBtn.disabled = false;

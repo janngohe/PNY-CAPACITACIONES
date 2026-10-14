@@ -14,12 +14,14 @@ class PlantillaCertificado extends Model
         'nombre',
         'descripcion',
         'area_id',
+        'creado_por',
         'ruta_plantilla',
         'nombre_organizacion',
         'texto_certificado',
         'firma_1_nombre',
         'firma_1_cargo',
         'firma_1_ruta',
+        'firma_1_actualizada_el',
         'firma_2_nombre',
         'firma_2_cargo',
         'firma_2_ruta',
@@ -28,12 +30,20 @@ class PlantillaCertificado extends Model
 
     protected function casts(): array
     {
-        return ['estado' => 'boolean'];
+        return [
+            'estado' => 'boolean',
+            'firma_1_actualizada_el' => 'datetime',
+        ];
     }
 
     public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class, 'area_id');
+    }
+
+    public function creador(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'creado_por');
     }
 
     public function capacitaciones(): HasMany

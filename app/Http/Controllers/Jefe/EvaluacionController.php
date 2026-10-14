@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Jefe;
 
 use App\Http\Controllers\Controller;
+use App\Models\Capacitacion;
 use App\Models\Evaluacion;
 use App\Models\OpcionRespuesta;
 use App\Models\Pregunta;
@@ -66,6 +67,12 @@ class EvaluacionController extends Controller
                 'estado' => true,
             ]);
 
+            // Sincronizar en la capacitación asociada para reportes y listados
+            Capacitacion::where('id', $datos['capacitacion_id'])->update([
+                'porcentaje_aprobacion' => $datos['porcentaje_aprobacion'],
+                'intentos_permitidos' => $datos['intentos_permitidos'],
+            ]);
+
             $this->sincronizarPreguntas($evaluacion, $datos['preguntas']);
         });
 
@@ -104,6 +111,12 @@ class EvaluacionController extends Controller
                 'capacitacion_id' => $datos['capacitacion_id'],
                 'titulo' => $datos['titulo'],
                 'descripcion' => $datos['descripcion'] ?? null,
+                'porcentaje_aprobacion' => $datos['porcentaje_aprobacion'],
+                'intentos_permitidos' => $datos['intentos_permitidos'],
+            ]);
+
+            // Sincronizar en la capacitación asociada para reportes y listados
+            Capacitacion::where('id', $datos['capacitacion_id'])->update([
                 'porcentaje_aprobacion' => $datos['porcentaje_aprobacion'],
                 'intentos_permitidos' => $datos['intentos_permitidos'],
             ]);
