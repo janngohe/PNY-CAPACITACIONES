@@ -380,7 +380,8 @@ class DashboardController extends Controller
                     ]
                 );
 
-                return back()->with('success_modulo', '🎉 ¡Felicitaciones! Has finalizado exitosamente la capacitación "' . $capacitacion->titulo . '". Tu certificado digital ha sido emitido.');
+                return redirect()->route('empleado.certificados')
+                    ->with('success', '🎉 ¡Felicitaciones! Has finalizado exitosamente la capacitación "' . $capacitacion->titulo . '". Tu certificado digital ha sido emitido.');
             } else {
                 $usuario->capacitaciones()->syncWithoutDetaching([
                     $capacitacion->id => [
@@ -389,7 +390,8 @@ class DashboardController extends Controller
                     ]
                 ]);
 
-                return back()->with('success_modulo', '¡Has finalizado todos los módulos de la capacitación! Ya puedes presentar la evaluación de aprendizaje a continuación.');
+                return redirect(route('empleado.capacitaciones.ver', $capacitacion) . '#seccion-evaluaciones')
+                    ->with('success_modulo', '¡Has finalizado todos los módulos de la capacitación! Ya puedes presentar la evaluación de aprendizaje a continuación.');
             }
         }
 
@@ -400,7 +402,15 @@ class DashboardController extends Controller
             ]
         ]);
 
-        return back()->with('success_modulo', '¡Módulo "' . $modulo->titulo . '" completado con éxito! El siguiente contenido se ha desbloqueado.');
+        $siguienteModulo = $modulosOrdenados->get($currentIndex + 1);
+        $redirectUrl = route('empleado.capacitaciones.ver', $capacitacion);
+        if ($siguienteModulo) {
+            $redirectUrl .= '#modulo-' . $siguienteModulo->id;
+        }
+
+        return redirect($redirectUrl)
+            ->with('success_modulo', '¡Módulo "' . $modulo->titulo . '" completado con éxito! Continuando con el Módulo ' . ($currentIndex + 2) . '.')
+            ->with('modulo_activo_id', $siguienteModulo?->id);
     }
 
     /**

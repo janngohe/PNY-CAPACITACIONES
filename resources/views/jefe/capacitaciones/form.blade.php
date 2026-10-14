@@ -13,6 +13,18 @@
 @section('page_title', $editando ? 'Editar Capacitación' : 'Estudio de Creación de Capacitaciones')
 
 @section('content')
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        background: transparent !important;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
+</style>
 <div class="max-w-7xl mx-auto space-y-6">
 
     <!-- ========================================================
@@ -239,25 +251,31 @@
                     </div>
 
                     <!-- Asistente Superior: Pestañas de progreso entre módulos -->
-                    <div class="bg-slate-50/90 p-4 rounded-2xl border border-line/80 space-y-3 shadow-2xs">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line/50 pb-2.5">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-brand-blue animate-pulse"></span>
-                                <span class="text-xs font-bold text-brand-dark uppercase tracking-wider font-heading">
-                                    Navegación Asistida de Módulos
-                                </span>
-                                <span class="text-[11px] text-muted hidden sm:inline">· Vista limpia individual</span>
+                    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-line/80 space-y-3.5 shadow-xs">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line/60 pb-3">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                                    <i class="fa-solid fa-route text-sm"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs sm:text-sm font-extrabold text-brand-dark uppercase tracking-wider font-heading block">
+                                        Navegación Asistida de Módulos
+                                    </span>
+                                    <span class="text-[11px] text-muted hidden sm:inline">Selecciona un módulo para visualizarlo o editarlo de forma limpia</span>
+                                </div>
                             </div>
                             <div class="flex items-center gap-2 text-xs">
-                                <span class="text-muted">Total módulos:</span>
-                                <span id="badge-contador-modulos" class="px-2.5 py-0.5 rounded-full bg-brand-light text-brand-blue font-extrabold text-[11px]">
+                                <span class="text-muted font-medium">Total módulos:</span>
+                                <span id="badge-contador-modulos" class="px-2.5 py-0.5 rounded-full bg-brand-light text-brand-blue font-extrabold text-[11px] font-mono">
                                     1
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Píldoras / Tabs de módulos -->
-                        <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin" id="nav-tabs-modulos">
+                        <!-- Píldoras / Tabs de módulos sin barra de desplazamiento visible -->
+                        <div class="no-scrollbar flex items-stretch gap-2.5 overflow-x-auto py-1 scroll-smooth w-full"
+                             style="scrollbar-width: none; -ms-overflow-style: none;"
+                             id="nav-tabs-modulos">
                             <!-- Generado dinámicamente con JS -->
                         </div>
                     </div>
@@ -1001,16 +1019,30 @@
                     const esActivo = (idx === moduloActivoIndex);
                     const tieneTitulo = Boolean(tInput && tInput.value.trim());
 
+                    // Limpiar redundancia de "Módulo 1: " en el título para que quede conciso y elegante
+                    const titLimpio = tit.replace(/^(Paso|M[óo]dulo)\s*\d+[\s:\.\-–—]*/i, '').trim() || tit;
+
                     const btnTab = document.createElement('button');
                     btnTab.type = 'button';
                     btnTab.className = esActivo
-                        ? 'tab-modulo-btn inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-brand-blue text-white font-heading font-bold text-xs shadow-xs shrink-0 transition-all cursor-pointer ring-2 ring-brand-blue/30'
-                        : 'tab-modulo-btn inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-heading font-bold text-xs border border-line shrink-0 transition-all cursor-pointer';
+                        ? 'tab-modulo-btn flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 bg-gradient-to-r from-brand-blue to-[#004a99] text-white border-brand-blue shadow-md ring-2 ring-brand-blue/30 scale-[1.01]'
+                        : 'tab-modulo-btn flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-brand-blue shadow-2xs cursor-pointer';
 
                     btnTab.innerHTML = `
-                        <span class="w-5 h-5 rounded-lg ${esActivo ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'} flex items-center justify-center text-[10px] font-extrabold">${idx + 1}</span>
-                        <span class="truncate max-w-[130px] sm:max-w-[160px] text-left tab-titulo-texto">${tit}</span>
-                        ${tieneTitulo ? `<i class="fa-solid fa-check text-[10px] ${esActivo ? 'text-cyan-300' : 'text-emerald-500'} ml-0.5"></i>` : ''}
+                        <div class="stepper-badge-icon w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${esActivo ? 'bg-white text-brand-blue font-black text-xs shadow-xs' : (tieneTitulo ? 'bg-emerald-500 text-white font-bold text-xs shadow-xs' : 'bg-brand-light text-brand-blue font-bold text-xs')}">
+                            ${tieneTitulo && !esActivo ? '<i class="fa-solid fa-check"></i>' : `<span>${idx + 1}</span>`}
+                        </div>
+                        <div class="flex flex-col text-left min-w-0 flex-1 leading-tight">
+                            <div class="flex items-center gap-1.5">
+                                <span class="stepper-label-text text-[10px] font-extrabold uppercase tracking-wider ${esActivo ? 'text-white/80' : 'text-slate-400'}">
+                                    Módulo ${idx + 1}
+                                </span>
+                                <span class="stepper-badge-tag text-[9px] px-1.5 py-0.2 rounded-md font-bold ${esActivo ? 'bg-white/20 text-white' : (tieneTitulo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600')}">
+                                    ${esActivo ? 'En edición' : (tieneTitulo ? 'Listo' : 'Por configurar')}
+                                </span>
+                            </div>
+                            <span class="truncate text-xs ${esActivo ? 'font-bold text-white' : 'font-semibold text-slate-800'} tab-titulo-texto" title="${tit}">${titLimpio}</span>
+                        </div>
                     `;
 
                     btnTab.addEventListener('click', () => {
@@ -1024,12 +1056,17 @@
                 // Botón rápido en la barra de pestañas para añadir módulo
                 const btnTabAdd = document.createElement('button');
                 btnTabAdd.type = 'button';
-                btnTabAdd.className = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-brand-blue/40 text-brand-blue hover:bg-brand-light font-heading font-bold text-xs shrink-0 transition-colors cursor-pointer';
-                btnTabAdd.innerHTML = '<i class="fa-solid fa-plus text-[10px]"></i> <span>Nuevo</span>';
+                btnTabAdd.className = 'flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 rounded-2xl border-2 border-dashed border-brand-blue/30 hover:border-brand-blue text-brand-blue hover:bg-brand-light/60 font-heading font-bold text-xs shrink-0 transition-all cursor-pointer';
+                btnTabAdd.innerHTML = '<i class="fa-solid fa-plus text-xs"></i> <span class="whitespace-nowrap">Nuevo Módulo</span>';
                 btnTabAdd.addEventListener('click', () => {
                     agregarModulo();
                 });
                 navTabs.appendChild(btnTabAdd);
+
+                // Asegurar que el tab activo esté a la vista en el contenedor si hay scroll
+                if (navTabs.children[moduloActivoIndex] && navTabs.children[moduloActivoIndex].scrollIntoView) {
+                    navTabs.children[moduloActivoIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
             }
         }
 
@@ -1202,7 +1239,11 @@
                         const tabs = document.querySelectorAll('#nav-tabs-modulos .tab-modulo-btn');
                         if (tabs[moduloActivoIndex]) {
                             const txtSpan = tabs[moduloActivoIndex].querySelector('.tab-titulo-texto');
-                            if (txtSpan) txtSpan.textContent = val;
+                            if (txtSpan) {
+                                const valLimpio = val.replace(/^(Paso|M[óo]dulo)\s*\d+[\s:\.\-–—]*/i, '').trim() || val;
+                                txtSpan.textContent = valLimpio;
+                                txtSpan.title = val;
+                            }
                         }
                     }
                 }

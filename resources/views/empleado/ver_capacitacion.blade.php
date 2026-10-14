@@ -4,6 +4,18 @@
 @section('page_title', 'Detalle de Capacitación')
 
 @section('content')
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        background: transparent !important;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
+</style>
 <div class="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
 
     <!-- ========================================================
@@ -122,25 +134,157 @@
         </div>
     @endif
 
+    @php
+        // Identificar el módulo activo inicial para el recorrido asistido:
+        $primerModuloEnCurso = $capacitacion->modulos->first(function($m) {
+            return !$m->bloqueado_usuario && !$m->completado_usuario;
+        });
+
+        $idModuloInicial = session('modulo_activo_id');
+        if (!$idModuloInicial) {
+            if ($primerModuloEnCurso) {
+                $idModuloInicial = $primerModuloEnCurso->id;
+            } elseif ($capacitacion->modulos->isNotEmpty()) {
+                $idModuloInicial = $capacitacion->modulos->first()->id;
+            } else {
+                $idModuloInicial = null;
+            }
+        }
+    @endphp
+
     <!-- ========================================================
-         SECCIÓN 1: MÓDULOS DE ESTUDIO (SECUENCIALES)
+         SECCIÓN 1: MÓDULOS DE ESTUDIO (RECORRIDO ACOMPAÑADO)
          ======================================================== -->
-    <div class="space-y-4">
-        <div class="flex items-center justify-between border-b border-line/70 pb-3">
+    <div id="contenedor-recorrido-modulos" class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line/70 pb-3">
             <div>
-                <h2 class="font-heading font-extrabold text-lg sm:text-xl text-brand-dark">Módulos y Contenido de Estudio</h2>
-                <p class="text-xs text-muted">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-brand-blue animate-pulse"></span>
+                    <h2 class="font-heading font-extrabold text-lg sm:text-xl text-brand-dark">Recorrido de Aprendizaje Asistido</h2>
+                </div>
+                <p class="text-xs text-muted mt-0.5">
                     @if($haIniciado)
-                        Accede al material de estudio interactivo. Los módulos se desbloquean en secuencia conforme los completas.
+                        Avanza paso a paso. Completa cada módulo para habilitar el siguiente de manera continua y acompañada.
                     @else
-                        Visualización descriptiva del temario. Haz clic en "Iniciar Capacitación" para desbloquear videos, recursos interactivos y evaluaciones.
+                        Visualización descriptiva del temario. Haz clic en "Iniciar Capacitación" para desbloquear videos, recursos y evaluaciones.
                     @endif
                 </p>
             </div>
-            <span class="px-3 py-1 rounded-full bg-brand-light text-brand-blue text-xs font-bold">
-                {{ $totalModulos }} {{ $totalModulos === 1 ? 'Módulo' : 'Módulos' }}
-            </span>
+            <div class="flex items-center gap-2">
+                @if($totalModulos > 1)
+                    <button type="button"
+                            id="btn-toggle-vista-modulos"
+                            onclick="alternarModoVista()"
+                            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs">
+                        <i id="icono-toggle-vista" class="fa-solid fa-list-check text-slate-500 text-[11px]"></i>
+                        <span id="texto-toggle-vista">Ver todos los módulos</span>
+                    </button>
+                @endif
+                <span class="px-3 py-1.5 rounded-full bg-brand-light text-brand-blue text-xs font-bold shrink-0">
+                    {{ $totalModulos }} {{ $totalModulos === 1 ? 'Módulo' : 'Módulos' }}
+                </span>
+            </div>
         </div>
+
+        @if($totalModulos > 0)
+            <!-- Stepper / Barra de Ruta Acompañada -->
+            <div class="bg-white rounded-3xl border border-line/80 p-4 sm:p-5 shadow-xs space-y-3.5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line/60 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                            <i class="fa-solid fa-route text-sm"></i>
+                        </div>
+                        <div>
+                            <span class="font-heading font-extrabold text-xs sm:text-sm text-brand-dark block">Ruta de Módulos</span>
+                            <span class="text-[11px] text-muted hidden sm:inline">Selecciona un paso para visualizar su material interactivo</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Progreso</span>
+                            <div class="w-24 sm:w-32 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                                <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: {{ $porcentajeProgreso }}%"></div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-extrabold text-slate-800 font-mono px-2 py-0.5 rounded-lg bg-slate-100 border border-slate-200">
+                            {{ $modulosCompletados }}/{{ $totalModulos }} ({{ $porcentajeProgreso }}%)
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Chips del Stepper sin barra de desplazamiento visible -->
+                <div class="no-scrollbar flex items-stretch gap-2.5 overflow-x-auto py-1 scroll-smooth w-full"
+                     style="scrollbar-width: none; -ms-overflow-style: none;">
+                    @foreach($capacitacion->modulos as $sIdx => $sMod)
+                        @php
+                            $sBloqueado = $haIniciado ? (bool) $sMod->bloqueado_usuario : false;
+                            $sCompletado = $haIniciado ? (bool) $sMod->completado_usuario : false;
+                            $sEsActivo = ($sMod->id == $idModuloInicial);
+
+                            // Limpiar redundancia de "Módulo 1: " en el título para que quede conciso y elegante
+                            $tituloLimpio = preg_replace('/^(Paso|M[óo]dulo)\s*\d+[\s:\.\-–—]*/iu', '', trim($sMod->titulo));
+                            if (empty($tituloLimpio)) {
+                                $tituloLimpio = $sMod->titulo;
+                            }
+                        @endphp
+                        <button type="button"
+                                onclick="{{ (!$sBloqueado || !$haIniciado) ? "seleccionarModuloRecorrido({$sMod->id})" : "void(0)" }}"
+                                id="stepper-tab-{{ $sMod->id }}"
+                                data-modulo-id="{{ $sMod->id }}"
+                                data-es-completado="{{ $sCompletado ? '1' : '0' }}"
+                                data-es-bloqueado="{{ $sBloqueado ? '1' : '0' }}"
+                                class="stepper-tab flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 {{ $sEsActivo ? 'bg-gradient-to-r from-brand-blue to-[#004a99] text-white border-brand-blue shadow-md ring-2 ring-brand-blue/30 scale-[1.01]' : ($sCompletado ? 'bg-white hover:bg-emerald-50/60 text-slate-800 border-emerald-200 hover:border-emerald-400 shadow-2xs cursor-pointer' : ($sBloqueado ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed opacity-75' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-brand-blue cursor-pointer')) }}"
+                                {{ $sBloqueado && $haIniciado ? 'disabled' : '' }}>
+                            
+                            <div class="stepper-badge-icon w-8 h-8 rounded-xl flex items-center justify-center shrink-0 {{ $sEsActivo ? 'bg-white text-brand-blue font-black text-xs shadow-xs' : ($sCompletado ? 'bg-emerald-500 text-white font-bold text-xs shadow-xs' : ($sBloqueado ? 'bg-slate-200 text-slate-500 font-bold text-xs' : 'bg-brand-light text-brand-blue font-bold text-xs')) }}">
+                                @if($sCompletado)
+                                    <i class="fa-solid fa-check"></i>
+                                @elseif($sBloqueado && $haIniciado)
+                                    <i class="fa-solid fa-lock text-[11px]"></i>
+                                @else
+                                    <span>{{ $sIdx + 1 }}</span>
+                                @endif
+                            </div>
+
+                            <div class="flex flex-col text-left min-w-0 flex-1 leading-tight">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="stepper-label-text text-[10px] font-extrabold uppercase tracking-wider {{ $sEsActivo ? 'text-white/80' : 'text-slate-400' }}">
+                                        Módulo {{ $sIdx + 1 }}
+                                    </span>
+                                    <span class="stepper-badge-tag text-[9px] px-1.5 py-0.2 rounded-md font-bold {{ $sEsActivo ? 'bg-white/20 text-white' : ($sCompletado ? 'bg-emerald-100 text-emerald-800' : ($sBloqueado ? 'bg-slate-200 text-slate-600 font-medium' : 'bg-cyan-100 text-cyan-800')) }}">
+                                        {{ $sEsActivo ? 'En curso' : ($sCompletado ? 'Listo' : ($sBloqueado ? 'Bloqueado' : 'Disponible')) }}
+                                    </span>
+                                </div>
+                                <span class="stepper-title-text truncate text-xs {{ $sEsActivo ? 'font-bold text-white' : 'font-semibold text-slate-800' }}" title="{{ $sMod->titulo }}">
+                                    {{ $tituloLimpio }}
+                                </span>
+                            </div>
+                        </button>
+                    @endforeach
+
+                    @if($evaluaciones->isNotEmpty())
+                        <a href="#seccion-evaluaciones"
+                           id="stepper-tab-evaluacion"
+                           class="flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 {{ $todosModulosCompletados ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-75' }}">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 {{ $todosModulosCompletados ? 'bg-white text-emerald-700 font-black text-xs shadow-xs' : 'bg-slate-200 text-slate-500 font-bold text-xs' }}">
+                                <i class="fa-solid fa-graduation-cap {{ $todosModulosCompletados ? 'text-sm' : 'text-xs' }}"></i>
+                            </div>
+                            <div class="flex flex-col text-left min-w-0 flex-1 leading-tight">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-extrabold uppercase tracking-wider {{ $todosModulosCompletados ? 'text-white/80' : 'text-slate-400' }}">Examen</span>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded-md font-bold {{ $todosModulosCompletados ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-500 font-medium' }}">
+                                        {{ $todosModulosCompletados ? '¡Listo!' : 'Al terminar' }}
+                                    </span>
+                                </div>
+                                <span class="truncate text-xs font-bold {{ $todosModulosCompletados ? 'text-white' : 'text-slate-500' }}">
+                                    Evaluación Final
+                                </span>
+                            </div>
+                        </a>
+                    @endif
+                </div>
+            </div>
+        @endif
 
         <div class="space-y-5">
             @forelse($capacitacion->modulos as $idx => $mod)
@@ -160,8 +304,27 @@
                     $totalVideosModulo = $contenidosVideo->count();
                 @endphp
 
-                <div id="modulo-{{ $mod->id }}" class="rounded-3xl border transition-all overflow-hidden {{ $esBloqueado ? 'bg-slate-100/70 border-slate-200 opacity-85' : ($esCompletado ? 'bg-emerald-50/40 border-emerald-200 shadow-2xs' : 'bg-white border-line shadow-xs') }}">
+                <div id="modulo-{{ $mod->id }}"
+                     data-modulo-id="{{ $mod->id }}"
+                     data-idx="{{ $idx }}"
+                     class="modulo-recorrido-item rounded-3xl border transition-all overflow-hidden {{ $mod->id == $idModuloInicial ? '' : 'hidden' }} {{ $esBloqueado ? 'bg-slate-100/70 border-slate-200 opacity-85' : ($esCompletado ? 'bg-emerald-50/40 border-emerald-200 shadow-2xs' : 'bg-white border-line shadow-xs') }}">
                     
+                    @if($esCompletado)
+                        <div class="px-5 py-3 bg-emerald-50/90 border-b border-emerald-200 text-emerald-800 text-xs flex flex-wrap items-center justify-between gap-2">
+                            <span class="flex items-center gap-2 font-medium">
+                                <i class="fa-solid fa-clock-rotate-left text-emerald-600"></i>
+                                Estás repasando el <strong>Módulo {{ $idx + 1 }} (Ya completado)</strong>.
+                            </span>
+                            @if($primerModuloEnCurso && $primerModuloEnCurso->id !== $mod->id)
+                                <button type="button"
+                                        onclick="seleccionarModuloRecorrido({{ $primerModuloEnCurso->id }})"
+                                        class="font-bold underline text-emerald-900 hover:text-emerald-700 cursor-pointer">
+                                    Ir al Módulo en Curso (Módulo {{ ($capacitacion->modulos->search(fn($m) => $m->id == $primerModuloEnCurso->id) + 1) }}) →
+                                </button>
+                            @endif
+                        </div>
+                    @endif
+
                     <!-- Encabezado del Módulo -->
                     <div class="p-5 flex items-start justify-between gap-4 border-b {{ $esBloqueado ? 'border-slate-200 bg-slate-100/50' : 'border-line/60 bg-gradient-to-r from-slate-50 via-white to-white' }}">
                         <div class="flex items-start gap-3.5">
@@ -387,71 +550,109 @@
                                 </div>
                             </div>
 
-                            <!-- Botón para marcar el módulo como completado -->
-                            <div class="pt-3 border-t border-line/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
-                                @if(!$haIniciado)
-                                    <div class="flex items-center gap-2 text-slate-500 italic">
-                                        <i class="fa-solid fa-eye text-slate-400"></i>
-                                        <span>Modo solo visualización · Inicia la capacitación para registrar avance y completar este módulo.</span>
-                                    </div>
-                                    <form method="POST" action="{{ route('empleado.capacitaciones.iniciar', $capacitacion) }}" class="shrink-0">
-                                        @csrf
-                                        <button type="submit"
-                                                style="background-color: #0056b3; color: #ffffff;"
-                                                class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-bold text-xs shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
-                                            <i class="fa-solid fa-play text-[10px]"></i>
-                                            <span>Iniciar Capacitación</span>
+                            <!-- Botones de Navegación del Recorrido Acompañado -->
+                            <div class="pt-4 border-t border-line/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
+                                <!-- Lado Izquierdo: Módulo Anterior (Repasar) -->
+                                <div class="flex items-center gap-2">
+                                    @if($idx > 0)
+                                        <button type="button"
+                                                onclick="seleccionarModuloRecorrido({{ $capacitacion->modulos[$idx - 1]->id }})"
+                                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all border border-slate-200 shadow-2xs cursor-pointer">
+                                            <i class="fa-solid fa-arrow-left text-[11px]"></i>
+                                            <span>← Módulo Anterior (Paso {{ $idx }})</span>
                                         </button>
-                                    </form>
-                                @elseif($esCompletado)
-                                    <div></div>
-                                    <span class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300">
-                                        @if($esUltimoModulo)
-                                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                                            <span>Capacitación Finalizada</span>
-                                        @else
-                                            <span>✓ Módulo Completado</span>
-                                        @endif
-                                    </span>
-                                @else
-                                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
-                                        @if($totalVideosModulo > 0)
-                                            <!-- Aviso de bloqueo hasta cumplir 50% -->
-                                            <div id="aviso-bloqueo-modulo-{{ $mod->id }}"
-                                                 class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold transition-all shadow-2xs">
-                                                <i id="aviso-icono-modulo-{{ $mod->id }}" class="fa-solid fa-lock text-amber-600 text-sm"></i>
-                                                <span id="aviso-texto-modulo-{{ $mod->id }}">Debes reproducir al menos el 50% del video para desbloquear este paso.</span>
-                                            </div>
-                                        @else
-                                            <div></div>
-                                        @endif
+                                    @else
+                                        <span class="text-xs text-slate-400 italic flex items-center gap-1.5">
+                                            <i class="fa-solid fa-flag text-slate-300"></i> Inicio del recorrido de aprendizaje
+                                        </span>
+                                    @endif
+                                </div>
 
-                                        <form method="POST" action="{{ route('empleado.modulos.completar', $mod) }}" class="shrink-0 m-0" id="form-completar-modulo-{{ $mod->id }}">
+                                <!-- Lado Derecho: Avance / Siguiente Módulo / Completar -->
+                                <div class="flex items-center justify-end gap-2">
+                                    @if(!$haIniciado)
+                                        <div class="flex items-center gap-2 text-slate-500 italic">
+                                            <i class="fa-solid fa-eye text-slate-400"></i>
+                                            <span>Modo visualización · Inicia la capacitación para registrar avance.</span>
+                                        </div>
+                                        <form method="POST" action="{{ route('empleado.capacitaciones.iniciar', $capacitacion) }}" class="shrink-0 m-0">
                                             @csrf
-                                            @if($esUltimoModulo)
-                                                <button type="submit"
-                                                        id="btn-completar-modulo-{{ $mod->id }}"
-                                                        data-modulo-id="{{ $mod->id }}"
-                                                        data-requiere-videos="{{ $totalVideosModulo }}"
-                                                        style="background-color: #0056b3; color: #ffffff;"
-                                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer btn-completar-modulo">
-                                                    <i id="btn-icono-modulo-{{ $mod->id }}" class="fa-solid fa-flag-checkered text-sm"></i>
-                                                    <span>Finalizar Capacitación</span>
-                                                </button>
-                                            @else
-                                                <button type="submit"
-                                                        id="btn-completar-modulo-{{ $mod->id }}"
-                                                        data-modulo-id="{{ $mod->id }}"
-                                                        data-requiere-videos="{{ $totalVideosModulo }}"
-                                                        style="background-color: #0056b3; color: #ffffff;"
-                                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer btn-completar-modulo">
-                                                    <i id="btn-icono-modulo-{{ $mod->id }}" class="fa-solid fa-arrow-right text-xs"></i>
-                                                    <span>Continuar al Siguiente Módulo</span>
-                                                </button>
-                                            @endif
+                                            <button type="submit"
+                                                    style="background-color: #0056b3; color: #ffffff;"
+                                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-bold text-xs shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
+                                                <i class="fa-solid fa-play text-[10px]"></i>
+                                                <span>Iniciar Capacitación</span>
+                                            </button>
                                         </form>
-                                    </div>
-                                @endif
+                                    @elseif($esCompletado)
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300">
+                                                <i class="fa-solid fa-check text-emerald-600"></i> Módulo Listo
+                                            </span>
+                                            @if(!$esUltimoModulo && isset($capacitacion->modulos[$idx + 1]) && !$capacitacion->modulos[$idx + 1]->bloqueado_usuario)
+                                                <button type="button"
+                                                        onclick="seleccionarModuloRecorrido({{ $capacitacion->modulos[$idx + 1]->id }})"
+                                                        style="background-color: #0056b3; color: #ffffff;"
+                                                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-bold text-xs shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
+                                                    <span>Continuar al Módulo {{ $idx + 2 }}</span>
+                                                    <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                                                </button>
+                                            @elseif($esUltimoModulo)
+                                                @if($evaluaciones->isNotEmpty())
+                                                    <a href="#seccion-evaluaciones"
+                                                       class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-bold text-xs shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
+                                                        <i class="fa-solid fa-graduation-cap"></i>
+                                                        <span>Ir a la Evaluación Final →</span>
+                                                    </a>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300">
+                                                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                                                        <span>Capacitación Finalizada</span>
+                                                    </span>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    @else
+                                        <!-- Módulo en curso (requiere ser completado) -->
+                                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
+                                            @if($totalVideosModulo > 0)
+                                                <!-- Aviso de bloqueo hasta cumplir 50% -->
+                                                <div id="aviso-bloqueo-modulo-{{ $mod->id }}"
+                                                     class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold transition-all shadow-2xs">
+                                                    <i id="aviso-icono-modulo-{{ $mod->id }}" class="fa-solid fa-lock text-amber-600 text-sm"></i>
+                                                    <span id="aviso-texto-modulo-{{ $mod->id }}">Debes reproducir al menos el 50% del video para desbloquear este paso.</span>
+                                                </div>
+                                            @else
+                                                <div></div>
+                                            @endif
+
+                                            <form method="POST" action="{{ route('empleado.modulos.completar', $mod) }}" class="shrink-0 m-0" id="form-completar-modulo-{{ $mod->id }}">
+                                                @csrf
+                                                @if($esUltimoModulo)
+                                                    <button type="submit"
+                                                            id="btn-completar-modulo-{{ $mod->id }}"
+                                                            data-modulo-id="{{ $mod->id }}"
+                                                            data-requiere-videos="{{ $totalVideosModulo }}"
+                                                            style="background-color: #0056b3; color: #ffffff;"
+                                                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer btn-completar-modulo">
+                                                        <i id="btn-icono-modulo-{{ $mod->id }}" class="fa-solid fa-flag-checkered text-sm"></i>
+                                                        <span>Finalizar Módulos y Pasar a Evaluación</span>
+                                                    </button>
+                                                @else
+                                                    <button type="submit"
+                                                            id="btn-completar-modulo-{{ $mod->id }}"
+                                                            data-modulo-id="{{ $mod->id }}"
+                                                            data-requiere-videos="{{ $totalVideosModulo }}"
+                                                            style="background-color: #0056b3; color: #ffffff;"
+                                                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0056b3] hover:bg-[#003d80] text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer btn-completar-modulo">
+                                                        <i id="btn-icono-modulo-{{ $mod->id }}" class="fa-solid fa-arrow-right text-xs"></i>
+                                                        <span>Completar Módulo y Continuar al Paso {{ $idx + 2 }}</span>
+                                                    </button>
+                                                @endif
+                                            </form>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -886,6 +1087,187 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // 5. Manejo del Recorrido Guiado Paso a Paso
+    let modoVistaTodos = false;
+    let moduloActivoActual = {{ $idModuloInicial ? (int)$idModuloInicial : 'null' }};
+
+    window.seleccionarModuloRecorrido = function (moduloId, smoothScroll = true) {
+        if (!moduloId) return;
+        moduloActivoActual = moduloId;
+
+        const items = document.querySelectorAll('.modulo-recorrido-item');
+        let targetItem = null;
+
+        items.forEach(item => {
+            const mId = parseInt(item.dataset.moduloId, 10);
+            if (modoVistaTodos) {
+                item.classList.remove('hidden');
+            } else {
+                if (mId === moduloId) {
+                    item.classList.remove('hidden');
+                    targetItem = item;
+                } else {
+                    item.classList.add('hidden');
+                }
+            }
+        });
+
+        // Actualizar pestañas del Stepper
+        document.querySelectorAll('.stepper-tab').forEach(tab => {
+            const mId = parseInt(tab.dataset.moduloId, 10);
+            const esCompletado = tab.dataset.esCompletado === '1';
+            const esBloqueado = tab.dataset.esBloqueado === '1';
+
+            const baseClasses = 'stepper-tab flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200';
+            const badgeIcon = tab.querySelector('.stepper-badge-icon');
+            const badgeTag = tab.querySelector('.stepper-badge-tag');
+            const titleEl = tab.querySelector('.stepper-title-text');
+            const labelEl = tab.querySelector('.stepper-label-text');
+
+            if (mId === moduloId) {
+                tab.className = `${baseClasses} bg-gradient-to-r from-brand-blue to-[#004a99] text-white border-brand-blue shadow-md ring-2 ring-brand-blue/30 scale-[1.01]`;
+                if (badgeIcon) {
+                    badgeIcon.className = 'stepper-badge-icon w-8 h-8 rounded-xl bg-white text-brand-blue flex items-center justify-center font-black text-xs shadow-xs';
+                }
+                if (badgeTag) {
+                    badgeTag.className = 'stepper-badge-tag text-[9px] px-1.5 py-0.2 rounded-md font-bold bg-white/20 text-white';
+                    badgeTag.textContent = 'En curso';
+                }
+                if (titleEl) {
+                    titleEl.className = 'stepper-title-text truncate text-xs font-bold text-white';
+                }
+                if (labelEl) {
+                    labelEl.className = 'stepper-label-text text-[10px] font-extrabold uppercase tracking-wider text-white/80';
+                }
+            } else if (esCompletado) {
+                tab.className = `${baseClasses} bg-white hover:bg-emerald-50/60 text-slate-800 border-emerald-200 hover:border-emerald-400 shadow-2xs cursor-pointer`;
+                if (badgeIcon) {
+                    badgeIcon.className = 'stepper-badge-icon w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shadow-xs';
+                }
+                if (badgeTag) {
+                    badgeTag.className = 'stepper-badge-tag text-[9px] px-1.5 py-0.2 rounded-md font-bold bg-emerald-100 text-emerald-800';
+                    badgeTag.textContent = 'Listo';
+                }
+                if (titleEl) {
+                    titleEl.className = 'stepper-title-text truncate text-xs font-semibold text-slate-800';
+                }
+                if (labelEl) {
+                    labelEl.className = 'stepper-label-text text-[10px] font-extrabold uppercase tracking-wider text-slate-400';
+                }
+            } else if (esBloqueado) {
+                tab.className = `${baseClasses} bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed opacity-75`;
+                if (badgeIcon) {
+                    badgeIcon.className = 'stepper-badge-icon w-8 h-8 rounded-xl bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs';
+                }
+                if (badgeTag) {
+                    badgeTag.className = 'stepper-badge-tag text-[9px] px-1.5 py-0.2 rounded-md font-medium bg-slate-200 text-slate-600';
+                    badgeTag.textContent = 'Bloqueado';
+                }
+                if (titleEl) {
+                    titleEl.className = 'stepper-title-text truncate text-xs font-medium text-slate-500';
+                }
+                if (labelEl) {
+                    labelEl.className = 'stepper-label-text text-[10px] font-extrabold uppercase tracking-wider text-slate-400';
+                }
+            } else {
+                tab.className = `${baseClasses} bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-brand-blue cursor-pointer`;
+                if (badgeIcon) {
+                    badgeIcon.className = 'stepper-badge-icon w-8 h-8 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center font-bold text-xs';
+                }
+                if (badgeTag) {
+                    badgeTag.className = 'stepper-badge-tag text-[9px] px-1.5 py-0.2 rounded-md font-bold bg-cyan-100 text-cyan-800';
+                    badgeTag.textContent = 'Disponible';
+                }
+                if (titleEl) {
+                    titleEl.className = 'stepper-title-text truncate text-xs font-semibold text-slate-800';
+                }
+                if (labelEl) {
+                    labelEl.className = 'stepper-label-text text-[10px] font-extrabold uppercase tracking-wider text-slate-400';
+                }
+            }
+        });
+
+        // Si hay un tab activo, asegurar que sea visible en el scroll horizontal
+        const activeTab = document.getElementById(`stepper-tab-${moduloId}`);
+        if (activeTab && activeTab.scrollIntoView) {
+            activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        // Si tiene iframes de YouTube sin inicializar, inicializarlos
+        if (window.YT && window.YT.Player && targetItem) {
+            targetItem.querySelectorAll('iframe.pny-video-youtube').forEach(iframe => {
+                const contId = iframe.dataset.contenidoId;
+                const modId = iframe.dataset.moduloId;
+                if (!ytPlayers[contId]) {
+                    try {
+                        ytPlayers[contId] = new YT.Player(iframe.id, {
+                            events: {
+                                'onStateChange': function (event) {
+                                    onYTStateChange(event, modId, contId);
+                                }
+                            }
+                        });
+                    } catch (e) {}
+                }
+            });
+        }
+
+        // Scroll suave hacia el módulo o el contenedor del recorrido
+        if (smoothScroll) {
+            const container = document.getElementById('contenedor-recorrido-modulos') || document.getElementById(`modulo-${moduloId}`);
+            if (container) {
+                const yOffset = -80;
+                const y = container.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+            }
+        }
+
+        // Actualizar URL sin saltos
+        if (history.replaceState) {
+            history.replaceState(null, null, '#modulo-' + moduloId);
+        }
+    };
+
+    window.alternarModoVista = function () {
+        modoVistaTodos = !modoVistaTodos;
+        const btnTexto = document.getElementById('texto-toggle-vista');
+        const btnIcono = document.getElementById('icono-toggle-vista');
+
+        if (modoVistaTodos) {
+            document.querySelectorAll('.modulo-recorrido-item').forEach(item => item.classList.remove('hidden'));
+            if (btnTexto) btnTexto.textContent = 'Modo Vista Paso a Paso';
+            if (btnIcono) btnIcono.className = 'fa-solid fa-arrows-split-up-and-left text-slate-500 text-[11px]';
+        } else {
+            if (btnTexto) btnTexto.textContent = 'Ver todos los módulos';
+            if (btnIcono) btnIcono.className = 'fa-solid fa-list-check text-slate-500 text-[11px]';
+            seleccionarModuloRecorrido(moduloActivoActual, false);
+        }
+    };
+
+    // Auto-scroll y activación inicial inteligente
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#modulo-')) {
+        const idFromHash = parseInt(hash.replace('#modulo-', ''), 10);
+        if (!isNaN(idFromHash)) {
+            seleccionarModuloRecorrido(idFromHash, true);
+        }
+    } else if (hash === '#seccion-evaluaciones') {
+        const evalSec = document.getElementById('seccion-evaluaciones');
+        if (evalSec) {
+            setTimeout(() => {
+                const yOffset = -70;
+                const y = evalSec.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+            }, 200);
+        }
+    } else if (moduloActivoActual) {
+        @if(session('success_modulo'))
+            setTimeout(() => {
+                seleccionarModuloRecorrido(moduloActivoActual, true);
+            }, 150);
+        @endif
+    }
 });
 </script>
 @endpush
