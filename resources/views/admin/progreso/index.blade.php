@@ -112,9 +112,102 @@
         </form>
     </div>
 
-    <!-- TABLA DE SEGUIMIENTO -->
+    <!-- TABLA DE SEGUIMIENTO (RESPONSIVE: TARJETAS EN MÓVIL, TABLA EN ESCRITORIO) -->
     <div class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden">
-        <div class="overflow-x-auto">
+        
+        <!-- VISTA MÓVIL: TARJETAS (block md:hidden) -->
+        <div class="block md:hidden divide-y divide-line/60">
+            @forelse ($filas as $fila)
+                @php
+                    $asignacionesPayload = $fila->asignaciones->map(function ($asig) use ($estados) {
+                        return [
+                            'id' => $asig->capacitacion->id,
+                            'titulo' => $asig->capacitacion->titulo,
+                            'descripcion' => $asig->capacitacion->descripcion,
+                            'total_modulos' => $asig->total_modulos,
+                            'completados' => $asig->completados,
+                            'porcentaje' => $asig->porcentaje,
+                            'estado' => $asig->estado,
+                            'estado_nombre' => $estados[$asig->estado] ?? $asig->estado,
+                            'minimo_aprobacion' => (float) $asig->capacitacion->porcentaje_aprobacion,
+                            'mejor_nota' => $asig->mejor_nota,
+                            'certificado' => (bool) $asig->certificado,
+                        ];
+                    });
+                @endphp
+                <div class="p-4 space-y-3.5 hover:bg-slate-50/70 transition-colors">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="w-10 h-10 rounded-2xl bg-brand-light text-brand-blue font-heading font-extrabold flex items-center justify-center text-xs shrink-0 shadow-2xs">
+                                {{ strtoupper(substr($fila->usuario->nombre_completo, 0, 1)) }}
+                            </span>
+                            <div class="min-w-0">
+                                <h4 class="font-heading font-bold text-sm text-brand-dark leading-tight truncate">{{ $fila->usuario->nombre_completo }}</h4>
+                                <p class="text-[11px] text-muted font-mono mt-0.5">C.C. {{ $fila->usuario->identificacion }}</p>
+                            </div>
+                        </div>
+
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-bold shrink-0">
+                            <i class="fa-solid fa-briefcase text-[9px] text-slate-400"></i>
+                            {{ $fila->usuario->area->nombre ?? 'Sin área' }}
+                        </span>
+                    </div>
+
+                    <!-- Avance Global Barra -->
+                    <div class="bg-slate-50 p-3 rounded-2xl border border-line/60 space-y-1.5">
+                        <div class="flex items-center justify-between text-xs font-bold">
+                            <span class="text-slate-600">Avance Global</span>
+                            <span class="text-brand-blue font-extrabold text-sm">{{ $fila->porcentaje_global }}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                            <div class="bg-brand-blue h-2 rounded-full transition-all duration-300" style="width: {{ $fila->porcentaje_global }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Métricas de formación -->
+                    <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="bg-slate-50 p-2 rounded-xl border border-line/60">
+                            <span class="block text-[10px] font-bold uppercase text-muted">Asignadas</span>
+                            <span class="text-xs font-extrabold text-brand-dark">{{ $fila->total_asignadas }}</span>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-xl border border-line/60">
+                            <span class="block text-[10px] font-bold uppercase text-muted">Completas</span>
+                            <span class="text-xs font-extrabold {{ $fila->completadas > 0 ? 'text-emerald-700' : 'text-slate-400' }}">
+                                {{ $fila->completadas }}
+                            </span>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-xl border border-line/60">
+                            <span class="block text-[10px] font-bold uppercase text-muted">Certificados</span>
+                            <span class="text-xs font-extrabold text-amber-700">
+                                {{ $fila->certificados_total }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="pt-1">
+                        <button type="button"
+                                class="btn-ver-asignaciones w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-brand-blue/10 hover:bg-brand-blue text-brand-blue hover:text-white font-heading font-bold text-xs transition-all cursor-pointer shadow-2xs"
+                                data-nombre="{{ $fila->usuario->nombre_completo }}"
+                                data-identificacion="{{ $fila->usuario->identificacion }}"
+                                data-area="{{ $fila->usuario->area->nombre ?? 'Sin área' }}"
+                                data-asignadas="{{ $fila->total_asignadas }}"
+                                data-promedio="{{ $fila->porcentaje_global }}"
+                                data-lista='@json($asignacionesPayload)'>
+                            <i class="fa-solid fa-list-check text-xs"></i>
+                            <span>Ver detalle de cursos</span>
+                        </button>
+                    </div>
+                </div>
+            @empty
+                <div class="p-8 text-center text-muted">
+                    <i class="fa-solid fa-chart-line text-3xl mb-2 text-slate-300 block"></i>
+                    No se encontraron colaboradores con los filtros indicados.
+                </div>
+            @endforelse
+        </div>
+
+        <!-- VISTA ESCRITORIO: TABLA (hidden md:block) -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted border-b border-line/60">
                     <tr>

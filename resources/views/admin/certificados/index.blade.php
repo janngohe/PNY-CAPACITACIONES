@@ -124,9 +124,103 @@
             </form>
         </div>
 
-        <!-- LISTADO DE CERTIFICADOS EMITIDOS -->
+        <!-- LISTADO DE CERTIFICADOS EMITIDOS (RESPONSIVE: TARJETAS EN MÓVIL, TABLA EN ESCRITORIO) -->
         <div class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden">
-            <div class="overflow-x-auto">
+            
+            <!-- VISTA MÓVIL: TARJETAS (block md:hidden) -->
+            <div class="block md:hidden divide-y divide-line/60">
+                @forelse ($certificados as $cert)
+                    @php
+                        $plantillaCert = $cert->plantillaCertificado ?? $plantillas->first();
+                        $f1n = $plantillaCert->firma_1_nombre ?? 'Ing. Carlos Mendoza';
+                        $f1c = $plantillaCert->firma_1_cargo ?? 'Jefe de Operaciones';
+                        $f1r = $plantillaCert?->firma_1_ruta ? asset('storage/' . $plantillaCert->firma_1_ruta) : '';
+
+                        if (empty($f1r) && $cert->usuario?->area_id) {
+                            $jefeArea = $jefes->firstWhere('area_id', $cert->usuario->area_id);
+                            if ($jefeArea && $jefeArea->tieneFirmaRegistrada()) {
+                                $f1n = $jefeArea->nombre_completo;
+                                $f1c = $jefeArea->cargoOficial();
+                                $f1r = $jefeArea->firmaUrl();
+                            }
+                        }
+
+                        $f2n = $plantillaCert->firma_2_nombre ?? 'Dra. Elena Ramos';
+                        $f2c = $plantillaCert->firma_2_cargo ?? 'Gerente General';
+                        $f2r = $plantillaCert?->firma_2_ruta ? asset('storage/' . $plantillaCert->firma_2_ruta) : '';
+                        $fondoUrl = $plantillaCert?->ruta_plantilla ? asset('storage/' . $plantillaCert->ruta_plantilla) : '';
+                        $org = $plantillaCert?->nombre_organizacion ?? 'C.I. Piscícola New York S.A.S.';
+                        $textoCert = $plantillaCert?->texto_certificado ?? ('La Dirección General de ' . $org . ' hace constar formalmente que:');
+                    @endphp
+                    <div class="p-4 space-y-3 hover:bg-slate-50/70 transition-colors">
+                        <div class="flex items-start justify-between gap-2">
+                            <span class="font-mono font-bold text-brand-blue bg-blue-50 px-2 py-0.5 rounded text-[11px]">
+                                {{ $cert->codigo }}
+                            </span>
+                            <span class="text-[11px] text-muted font-medium">
+                                {{ $cert->fecha_emision?->format('d/m/Y') }}
+                            </span>
+                        </div>
+
+                        <div>
+                            <h4 class="font-heading font-bold text-sm text-brand-dark leading-tight">{{ $cert->nombre_empleado }}</h4>
+                            <p class="text-[11px] text-muted font-mono mt-0.5">C.C. {{ $cert->identificacion }}</p>
+                        </div>
+
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-line/60 text-xs">
+                            <span class="text-[9px] uppercase font-bold text-muted block mb-0.5">Capacitación</span>
+                            <p class="font-semibold text-brand-dark leading-snug">{{ $cert->nombre_capacitacion }}</p>
+                            <span class="text-[10px] text-muted block mt-0.5">{{ $cert->area_nombre ?? 'Área General' }}</span>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-2 border-t border-line/50">
+                            <button type="button"
+                                    class="btn-ver-certificado flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-brand-light hover:bg-brand-blue hover:text-white text-brand-blue font-heading font-bold text-xs transition-colors shadow-2xs cursor-pointer"
+                                    data-codigo="{{ $cert->codigo }}"
+                                    data-empleado="{{ $cert->nombre_empleado }}"
+                                    data-identificacion="{{ $cert->identificacion }}"
+                                    data-capacitacion="{{ $cert->nombre_capacitacion }}"
+                                    data-area="{{ $cert->area_nombre ?? 'Área General' }}"
+                                    data-horas="{{ $cert->capacitacion?->duracion_estimada ?? 4 }}"
+                                    data-nota="{{ rtrim(rtrim(number_format((float) $cert->porcentaje, 1), '0'), '.') }}"
+                                    data-fecha="{{ $cert->fecha_emision?->format('d/m/Y') ?? date('d/m/Y') }}"
+                                    data-org="{{ $org }}"
+                                    data-texto="{{ $textoCert }}"
+                                    data-fondo="{{ $fondoUrl }}"
+                                    data-jefe-nombre="{{ $f1n }}"
+                                    data-jefe-cargo="{{ $f1c }}"
+                                    data-jefe-firma="{{ $f1r }}"
+                                    data-gerente-nombre="{{ $f2n }}"
+                                    data-gerente-cargo="{{ $f2c }}"
+                                    data-gerente-firma="{{ $f2r }}"
+                                    data-ver-url="{{ route('admin.certificados.show', $cert) }}"
+                                    data-pdf="{{ route('admin.certificados.pdf', $cert) }}"
+                                    title="Previsualizar certificado">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Previsualizar</span>
+                            </button>
+                            <a href="{{ route('admin.certificados.show', $cert) }}" target="_blank"
+                               class="p-2 rounded-xl bg-slate-100 hover:bg-brand-light text-slate-700 hover:text-brand-blue transition-colors"
+                               title="Ver en página completa">
+                                <i class="fa-solid fa-up-right-from-square text-xs"></i>
+                            </a>
+                            <a href="{{ route('admin.certificados.pdf', $cert) }}"
+                               class="p-2 rounded-xl bg-slate-100 hover:bg-brand-light text-slate-700 hover:text-brand-blue transition-colors"
+                               title="Descargar PDF">
+                                <i class="fa-solid fa-file-pdf text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-8 text-center text-muted">
+                        <i class="fa-solid fa-award text-3xl mb-2 text-slate-300 block"></i>
+                        No se encontraron certificados institucionales con los criterios de búsqueda.
+                    </div>
+                @endforelse
+            </div>
+
+            <!-- VISTA ESCRITORIO: TABLA (hidden md:block) -->
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted border-b border-line/60">
                         <tr>
@@ -140,6 +234,28 @@
                     </thead>
                     <tbody class="divide-y divide-line/50">
                         @forelse ($certificados as $cert)
+                            @php
+                                $plantillaCert = $cert->plantillaCertificado ?? $plantillas->first();
+                                $f1n = $plantillaCert->firma_1_nombre ?? 'Ing. Carlos Mendoza';
+                                $f1c = $plantillaCert->firma_1_cargo ?? 'Jefe de Operaciones';
+                                $f1r = $plantillaCert?->firma_1_ruta ? asset('storage/' . $plantillaCert->firma_1_ruta) : '';
+
+                                if (empty($f1r) && $cert->usuario?->area_id) {
+                                    $jefeArea = $jefes->firstWhere('area_id', $cert->usuario->area_id);
+                                    if ($jefeArea && $jefeArea->tieneFirmaRegistrada()) {
+                                        $f1n = $jefeArea->nombre_completo;
+                                        $f1c = $jefeArea->cargoOficial();
+                                        $f1r = $jefeArea->firmaUrl();
+                                    }
+                                }
+
+                                $f2n = $plantillaCert->firma_2_nombre ?? 'Dra. Elena Ramos';
+                                $f2c = $plantillaCert->firma_2_cargo ?? 'Gerente General';
+                                $f2r = $plantillaCert?->firma_2_ruta ? asset('storage/' . $plantillaCert->firma_2_ruta) : '';
+                                $fondoUrl = $plantillaCert?->ruta_plantilla ? asset('storage/' . $plantillaCert->ruta_plantilla) : '';
+                                $org = $plantillaCert?->nombre_organizacion ?? 'C.I. Piscícola New York S.A.S.';
+                                $textoCert = $plantillaCert?->texto_certificado ?? ('La Dirección General de ' . $org . ' hace constar formalmente que:');
+                            @endphp
                             <tr class="hover:bg-brand-light/30 transition-colors">
                                 <td class="px-5 sm:px-6 py-3.5">
                                     <span class="font-mono font-bold text-brand-blue bg-blue-50 px-2 py-0.5 rounded text-[11px]">
@@ -173,15 +289,26 @@
                                                 data-horas="{{ $cert->capacitacion?->duracion_estimada ?? 4 }}"
                                                 data-nota="{{ rtrim(rtrim(number_format((float) $cert->porcentaje, 1), '0'), '.') }}"
                                                 data-fecha="{{ $cert->fecha_emision?->format('d/m/Y') ?? date('d/m/Y') }}"
-                                                data-jefe-nombre="{{ $cert->plantillaCertificado->firma_1_nombre ?? 'Ing. Carlos Mendoza' }}"
-                                                data-jefe-cargo="{{ $cert->plantillaCertificado->firma_1_cargo ?? 'Jefe de Operaciones' }}"
-                                                data-gerente-nombre="{{ $cert->plantillaCertificado->firma_2_nombre ?? 'Dra. Elena Ramos' }}"
-                                                data-gerente-cargo="{{ $cert->plantillaCertificado->firma_2_cargo ?? 'Gerente General' }}"
-                                                data-pdf="{{ route('empleado.certificados.pdf', $cert) }}"
-                                                title="Ver certificado en modal">
-                                            <i class="fa-solid fa-eye mr-1"></i> Ver
+                                                data-org="{{ $org }}"
+                                                data-texto="{{ $textoCert }}"
+                                                data-fondo="{{ $fondoUrl }}"
+                                                data-jefe-nombre="{{ $f1n }}"
+                                                data-jefe-cargo="{{ $f1c }}"
+                                                data-jefe-firma="{{ $f1r }}"
+                                                data-gerente-nombre="{{ $f2n }}"
+                                                data-gerente-cargo="{{ $f2c }}"
+                                                data-gerente-firma="{{ $f2r }}"
+                                                data-ver-url="{{ route('admin.certificados.show', $cert) }}"
+                                                data-pdf="{{ route('admin.certificados.pdf', $cert) }}"
+                                                title="Previsualizar certificado en modal">
+                                            <i class="fa-solid fa-eye mr-1"></i> Previsualizar
                                         </button>
-                                        <a href="{{ route('empleado.certificados.pdf', $cert) }}"
+                                        <a href="{{ route('admin.certificados.show', $cert) }}" target="_blank"
+                                           class="p-1.5 rounded-lg bg-slate-100 hover:bg-brand-light hover:text-brand-blue text-slate-700 transition-colors"
+                                           title="Ver en página completa">
+                                            <i class="fa-solid fa-up-right-from-square"></i>
+                                        </a>
+                                        <a href="{{ route('admin.certificados.pdf', $cert) }}"
                                            class="p-1.5 rounded-lg bg-slate-100 hover:bg-brand-light hover:text-brand-blue text-slate-700 transition-colors"
                                            title="Descargar PDF">
                                             <i class="fa-solid fa-file-pdf"></i>
@@ -489,6 +616,25 @@
                             </div>
                         </div>
 
+                        <!-- Botón para Previsualizar Certificado con esta Plantilla -->
+                        <div class="pt-2 border-t border-line/60">
+                            <button type="button"
+                                    class="btn-previsualizar-plantilla w-full py-2 px-3 rounded-xl bg-brand-light hover:bg-brand-blue hover:text-white text-brand-blue font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-2xs"
+                                    data-nombre="{{ $pl->nombre }}"
+                                    data-org="{{ $pl->nombre_organizacion ?? 'C.I. Piscícola New York S.A.S.' }}"
+                                    data-texto="{{ $pl->texto_certificado ?? 'La Dirección General de C.I. Piscícola New York S.A.S. hace constar formalmente que:' }}"
+                                    data-fondo="{{ $pl->ruta_plantilla ? asset('storage/' . $pl->ruta_plantilla) : '' }}"
+                                    data-jefe-nombre="{{ $pl->firma_1_nombre ?? 'Ing. Carlos Mendoza' }}"
+                                    data-jefe-cargo="{{ $pl->firma_1_cargo ?? 'Jefe de Operaciones' }}"
+                                    data-jefe-firma="{{ $pl->firma_1_ruta ? asset('storage/' . $pl->firma_1_ruta) : '' }}"
+                                    data-gerente-nombre="{{ $pl->firma_2_nombre ?? 'Dra. Elena Ramos' }}"
+                                    data-gerente-cargo="{{ $pl->firma_2_cargo ?? 'Gerente General' }}"
+                                    data-gerente-firma="{{ $pl->firma_2_ruta ? asset('storage/' . $pl->firma_2_ruta) : '' }}">
+                                <i class="fa-solid fa-eye text-xs"></i>
+                                <span>Previsualizar Certificado con esta Plantilla</span>
+                            </button>
+                        </div>
+
                     </div>
                 @endforeach
             </div>
@@ -497,41 +643,49 @@
 </div>
 
 <!-- ========================================================
-     MODAL PARA VISUALIZACIÓN DEL CERTIFICADO EN LA MISMA PESTAÑA
+     MODAL PARA PREVISUALIZACIÓN OFICIAL DEL CERTIFICADO
      ======================================================== -->
 <div id="modal-visor-certificado" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-visor-titulo" role="dialog" aria-modal="true">
-    <div id="modal-visor-backdrop" class="fixed inset-0 bg-brand-dark/70 backdrop-blur-sm transition-opacity opacity-0"></div>
+    <div id="modal-visor-backdrop" class="fixed inset-0 bg-brand-dark/75 backdrop-blur-sm transition-opacity opacity-0 cursor-pointer" onclick="cerrarVisor()"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 flex items-center justify-center min-h-full">
-        <div id="modal-visor-panel" class="relative bg-white rounded-3xl max-w-4xl w-full shadow-2xl border border-line/80 overflow-hidden transform transition-all scale-95 opacity-0">
+    <div class="fixed inset-0 z-10 p-2 sm:p-4 md:p-6 flex items-center justify-center" onclick="if(event.target === this) cerrarVisor()">
+        <div id="modal-visor-panel" class="relative bg-white rounded-2xl sm:rounded-3xl max-w-4xl w-full shadow-2xl border border-line/80 overflow-hidden transform transition-all scale-95 opacity-0 flex flex-col max-h-[92vh] sm:max-h-[90vh]" onclick="event.stopPropagation()">
             
             <!-- Barra de control superior del visor -->
-            <div class="bg-slate-900 text-white px-6 py-3.5 flex items-center justify-between border-b border-slate-800">
-                <div class="flex items-center gap-2">
-                    <span class="w-8 h-8 rounded-xl bg-white/10 text-amber-400 flex items-center justify-center text-sm font-bold">
+            <div class="bg-slate-900 text-white px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between border-b border-slate-800 shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-white/10 text-amber-400 flex items-center justify-center text-sm font-bold shrink-0">
                         <i class="fa-solid fa-award"></i>
                     </span>
                     <div>
-                        <h4 class="font-heading font-bold text-xs sm:text-sm text-white">Visualizador Oficial de Certificado</h4>
-                        <span id="visor-codigo" class="text-[10px] font-mono text-cyan-300"></span>
+                        <h4 class="font-heading font-bold text-xs sm:text-sm text-white leading-tight">Previsualización de Certificado</h4>
+                        <span id="visor-codigo" class="text-[10px] font-mono text-cyan-300">PNY-CERTIFICADO</span>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2">
+                    <a href="#" id="visor-btn-ver-completo" target="_blank"
+                       class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-heading font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs"
+                       title="Abrir en ventana completa">
+                        <i class="fa-solid fa-up-right-from-square"></i>
+                        <span class="hidden sm:inline">Página Completa</span>
+                    </a>
                     <a href="#" id="visor-btn-descargar-pdf"
                        class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-brand-blue to-brand-deep hover:brightness-110 text-white font-heading font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs">
                         <i class="fa-solid fa-file-pdf"></i>
                         <span>Descargar PDF</span>
                     </a>
-                    <button type="button" id="visor-btn-cerrar" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer" title="Cerrar ventana">
+                    <button type="button" id="visor-btn-cerrar" onclick="cerrarVisor()"
+                            class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                            title="Cerrar ventana">
                         <i class="fa-solid fa-xmark text-sm"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Contenedor del Diploma (réplica exacta del diseño institucional) -->
-            <div class="p-4 sm:p-6 max-h-[82vh] overflow-y-auto bg-slate-100">
-                <div class="bg-white rounded-2xl border-4 border-slate-200 shadow-xl overflow-hidden relative">
+            <!-- Contenedor del Diploma (réplica exacta con scroll suave y completo) -->
+            <div id="visor-scroll-container" class="p-3 sm:p-6 overflow-y-auto flex-1 bg-slate-100 overscroll-contain">
+                <div id="diploma-imprimible" class="bg-white rounded-2xl border-2 sm:border-4 border-slate-200 shadow-xl overflow-hidden relative mb-4">
                     
                     <!-- Banner superior con olas marinas -->
                     <div class="relative bg-gradient-to-r from-brand-dark via-brand-deep to-[#0056b3] text-white p-5 sm:p-6 overflow-hidden">
@@ -541,23 +695,45 @@
                                     <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-10 w-auto object-contain">
                                 </div>
                                 <div>
-                                    <h2 class="font-heading font-black text-base text-white uppercase tracking-wider">
+                                    <h2 id="diploma-org-top" class="font-heading font-black text-sm sm:text-base text-white uppercase tracking-wider">
                                         C.I. PISCÍCOLA <span class="text-cyan-300">NEW YORK</span> S.A.S.
                                     </h2>
                                     <p class="text-[10px] text-slate-200">Gestión de Talento Humano & Capacitación Continuada</p>
                                 </div>
                             </div>
+
+                            <div class="text-right sm:text-right text-xs bg-white/10 backdrop-blur-md px-3 py-1 rounded-xl border border-white/15">
+                                <span class="text-[9px] uppercase font-bold text-cyan-300 block">Código Oficial</span>
+                                <span id="diploma-codigo-badge" class="font-mono font-black text-white text-xs">PNY-XXXXXX</span>
+                            </div>
+                        </div>
+
+                        <!-- Olas SVG -->
+                        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none pointer-events-none opacity-25">
+                            <svg class="relative block w-full h-5 text-white" viewBox="0 0 1200 40" preserveAspectRatio="none">
+                                <path d="M0,0 C150,35 350,10 500,25 C650,40 850,5 1000,20 C1100,30 1160,15 1200,25 L1200,40 L0,40 Z" fill="currentColor"/>
+                            </svg>
                         </div>
                     </div>
 
                     <!-- Cuerpo central del Diploma -->
                     <div class="p-6 sm:p-10 space-y-6 text-center bg-gradient-to-b from-white via-slate-50/50 to-white relative">
-                        <!-- Marca de agua -->
-                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-                            <img src="{{ asset('images/Logo.png') }}" alt="Watermark" class="w-80 h-auto">
+                        
+                        <!-- Fondo de plantilla personalizada si existe -->
+                        <div id="diploma-fondo-container" class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-15 overflow-hidden hidden">
+                            <img id="diploma-fondo-img" src="" alt="Fondo Plantilla" class="w-full h-full object-cover select-none">
+                        </div>
+
+                        <!-- Marca de agua central suave -->
+                        <div id="diploma-watermark" class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-5">
+                            <img src="{{ asset('images/Logo.png') }}" alt="Watermark" class="w-80 h-auto select-none">
                         </div>
 
                         <div class="relative z-10 space-y-2">
+                            <div class="flex items-center justify-center mb-1">
+                                <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-12 w-auto object-contain">
+                            </div>
+
                             <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200">
                                 <i class="fa-solid fa-certificate text-amber-500"></i>
                                 <span>Acreditación Institucional Oficial</span>
@@ -565,20 +741,22 @@
                             <h3 class="font-heading font-black text-xl sm:text-2xl text-brand-dark uppercase tracking-tight">
                                 CERTIFICADO DE CAPACITACIÓN Y APROBACIÓN
                             </h3>
-                            <p class="text-xs text-slate-500">La Dirección General de C.I. Piscícola New York S.A.S. hace constar formalmente que:</p>
+                            <p id="diploma-texto-cert" class="text-xs text-slate-500 max-w-xl mx-auto font-medium">
+                                La Dirección General de C.I. Piscícola New York S.A.S. hace constar formalmente que:
+                            </p>
                         </div>
 
                         <!-- Nombre del colaborador -->
                         <div class="relative z-10 space-y-2 py-1">
-                            <h2 id="diploma-empleado" class="font-heading font-black text-2xl sm:text-3xl text-brand-dark uppercase"></h2>
+                            <h2 id="diploma-empleado" class="font-heading font-black text-2xl sm:text-3xl text-brand-dark uppercase tracking-tight"></h2>
                             <div class="h-0.5 w-48 bg-gradient-to-r from-transparent via-brand-blue to-transparent mx-auto"></div>
-                            <p class="text-xs text-slate-600">
+                            <p class="text-xs text-slate-600 font-semibold">
                                 Con documento de identificación N.º <strong id="diploma-identificacion" class="text-brand-dark font-extrabold"></strong>, adscrito al área de <strong id="diploma-area" class="text-brand-blue font-extrabold"></strong>,
                             </p>
                         </div>
 
                         <!-- Capacitación y Acreditación -->
-                        <div class="relative z-10 max-w-xl mx-auto bg-slate-50 p-5 rounded-2xl border border-line/80 space-y-3">
+                        <div class="relative z-10 max-w-xl mx-auto bg-slate-50/90 p-5 rounded-2xl border border-line/80 space-y-3">
                             <span class="text-[10px] uppercase font-extrabold tracking-widest text-brand-sky block">
                                 HA CUMPLIDO SATISFACTORIAMENTE LA CAPACITACIÓN FORMATIVA EN:
                             </span>
@@ -589,31 +767,46 @@
                             <p class="text-[11px] text-slate-500 italic">
                                 Se expide el presente certificado como constancia de su participación y cumplimiento de la actividad formativa.
                             </p>
-                            <div class="flex items-center justify-center gap-3 text-xs pt-1">
+                            <div class="flex items-center justify-center gap-2.5 text-xs pt-1 flex-wrap">
                                 <span class="inline-flex items-center gap-1.5 text-slate-700 bg-white px-3.5 py-1 rounded-full border border-line font-bold">
                                     <i class="fa-solid fa-location-dot text-brand-blue"></i> Rivera - Huila, <span id="diploma-fecha"></span>
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Firmas -->
                         <!-- Firmas Dinámicas en el Visor -->
-                        <div class="relative z-10 pt-4 border-t border-line/70 grid grid-cols-2 gap-4 text-center text-xs">
-                            <div class="space-y-1">
-                                <span class="font-serif italic text-base text-brand-dark font-bold block select-none">Firma Verificada</span>
-                                <div class="w-40 mx-auto border-t border-brand-dark/40 pt-1">
-                                    <p id="diploma-jefe-nombre" class="font-heading font-bold text-xs text-brand-dark truncate leading-tight">Ing. Carlos Mendoza</p>
+                        <div class="relative z-10 pt-6 border-t border-line/70 grid grid-cols-1 sm:grid-cols-2 gap-6 text-center text-xs">
+                            <!-- Firma 1: Jefe Inmediato -->
+                            <div class="space-y-1.5">
+                                <div class="h-14 flex items-end justify-center pb-1">
+                                    <img id="diploma-jefe-firma-img" src="" alt="Firma Jefe" class="max-h-12 max-w-[150px] object-contain mx-auto hidden">
+                                    <span id="diploma-jefe-firma-texto" class="font-serif italic text-base text-brand-dark font-bold block select-none">
+                                        Firma Digital Verificada
+                                    </span>
+                                </div>
+                                <div class="w-48 mx-auto border-t-2 border-brand-dark/40 pt-1">
+                                    <p id="diploma-jefe-nombre" class="font-heading font-extrabold text-xs text-brand-dark truncate leading-tight">Ing. Carlos Mendoza</p>
                                     <p id="diploma-jefe-cargo" class="text-[10px] text-muted truncate">Jefe Inmediato</p>
+                                    <span class="inline-block text-[9px] font-bold text-brand-blue uppercase tracking-wider mt-0.5">Jefe Inmediato</span>
                                 </div>
                             </div>
-                            <div class="space-y-1">
-                                <span class="font-serif italic text-base text-brand-blue font-bold block select-none">Firma Verificada</span>
-                                <div class="w-40 mx-auto border-t border-brand-dark/40 pt-1">
-                                    <p id="diploma-gerente-nombre" class="font-heading font-bold text-xs text-brand-dark truncate leading-tight">Dra. Elena Ramos</p>
+
+                            <!-- Firma 2: Gerente -->
+                            <div class="space-y-1.5">
+                                <div class="h-14 flex items-end justify-center pb-1">
+                                    <img id="diploma-gerente-firma-img" src="" alt="Firma Gerente" class="max-h-12 max-w-[150px] object-contain mx-auto hidden">
+                                    <span id="diploma-gerente-firma-texto" class="font-serif italic text-base text-brand-blue font-bold block select-none">
+                                        Firma Digital Verificada
+                                    </span>
+                                </div>
+                                <div class="w-48 mx-auto border-t-2 border-brand-dark/40 pt-1">
+                                    <p id="diploma-gerente-nombre" class="font-heading font-extrabold text-xs text-brand-dark truncate leading-tight">Dra. Elena Ramos</p>
                                     <p id="diploma-gerente-cargo" class="text-[10px] text-muted truncate">Gerente General</p>
+                                    <span class="inline-block text-[9px] font-bold text-cyan-700 uppercase tracking-wider mt-0.5">Gerencia General</span>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                     <!-- Pie del diploma -->
@@ -1207,67 +1400,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Modal Visor de Certificado
-    const modal = document.getElementById('modal-visor-certificado');
-    const backdrop = document.getElementById('modal-visor-backdrop');
-    const panel = document.getElementById('modal-visor-panel');
-    const btnCerrar = document.getElementById('visor-btn-cerrar');
-    const btnDescargar = document.getElementById('visor-btn-descargar-pdf');
-
-    const codigoTop = document.getElementById('visor-codigo');
-    const codigoDip = document.getElementById('diploma-codigo');
-    const empleadoDip = document.getElementById('diploma-empleado');
-    const idDip = document.getElementById('diploma-identificacion');
-    const areaDip = document.getElementById('diploma-area');
-    const capDip = document.getElementById('diploma-capacitacion');
-    const horasDip = document.getElementById('diploma-horas');
-    const fechaRealizadaDip = document.getElementById('diploma-fecha-realizada');
-    const notaDip = document.getElementById('diploma-nota');
-    const fechaDip = document.getElementById('diploma-fecha');
-    const jefeNombreDip = document.getElementById('diploma-jefe-nombre');
-    const jefeCargoDip = document.getElementById('diploma-jefe-cargo');
-    const gerenteNombreDip = document.getElementById('diploma-gerente-nombre');
-    const gerenteCargoDip = document.getElementById('diploma-gerente-cargo');
-
-    function abrirVisor(datos) {
-        if (codigoTop) codigoTop.textContent = datos.codigo;
-        if (codigoDip) codigoDip.textContent = datos.codigo;
-        if (empleadoDip) empleadoDip.textContent = datos.empleado;
-        if (idDip) idDip.textContent = datos.identificacion;
-        if (areaDip) areaDip.textContent = datos.area;
-        if (capDip) capDip.textContent = datos.capacitacion;
-        if (horasDip) horasDip.textContent = `${datos.horas || 4} ${parseInt(datos.horas) === 1 ? 'hora' : 'horas'}`;
-        if (fechaRealizadaDip) fechaRealizadaDip.textContent = datos.fecha;
-        if (notaDip) notaDip.textContent = datos.nota;
-        if (fechaDip) fechaDip.textContent = datos.fecha;
-        if (btnDescargar) btnDescargar.href = datos.pdf;
-
-        if (jefeNombreDip) jefeNombreDip.textContent = datos.jefeNombre || 'Ing. Carlos Mendoza';
-        if (jefeCargoDip) jefeCargoDip.textContent = datos.jefeCargo || 'Jefe Inmediato';
-        if (gerenteNombreDip) gerenteNombreDip.textContent = datos.gerenteNombre || 'Dra. Elena Ramos';
-        if (gerenteCargoDip) gerenteCargoDip.textContent = datos.gerenteCargo || 'Gerente General';
-
-        modal.classList.remove('hidden');
-        requestAnimationFrame(() => {
-            backdrop.classList.remove('opacity-0');
-            backdrop.classList.add('opacity-100');
-            panel.classList.remove('scale-95', 'opacity-0');
-            panel.classList.add('scale-100', 'opacity-100');
-        });
-        document.body.classList.add('overflow-hidden');
-    }
-
-    function cerrarVisor() {
-        backdrop.classList.remove('opacity-100');
-        backdrop.classList.add('opacity-0');
-        panel.classList.remove('scale-100', 'opacity-100');
-        panel.classList.add('scale-95', 'opacity-0');
-
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        }, 200);
-    }
-
     document.querySelectorAll('.btn-ver-certificado').forEach(btn => {
         btn.addEventListener('click', () => {
             abrirVisor({
@@ -1279,11 +1411,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 horas: btn.getAttribute('data-horas'),
                 nota: btn.getAttribute('data-nota'),
                 fecha: btn.getAttribute('data-fecha'),
+                org: btn.getAttribute('data-org'),
+                texto: btn.getAttribute('data-texto'),
+                fondo: btn.getAttribute('data-fondo'),
                 jefeNombre: btn.getAttribute('data-jefe-nombre'),
                 jefeCargo: btn.getAttribute('data-jefe-cargo'),
+                jefeFirma: btn.getAttribute('data-jefe-firma'),
                 gerenteNombre: btn.getAttribute('data-gerente-nombre'),
                 gerenteCargo: btn.getAttribute('data-gerente-cargo'),
+                gerenteFirma: btn.getAttribute('data-gerente-firma'),
+                verUrl: btn.getAttribute('data-ver-url'),
                 pdf: btn.getAttribute('data-pdf'),
+            });
+        });
+    });
+
+    // Botones para previsualizar plantilla con datos de ejemplo
+    document.querySelectorAll('.btn-previsualizar-plantilla').forEach(btn => {
+        btn.addEventListener('click', () => {
+            abrirVisor({
+                codigo: 'PNY-DEMO-2026',
+                empleado: 'Juan Carlos Pérez González',
+                identificacion: '12.345.678',
+                capacitacion: 'Buenas Prácticas de Manejo, Bioseguridad y Sanidad Acuícola',
+                area: 'Producción y Cosecha',
+                horas: '4',
+                nota: '98',
+                fecha: new Date().toLocaleDateString('es-CO'),
+                org: btn.getAttribute('data-org'),
+                texto: btn.getAttribute('data-texto'),
+                fondo: btn.getAttribute('data-fondo'),
+                jefeNombre: btn.getAttribute('data-jefe-nombre'),
+                jefeCargo: btn.getAttribute('data-jefe-cargo'),
+                jefeFirma: btn.getAttribute('data-jefe-firma'),
+                gerenteNombre: btn.getAttribute('data-gerente-nombre'),
+                gerenteCargo: btn.getAttribute('data-gerente-cargo'),
+                gerenteFirma: btn.getAttribute('data-gerente-firma'),
+                verUrl: null,
+                pdf: null,
             });
         });
     });
@@ -1307,12 +1472,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    btnCerrar?.addEventListener('click', cerrarVisor);
-    backdrop?.addEventListener('click', cerrarVisor);
-
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            if (!modal.classList.contains('hidden')) cerrarVisor();
+            const modalVisor = document.getElementById('modal-visor-certificado');
+            if (modalVisor && !modalVisor.classList.contains('hidden')) cerrarVisor();
             const modalCrear = document.getElementById('modal-crear-plantilla');
             if (modalCrear && !modalCrear.classList.contains('hidden')) cerrarModalCrearPlantilla();
             const modalEdit = document.getElementById('modal-editar-plantilla');
@@ -1320,5 +1483,146 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+function abrirVisor(datos) {
+    const modal = document.getElementById('modal-visor-certificado');
+    const backdrop = document.getElementById('modal-visor-backdrop');
+    const panel = document.getElementById('modal-visor-panel');
+    if (!modal) return;
+
+    // Elementos de texto
+    const codigoTop = document.getElementById('visor-codigo');
+    const codigoBadge = document.getElementById('diploma-codigo-badge');
+    const empleadoDip = document.getElementById('diploma-empleado');
+    const idDip = document.getElementById('diploma-identificacion');
+    const areaDip = document.getElementById('diploma-area');
+    const capDip = document.getElementById('diploma-capacitacion');
+    const horasDip = document.getElementById('diploma-horas');
+    const fechaRealizadaDip = document.getElementById('diploma-fecha-realizada');
+    const notaDip = document.getElementById('diploma-nota');
+    const fechaDip = document.getElementById('diploma-fecha');
+    const orgTop = document.getElementById('diploma-org-top');
+    const textoCert = document.getElementById('diploma-texto-cert');
+
+    const jefeNombreDip = document.getElementById('diploma-jefe-nombre');
+    const jefeCargoDip = document.getElementById('diploma-jefe-cargo');
+    const jefeImg = document.getElementById('diploma-jefe-firma-img');
+    const jefeTxt = document.getElementById('diploma-jefe-firma-texto');
+
+    const gerenteNombreDip = document.getElementById('diploma-gerente-nombre');
+    const gerenteCargoDip = document.getElementById('diploma-gerente-cargo');
+    const gerenteImg = document.getElementById('diploma-gerente-firma-img');
+    const gerenteTxt = document.getElementById('diploma-gerente-firma-texto');
+
+    const fondoContainer = document.getElementById('diploma-fondo-container');
+    const fondoImg = document.getElementById('diploma-fondo-img');
+
+    const btnVerCompleto = document.getElementById('visor-btn-ver-completo');
+    const btnDescargar = document.getElementById('visor-btn-descargar-pdf');
+
+    if (codigoTop) codigoTop.textContent = datos.codigo || 'PNY-XXXXXX';
+    if (codigoBadge) codigoBadge.textContent = datos.codigo || 'PNY-XXXXXX';
+    if (empleadoDip) empleadoDip.textContent = datos.empleado || 'Colaborador Institucional';
+    if (idDip) idDip.textContent = datos.identificacion || '—';
+    if (areaDip) areaDip.textContent = datos.area || 'Producción Piscícola';
+    if (capDip) capDip.textContent = datos.capacitacion || 'Capacitación Institucional';
+    if (horasDip) horasDip.textContent = `${datos.horas || 4} ${parseInt(datos.horas) === 1 ? 'hora' : 'horas'}`;
+    if (fechaRealizadaDip) fechaRealizadaDip.textContent = datos.fecha || new Date().toLocaleDateString('es-CO');
+    if (notaDip) notaDip.textContent = datos.nota || '100';
+    if (fechaDip) fechaDip.textContent = datos.fecha || new Date().toLocaleDateString('es-CO');
+
+    if (orgTop && datos.org) orgTop.textContent = datos.org;
+    if (textoCert && datos.texto) textoCert.textContent = datos.texto;
+
+    // Fondo de plantilla
+    if (fondoContainer && fondoImg) {
+        if (datos.fondo) {
+            fondoImg.src = datos.fondo;
+            fondoContainer.classList.remove('hidden');
+        } else {
+            fondoContainer.classList.add('hidden');
+        }
+    }
+
+    // Firma Jefe
+    if (jefeNombreDip) jefeNombreDip.textContent = datos.jefeNombre || 'Ing. Carlos Mendoza';
+    if (jefeCargoDip) jefeCargoDip.textContent = datos.jefeCargo || 'Jefe Inmediato';
+    if (jefeImg && jefeTxt) {
+        if (datos.jefeFirma) {
+            jefeImg.src = datos.jefeFirma;
+            jefeImg.classList.remove('hidden');
+            jefeTxt.classList.add('hidden');
+        } else {
+            jefeImg.classList.add('hidden');
+            jefeTxt.classList.remove('hidden');
+        }
+    }
+
+    // Firma Gerente
+    if (gerenteNombreDip) gerenteNombreDip.textContent = datos.gerenteNombre || 'Dra. Elena Ramos';
+    if (gerenteCargoDip) gerenteCargoDip.textContent = datos.gerenteCargo || 'Gerente General';
+    if (gerenteImg && gerenteTxt) {
+        if (datos.gerenteFirma) {
+            gerenteImg.src = datos.gerenteFirma;
+            gerenteImg.classList.remove('hidden');
+            gerenteTxt.classList.add('hidden');
+        } else {
+            gerenteImg.classList.add('hidden');
+            gerenteTxt.classList.remove('hidden');
+        }
+    }
+
+    // Botones de acción
+    if (btnVerCompleto) {
+        if (datos.verUrl) {
+            btnVerCompleto.href = datos.verUrl;
+            btnVerCompleto.classList.remove('hidden');
+        } else {
+            btnVerCompleto.classList.add('hidden');
+        }
+    }
+    if (btnDescargar) {
+        if (datos.pdf) {
+            btnDescargar.href = datos.pdf;
+            btnDescargar.classList.remove('hidden');
+        } else {
+            btnDescargar.classList.add('hidden');
+        }
+    }
+
+    modal.classList.remove('hidden');
+    const scrollContainer = document.getElementById('visor-scroll-container');
+    if (scrollContainer) {
+        scrollContainer.scrollTop = 0;
+    }
+    requestAnimationFrame(() => {
+        backdrop.classList.remove('opacity-0');
+        backdrop.classList.add('opacity-100');
+        panel.classList.remove('scale-95', 'opacity-0');
+        panel.classList.add('scale-100', 'opacity-100');
+    });
+    document.body.classList.add('overflow-hidden');
+}
+
+function cerrarVisor() {
+    const modal = document.getElementById('modal-visor-certificado');
+    const backdrop = document.getElementById('modal-visor-backdrop');
+    const panel = document.getElementById('modal-visor-panel');
+    if (!modal) return;
+
+    if (backdrop) {
+        backdrop.classList.remove('opacity-100');
+        backdrop.classList.add('opacity-0');
+    }
+    if (panel) {
+        panel.classList.remove('scale-100', 'opacity-100');
+        panel.classList.add('scale-95', 'opacity-0');
+    }
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }, 200);
+}
 </script>
 @endsection

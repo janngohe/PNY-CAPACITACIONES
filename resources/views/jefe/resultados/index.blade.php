@@ -31,7 +31,53 @@
                 <a href="{{ route(($panel ?? 'jefe') . '.evaluaciones.create') }}" class="inline-block text-xs font-bold text-brand-blue hover:underline">Crear evaluación</a>
             </div>
         @else
-            <div class="overflow-x-auto">
+            <!-- VISTA MÓVIL: TARJETAS (block md:hidden) -->
+            <div class="block md:hidden divide-y divide-line/60">
+                @foreach ($evaluaciones as $evaluacion)
+                    <div class="p-4 space-y-3 hover:bg-slate-50/70 transition-colors">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <h3 class="font-heading font-bold text-sm text-brand-dark leading-tight">{{ $evaluacion->titulo }}</h3>
+                                <p class="text-[11px] text-muted truncate mt-0.5">{{ $evaluacion->capacitacion->titulo }}</p>
+                            </div>
+                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 {{ $evaluacion->estado ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' }}">
+                                {{ $evaluacion->estado ? 'Activa' : 'Desactivada' }}
+                            </span>
+                        </div>
+
+                        <!-- Métricas en grid -->
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-line/60">
+                                <span class="text-[9px] uppercase font-bold text-muted block">Participaron</span>
+                                <span class="text-xs font-bold text-brand-dark">{{ $evaluacion->participantes }} / {{ $evaluacion->empleados_objetivo ?? $empleadosArea }}</span>
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-line/60">
+                                <span class="text-[9px] uppercase font-bold text-muted block">Aprobados</span>
+                                <span class="text-xs font-bold text-emerald-700">{{ $evaluacion->aprobados_total }} aprobados</span>
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-line/60">
+                                <span class="text-[9px] uppercase font-bold text-muted block">Total Intentos</span>
+                                <span class="text-xs font-semibold text-slate-700">{{ $evaluacion->intentos_total }}</span>
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-line/60">
+                                <span class="text-[9px] uppercase font-bold text-muted block">Promedio General</span>
+                                <span class="text-xs font-bold text-brand-blue">{{ $evaluacion->promedio !== null ? $evaluacion->promedio . '%' : '—' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <a href="{{ route(($panel ?? 'jefe') . '.resultados.show', $evaluacion) }}"
+                               class="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs shadow-xs transition-colors">
+                                <i class="fa-solid fa-square-poll-vertical"></i>
+                                <span>Ver detalle por colaborador</span>
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- VISTA ESCRITORIO: TABLA (hidden md:block) -->
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted">
                         <tr>

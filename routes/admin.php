@@ -66,6 +66,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
 
     // Certificados
     Route::get('/certificados', [CertificadoController::class, 'index'])->name('certificados.index');
+    Route::get('/certificados/{certificado}', [CertificadoController::class, 'show'])->name('certificados.show');
+    Route::get('/certificados/{certificado}/pdf', [CertificadoController::class, 'descargarPdf'])->name('certificados.pdf');
     Route::post('/certificados/generar', [CertificadoController::class, 'generar'])->name('certificados.generar');
     Route::patch('/certificados/externos/{certificadoExterno}/aprobar', [CertificadoController::class, 'aprobarExterno'])->name('certificados.externos.aprobar');
     Route::patch('/certificados/externos/{certificadoExterno}/rechazar', [CertificadoController::class, 'rechazarExterno'])->name('certificados.externos.rechazar');

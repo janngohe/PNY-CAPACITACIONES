@@ -15,7 +15,7 @@
 
     <!-- BARRA SUPERIOR DE ACCIONES Y RESUMEN -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
             <span class="px-3 py-1.5 rounded-xl bg-white border border-line text-xs font-semibold text-slate-700 shadow-2xs">
                 Total: <strong class="text-brand-dark">{{ $resumen['total'] }}</strong>
             </span>
@@ -28,7 +28,7 @@
         </div>
 
         <a href="{{ route('admin.usuarios.create') }}" id="btn-crear-usuario"
-           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs transition-colors self-start sm:self-auto cursor-pointer">
+           class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs transition-colors w-full sm:w-auto cursor-pointer">
             <i class="fa-solid fa-user-plus"></i>
             <span>Registrar Nuevo Usuario</span>
         </a>
@@ -84,7 +84,7 @@
                         <i class="fa-solid fa-filter"></i>
                     </button>
                     @if ($filtros['q'] || $filtros['rol'] || $filtros['areaId'] || $filtros['estado'] !== null)
-                        <a href="{{ route('admin.usuarios.index') }}" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors" title="Limpiar filtros">
+                        <a href="{{ route('admin.usuarios.index') }}" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors inline-flex items-center justify-center" title="Limpiar filtros">
                             <i class="fa-solid fa-xmark"></i>
                         </a>
                     @endif
@@ -93,9 +93,108 @@
         </form>
     </div>
 
-    <!-- TABLA DE USUARIOS -->
+    <!-- LISTADO DE USUARIOS (RESPONSIVE: TARJETAS EN MÓVIL, TABLA EN ESCRITORIO) -->
     <div class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden">
-        <div class="overflow-x-auto">
+        
+        <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (md:hidden) -->
+        <div class="block md:hidden divide-y divide-line/60">
+            @forelse ($usuarios as $u)
+                @php
+                    $rolBadge = match($u->rol) {
+                        'ADMINISTRADOR' => 'bg-purple-50 text-purple-700 border-purple-200',
+                        'JEFE_AREA' => 'bg-blue-50 text-brand-blue border-blue-200',
+                        default => 'bg-slate-100 text-slate-700 border-slate-200',
+                    };
+                @endphp
+                <div class="p-4 space-y-3 transition-colors {{ $u->estado ? 'bg-white' : 'opacity-70 bg-slate-50/60' }}">
+                    <!-- Fila 1: Avatar, Nombre, Estado -->
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-deep to-brand-cyan text-white font-heading font-extrabold text-xs flex items-center justify-center shadow-2xs shrink-0">
+                                {{ strtoupper(substr($u->nombre_completo, 0, 1)) }}
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="font-heading font-bold text-sm text-brand-dark truncate leading-tight">{{ $u->nombre_completo }}</h4>
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <span class="text-[11px] font-mono text-slate-500 font-semibold">C.C. {{ $u->identificacion }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estado Badge -->
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 {{ $u->estado ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-300' }}">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $u->estado ? 'bg-emerald-500' : 'bg-slate-400' }}"></span>
+                            {{ $u->estado ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </div>
+
+                    @if ($u->usuario_nuevo)
+                        <div>
+                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                                <i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Primer ingreso pendiente
+                            </span>
+                        </div>
+                    @endif
+
+                    <!-- Fila 2: Rol y Área -->
+                    <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-line/40">
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-line/60">
+                            <span class="text-[9px] uppercase font-bold text-muted block mb-0.5">Rol Institucional</span>
+                            <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $rolBadge }}">
+                                {{ $roles[$u->rol] ?? $u->rol }}
+                            </span>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-line/60">
+                            <span class="text-[9px] uppercase font-bold text-muted block mb-0.5">Área Asignada</span>
+                            <span class="text-xs font-semibold text-slate-700 truncate block">
+                                {{ $u->area->nombre ?? '— Sin área —' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Acciones touch-friendly en móvil -->
+                    <div class="flex items-center gap-2 pt-2 border-t border-line/50">
+                        <a href="{{ route('admin.usuarios.edit', $u) }}"
+                           class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-100 hover:bg-brand-light text-slate-700 hover:text-brand-blue font-heading font-bold text-xs transition-colors shadow-2xs">
+                            <i class="fa-solid fa-pen-to-square text-xs"></i>
+                            <span>Editar</span>
+                        </a>
+
+                        <form method="POST" action="{{ route('admin.usuarios.restablecer', $u) }}" class="flex-1 m-0"
+                              onsubmit="return confirm('¿Restablecer la contraseña de {{ $u->nombre_completo }} a su número de cédula ({{ $u->identificacion }})?');">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-heading font-bold text-xs border border-amber-200 transition-colors shadow-2xs cursor-pointer">
+                                <i class="fa-solid fa-key text-xs"></i>
+                                <span>Clave Cédula</span>
+                            </button>
+                        </form>
+
+                        @if ($u->id !== auth()->id())
+                            <form method="POST" action="{{ route('admin.usuarios.estado', $u) }}" class="m-0"
+                                  onsubmit="return confirm('¿{{ $u->estado ? 'Desactivar' : 'Activar' }} al usuario {{ $u->nombre_completo }}?');">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                        class="inline-flex items-center justify-center gap-1.5 p-2 rounded-xl border transition-colors shadow-2xs cursor-pointer {{ $u->estado ? 'border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700' : 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700' }}"
+                                        title="{{ $u->estado ? 'Desactivar acceso' : 'Activar acceso' }}"
+                                        aria-label="{{ $u->estado ? 'Desactivar acceso' : 'Activar acceso' }}">
+                                    <i class="fa-solid {{ $u->estado ? 'fa-user-slash' : 'fa-user-check' }} text-xs"></i>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="p-8 text-center text-muted">
+                    <i class="fa-solid fa-users text-3xl mb-2 text-slate-300 block"></i>
+                    No se encontraron usuarios con los filtros aplicados.
+                </div>
+            @endforelse
+        </div>
+
+        <!-- VISTA ESCRITORIO / TABLET: TABLA COMPLETA (hidden md:block) -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted border-b border-line/60">
                     <tr>

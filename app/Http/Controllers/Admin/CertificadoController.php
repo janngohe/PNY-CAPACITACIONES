@@ -76,6 +76,28 @@ class CertificadoController extends Controller
         ]);
     }
 
+    /**
+     * Muestra la vista de detalle y previsualización oficial del Certificado.
+     */
+    public function show(Certificado $certificado)
+    {
+        $certificado->loadMissing('capacitacion', 'usuario.area', 'plantillaCertificado');
+
+        return view('admin.certificados.show', compact('certificado'));
+    }
+
+    /**
+     * Descarga el certificado como PDF oficial.
+     */
+    public function descargarPdf(Certificado $certificado)
+    {
+        $certificado->loadMissing('plantillaCertificado', 'capacitacion', 'usuario.area');
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('empleado.certificado_pdf', compact('certificado'))
+            ->setPaper('letter', 'landscape')
+            ->download('Certificado_' . $certificado->codigo . '.pdf');
+    }
+
     public function guardarPlantilla(Request $request): RedirectResponse
     {
         $datos = $request->validate([

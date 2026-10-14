@@ -100,13 +100,13 @@
                 </div>
             @endunless
 
-            <div class="flex items-center justify-between pt-4 border-t border-line/60">
+            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 pt-4 border-t border-line/60">
                 <a href="{{ route('admin.usuarios.index') }}"
-                   class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs transition-colors">
+                   class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs text-center transition-colors">
                     Cancelar
                 </a>
                 <button type="submit"
-                        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
+                        class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
                     <i class="fa-solid fa-check"></i>
                     <span>{{ $editando ? 'Actualizar Usuario' : 'Registrar y Habilitar' }}</span>
                 </button>
