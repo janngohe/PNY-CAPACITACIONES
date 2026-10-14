@@ -86,6 +86,7 @@ class CertificadoController extends Controller
             'firma_1_nombre' => ['nullable', 'string', 'max:150'],
             'firma_1_cargo' => ['nullable', 'string', 'max:150'],
             'firma_1_archivo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
+            'firma_1_ruta_existente' => ['nullable', 'string', 'max:255'],
             'firma_2_nombre' => ['nullable', 'string', 'max:150'],
             'firma_2_cargo' => ['nullable', 'string', 'max:150'],
             'firma_2_archivo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
@@ -96,9 +97,18 @@ class CertificadoController extends Controller
 
         $rutaPlantilla = $request->file('archivo_plantilla')->store('plantillas', 'public');
 
-        $rutaFirma1 = $request->hasFile('firma_1_archivo')
-            ? $request->file('firma_1_archivo')->store('firmas', 'public')
-            : null;
+        // Procesar Firma 1: archivo nuevo, ruta existente de firma de perfil, o búsqueda por nombre de jefe
+        $rutaFirma1 = null;
+        if ($request->hasFile('firma_1_archivo')) {
+            $rutaFirma1 = $request->file('firma_1_archivo')->store('firmas', 'public');
+        } elseif ($request->filled('firma_1_ruta_existente')) {
+            $rutaFirma1 = $request->input('firma_1_ruta_existente');
+        } elseif (!empty($datos['firma_1_nombre'])) {
+            $jefeUsuario = \App\Models\Usuario::where('nombre_completo', $datos['firma_1_nombre'])->first();
+            if ($jefeUsuario && $jefeUsuario->tieneFirmaRegistrada()) {
+                $rutaFirma1 = $jefeUsuario->firma_digital;
+            }
+        }
 
         $rutaFirma2 = $request->hasFile('firma_2_archivo')
             ? $request->file('firma_2_archivo')->store('firmas', 'public')
@@ -108,12 +118,14 @@ class CertificadoController extends Controller
             'nombre' => $datos['nombre'],
             'descripcion' => $datos['descripcion'] ?? null,
             'area_id' => !empty($datos['area_id']) ? $datos['area_id'] : null,
+            'creado_por' => auth()->id(),
             'ruta_plantilla' => $rutaPlantilla,
             'nombre_organizacion' => $datos['nombre_organizacion'] ?? 'C.I. Piscícola New York S.A.S.',
             'texto_certificado' => $datos['texto_certificado'] ?? null,
             'firma_1_nombre' => $datos['firma_1_nombre'] ?? 'Jefe Inmediato',
             'firma_1_cargo' => $datos['firma_1_cargo'] ?? 'Jefe de Área',
             'firma_1_ruta' => $rutaFirma1,
+            'firma_1_actualizada_el' => $rutaFirma1 ? now() : null,
             'firma_2_nombre' => $datos['firma_2_nombre'] ?? 'Gerente General',
             'firma_2_cargo' => $datos['firma_2_cargo'] ?? 'Gerencia General',
             'firma_2_ruta' => $rutaFirma2,
@@ -134,6 +146,7 @@ class CertificadoController extends Controller
             'firma_1_nombre' => ['nullable', 'string', 'max:150'],
             'firma_1_cargo' => ['nullable', 'string', 'max:150'],
             'firma_1_archivo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
+            'firma_1_ruta_existente' => ['nullable', 'string', 'max:255'],
             'firma_2_nombre' => ['nullable', 'string', 'max:150'],
             'firma_2_cargo' => ['nullable', 'string', 'max:150'],
             'firma_2_archivo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
@@ -167,6 +180,16 @@ class CertificadoController extends Controller
                 Storage::disk('public')->delete($plantilla->firma_1_ruta);
             }
             $camposActualizar['firma_1_ruta'] = $request->file('firma_1_archivo')->store('firmas', 'public');
+            $camposActualizar['firma_1_actualizada_el'] = now();
+        } elseif ($request->filled('firma_1_ruta_existente')) {
+            $camposActualizar['firma_1_ruta'] = $request->input('firma_1_ruta_existente');
+            $camposActualizar['firma_1_actualizada_el'] = now();
+        } elseif (!empty($datos['firma_1_nombre']) && empty($plantilla->firma_1_ruta)) {
+            $jefeUsuario = \App\Models\Usuario::where('nombre_completo', $datos['firma_1_nombre'])->first();
+            if ($jefeUsuario && $jefeUsuario->tieneFirmaRegistrada()) {
+                $camposActualizar['firma_1_ruta'] = $jefeUsuario->firma_digital;
+                $camposActualizar['firma_1_actualizada_el'] = now();
+            }
         }
 
         if ($request->hasFile('firma_2_archivo')) {

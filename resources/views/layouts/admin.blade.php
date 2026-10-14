@@ -32,7 +32,8 @@
             ['nav-dashboard', 'admin.dashboard', ['admin.dashboard'], 'fa-gauge-high', 'Resumen General'],
         ],
         'Gestión de Formación' => [
-            ['nav-capacitaciones', 'admin.capacitaciones.index', ['admin.capacitaciones.*'], 'fa-book-open', 'Capacitaciones'],
+            ['nav-capacitaciones', 'admin.capacitaciones.index', ['admin.capacitaciones.index', 'admin.capacitaciones.create', 'admin.capacitaciones.edit'], 'fa-book-open', 'Capacitaciones'],
+            ['nav-borradores', 'admin.capacitaciones.borradores', ['admin.capacitaciones.borradores'], 'fa-file-lines', 'Borradores'],
             ['nav-evaluaciones', 'admin.evaluaciones.index', ['admin.evaluaciones.*'], 'fa-clipboard-question', 'Evaluaciones'],
             ['nav-asignaciones', 'admin.asignaciones.index', ['admin.asignaciones.*'], 'fa-diagram-project', 'Asignar a Áreas'],
         ],
@@ -153,7 +154,7 @@
         <div class="flex-1 flex flex-col min-w-0 lg:h-full lg:overflow-y-auto">
 
             <!-- BARRA SUPERIOR -->
-            <header class="h-16 bg-white border-b border-line/70 px-4 sm:px-6 md:px-8 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
+            <header style="min-height: 80px;" class="min-h-[80px] py-4 bg-white border-b border-line/70 px-4 sm:px-6 md:px-8 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
                 <div class="flex items-center gap-3">
                     <button type="button"
                             onclick="toggleSidebar(true)"

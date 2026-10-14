@@ -31,11 +31,13 @@ class CapacitacionController extends Controller
         $usuario = $this->jefe();
 
         $capacitaciones = $usuario->capacitacionesCreadas()
+            ->where('estado', true)
             ->with('areas')
             ->withCount(['modulos as modulos_activos_count' => fn ($q) => $q->where('estado', true)])
             ->orderByDesc('id')
             ->get();
 
+        $totalBorradores = $usuario->capacitacionesCreadas()->where('estado', false)->count();
         $empleadosArea = $usuario->area_id ? $this->empleadosDelArea([$usuario->area_id])->count() : 0;
 
         // Participación agregada por capacitación (empleados que ya iniciaron y módulos completados)
@@ -62,13 +64,46 @@ class CapacitacionController extends Controller
         }
 
         $estadisticas = [
-            'total' => $capacitaciones->count(),
-            'activas' => $capacitaciones->where('estado', true)->count(),
-            'inactivas' => $capacitaciones->where('estado', false)->count(),
+            'total' => $capacitaciones->count() + $totalBorradores,
+            'activas' => $capacitaciones->count(),
+            'borradores' => $totalBorradores,
+            'inactivas' => $totalBorradores,
             'empleados' => $empleadosArea,
         ];
 
         return view('jefe.capacitaciones.index', compact('usuario', 'capacitaciones', 'estadisticas'));
+    }
+
+    /**
+     * Listado de borradores de capacitaciones pendientes de publicar.
+     */
+    public function borradores()
+    {
+        $usuario = $this->jefe();
+        $usuario->loadMissing('area');
+
+        $capacitaciones = $usuario->capacitacionesCreadas()
+            ->where('estado', false)
+            ->with(['areas', 'evaluaciones'])
+            ->withCount([
+                'modulos as modulos_activos_count' => fn ($q) => $q->where('estado', true),
+                'evaluaciones',
+            ])
+            ->orderByDesc('id')
+            ->get();
+
+        $totalPublicadas = $usuario->capacitacionesCreadas()->where('estado', true)->count();
+        $empleadosArea = $usuario->area_id ? $this->empleadosDelArea([$usuario->area_id])->count() : 0;
+
+        $estadisticas = [
+            'total' => $totalPublicadas + $capacitaciones->count(),
+            'activas' => $totalPublicadas,
+            'borradores' => $capacitaciones->count(),
+            'inactivas' => $capacitaciones->count(),
+            'empleados' => $empleadosArea,
+        ];
+
+        return view('jefe.capacitaciones.borradores', compact('usuario', 'capacitaciones', 'estadisticas'));
     }
 
     public function create()
@@ -93,13 +128,14 @@ class CapacitacionController extends Controller
         }
 
         $datos = $this->validar($request);
+        $esBorrador = $request->input('accion') === 'borrador' || ! $request->boolean('estado_publicacion', true);
 
-        DB::transaction(function () use ($request, $datos, $usuario) {
+        DB::transaction(function () use ($request, $datos, $usuario, $esBorrador) {
             $capacitacion = Capacitacion::create([
-                ...$this->atributosCapacitacion($datos),
+                ...$this->atributosCapacitacion($datos, null),
                 'ruta_imagen' => $this->guardarImagen($request, null),
                 'creado_por' => $usuario->id,
-                'estado' => true,
+                'estado' => ! $esBorrador,
             ]);
 
             // La capacitación solo se habilita para el área del jefe que la publica
@@ -107,6 +143,11 @@ class CapacitacionController extends Controller
 
             $this->sincronizarModulos($capacitacion, $datos['modulos'], $request);
         });
+
+        if ($esBorrador) {
+            return redirect()->route('jefe.capacitaciones.borradores')
+                ->with('success', 'Capacitación guardada en borradores correctamente. Puedes completarla y publicarla cuando desees.');
+        }
 
         return redirect()->route('jefe.capacitaciones.index')
             ->with('success', 'Capacitación publicada correctamente. Ya está disponible para los empleados de tu área.');
@@ -194,22 +235,69 @@ class CapacitacionController extends Controller
         $this->autorizar($capacitacion, $usuario);
 
         $datos = $this->validar($request);
+        $accion = $request->input('accion');
+        $esBorrador = $accion === 'borrador';
+        $esPublicar = $accion === 'publicar';
 
-        DB::transaction(function () use ($request, $datos, $capacitacion) {
-            $capacitacion->update([
-                ...$this->atributosCapacitacion($datos),
+        DB::transaction(function () use ($request, $datos, $capacitacion, $esBorrador, $esPublicar) {
+            $atributos = [
+                ...$this->atributosCapacitacion($datos, $capacitacion),
                 'ruta_imagen' => $this->guardarImagen($request, $capacitacion->ruta_imagen),
-            ]);
+            ];
+
+            if ($esBorrador) {
+                $atributos['estado'] = false;
+            } elseif ($esPublicar) {
+                $atributos['estado'] = true;
+            }
+
+            $capacitacion->update($atributos);
 
             $this->sincronizarModulos($capacitacion, $datos['modulos'], $request);
         });
+
+        if ($esBorrador || ! $capacitacion->fresh()->estado) {
+            return redirect()->route('jefe.capacitaciones.borradores')
+                ->with('success', 'Borrador actualizado correctamente.');
+        }
 
         return redirect()->route('jefe.capacitaciones.index')
             ->with('success', 'Capacitación actualizada correctamente.');
     }
 
     /**
-     * Las capacitaciones nunca se eliminan: solo se activan o desactivan.
+     * Publica directamente una capacitación que estaba en borrador.
+     */
+    public function publicar(Capacitacion $capacitacion): RedirectResponse
+    {
+        $this->autorizar($capacitacion, $this->jefe());
+
+        $capacitacion->update(['estado' => true]);
+
+        return redirect()->route('jefe.capacitaciones.index')
+            ->with('success', '¡La capacitación "' . $capacitacion->titulo . '" ha sido publicada exitosamente! Ya está visible para tus colaboradores.');
+    }
+
+    /**
+     * Elimina definitivamente una capacitación que esté en borrador (no publicada).
+     */
+    public function destroy(Capacitacion $capacitacion): RedirectResponse
+    {
+        $this->autorizar($capacitacion, $this->jefe());
+
+        if ($capacitacion->estado) {
+            return back()->with('error', 'No puedes eliminar una capacitación que ya está publicada. Puedes desactivarla.');
+        }
+
+        $titulo = $capacitacion->titulo;
+        $capacitacion->delete();
+
+        return redirect()->route('jefe.capacitaciones.borradores')
+            ->with('success', 'El borrador "' . $titulo . '" ha sido descartado.');
+    }
+
+    /**
+     * Alternar estado activo / inactivo de una capacitación publicada.
      */
     public function toggleEstado(Capacitacion $capacitacion): RedirectResponse
     {
@@ -247,7 +335,7 @@ class CapacitacionController extends Controller
             ->whereIn('area_id', $areaIds);
     }
 
-    protected function atributosCapacitacion(array $datos): array
+    protected function atributosCapacitacion(array $datos, ?Capacitacion $capacitacion = null): array
     {
         $tieneFechaFin = ($datos['tiene_fecha_fin'] ?? 'no') === 'si';
         $fechaLimite = ($tieneFechaFin && ! empty($datos['fecha_limite']))
@@ -257,8 +345,8 @@ class CapacitacionController extends Controller
         return [
             'titulo' => $datos['titulo'],
             'descripcion' => $datos['descripcion'],
-            'porcentaje_aprobacion' => $datos['porcentaje_aprobacion'],
-            'intentos_permitidos' => $datos['intentos_permitidos'],
+            'porcentaje_aprobacion' => $datos['porcentaje_aprobacion'] ?? $capacitacion?->porcentaje_aprobacion ?? 80.00,
+            'intentos_permitidos' => $datos['intentos_permitidos'] ?? $capacitacion?->intentos_permitidos ?? 3,
             'duracion_estimada' => $datos['duracion_estimada'] ?? null,
             'incentivo' => $datos['incentivo'] ?? null,
             'fecha_disponibilidad' => ! empty($datos['fecha_disponibilidad']) ? Carbon::parse($datos['fecha_disponibilidad'])->startOfDay() : null,
@@ -272,8 +360,8 @@ class CapacitacionController extends Controller
             'titulo' => ['required', 'string', 'max:255'],
             'descripcion' => ['required', 'string', 'max:5000'],
             'imagen' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
-            'porcentaje_aprobacion' => ['required', 'numeric', 'between:1,100'],
-            'intentos_permitidos' => ['required', 'integer', 'between:1,20'],
+            'porcentaje_aprobacion' => ['nullable', 'numeric', 'between:1,100'],
+            'intentos_permitidos' => ['nullable', 'integer', 'between:1,20'],
             'duracion_estimada' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'incentivo' => ['nullable', 'string', 'max:2000'],
             'tiene_fecha_fin' => ['nullable', 'in:si,no'],

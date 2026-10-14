@@ -707,8 +707,14 @@
                                     class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
                                 <option value="">-- Seleccionar Jefe de Área --</option>
                                 @foreach($jefes as $jf)
-                                    <option value="{{ $jf->nombre_completo }}" data-area="{{ $jf->area?->nombre ?? 'Área General' }}">
-                                        {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }})
+                                    <option value="{{ $jf->nombre_completo }}" 
+                                            data-cargo="{{ $jf->cargoOficial() }}"
+                                            data-area-id="{{ $jf->area_id ?? '' }}"
+                                            data-area-nombre="{{ $jf->area?->nombre ?? '' }}"
+                                            data-tiene-firma="{{ $jf->tieneFirmaRegistrada() ? '1' : '0' }}"
+                                            data-firma-url="{{ $jf->firmaUrl() ?? '' }}"
+                                            data-firma-ruta="{{ $jf->firma_digital ?? '' }}">
+                                        {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }}) {{ $jf->tieneFirmaRegistrada() ? '✓ [Firma Registrada]' : '' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -720,8 +726,33 @@
                         </div>
                     </div>
 
+                    <!-- Input oculto para reutilizar firma registrada del Jefe -->
+                    <input type="hidden" id="crear-firma-1-ruta-existente" name="firma_1_ruta_existente" value="">
+
+                    <!-- Badge informativo si el Jefe ya tiene firma registrada -->
+                    <div id="crear-jefe-firma-badge" class="hidden p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between shadow-2xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0">
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                            <div>
+                                <p class="font-bold">Firma digital registrada disponible</p>
+                                <p class="text-[11px] text-emerald-700">Se vinculará automáticamente la firma oficial de este Jefe de Área.</p>
+                            </div>
+                        </div>
+                        <div class="h-10 w-28 bg-white rounded-xl border border-emerald-200 p-1 flex items-center justify-center shrink-0 shadow-2xs">
+                            <img id="crear-jefe-firma-thumb" src="" alt="Firma" class="max-h-8 max-w-full object-contain">
+                        </div>
+                    </div>
+
+                    <!-- Aviso si el Jefe NO tiene firma registrada -->
+                    <div id="crear-jefe-sin-firma-badge" class="hidden p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-amber-500 text-xs shrink-0"></i>
+                        <span>Este Jefe aún no tiene firma en su perfil. Puedes adjuntar un archivo o él la registrará en su próximo ingreso.</span>
+                    </div>
+
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Imagen de Firma Digital (PNG fondo transparente, opcional)</label>
+                        <label class="block font-bold text-slate-700 mb-1">Cargar Imagen de Firma Digital (PNG opcional o reemplazo)</label>
                         <input type="file" name="firma_1_archivo" accept="image/png,image/jpeg,image/webp"
                                class="w-full text-[11px] text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300 cursor-pointer">
                     </div>
@@ -873,8 +904,14 @@
                                     class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
                                 <option value="">-- Seleccionar Jefe de Área --</option>
                                 @foreach($jefes as $jf)
-                                    <option value="{{ $jf->nombre_completo }}" data-area="{{ $jf->area?->nombre ?? 'Área General' }}">
-                                        {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }})
+                                    <option value="{{ $jf->nombre_completo }}" 
+                                            data-cargo="{{ $jf->cargoOficial() }}"
+                                            data-area-id="{{ $jf->area_id ?? '' }}"
+                                            data-area-nombre="{{ $jf->area?->nombre ?? '' }}"
+                                            data-tiene-firma="{{ $jf->tieneFirmaRegistrada() ? '1' : '0' }}"
+                                            data-firma-url="{{ $jf->firmaUrl() ?? '' }}"
+                                            data-firma-ruta="{{ $jf->firma_digital ?? '' }}">
+                                        {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }}) {{ $jf->tieneFirmaRegistrada() ? '✓ [Firma Registrada]' : '' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -884,6 +921,31 @@
                             <input type="text" id="edit-jefe-cargo" name="firma_1_cargo"
                                    class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
                         </div>
+                    </div>
+
+                    <!-- Input oculto para reutilizar firma registrada del Jefe -->
+                    <input type="hidden" id="edit-firma-1-ruta-existente" name="firma_1_ruta_existente" value="">
+
+                    <!-- Badge informativo si el Jefe ya tiene firma registrada -->
+                    <div id="edit-jefe-firma-badge" class="hidden p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between shadow-2xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0">
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                            <div>
+                                <p class="font-bold">Firma digital registrada disponible</p>
+                                <p class="text-[11px] text-emerald-700">Se vinculará automáticamente la firma oficial de este Jefe de Área.</p>
+                            </div>
+                        </div>
+                        <div class="h-10 w-28 bg-white rounded-xl border border-emerald-200 p-1 flex items-center justify-center shrink-0 shadow-2xs">
+                            <img id="edit-jefe-firma-thumb" src="" alt="Firma" class="max-h-8 max-w-full object-contain">
+                        </div>
+                    </div>
+
+                    <!-- Aviso si el Jefe NO tiene firma registrada -->
+                    <div id="edit-jefe-sin-firma-badge" class="hidden p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-amber-500 text-xs shrink-0"></i>
+                        <span>Este Jefe aún no tiene firma en su perfil. Puedes adjuntar un archivo o él la registrará en su próximo ingreso.</span>
                     </div>
 
                     <div>
@@ -992,14 +1054,48 @@ function cambiarPestana(tipo) {
 function actualizarCargoJefe(tipo) {
     const select = document.getElementById(tipo === 'crear' ? 'crear-jefe-select' : 'edit-jefe-select');
     const inputCargo = document.getElementById(tipo === 'crear' ? 'crear-jefe-cargo' : 'edit-jefe-cargo');
-    if (!select || !inputCargo) return;
+    const selectArea = document.getElementById(tipo === 'crear' ? 'crear-area-id' : 'edit-area-id');
+    const badgeFirma = document.getElementById(`${tipo}-jefe-firma-badge`);
+    const thumbFirma = document.getElementById(`${tipo}-jefe-firma-thumb`);
+    const badgeSinFirma = document.getElementById(`${tipo}-jefe-sin-firma-badge`);
+    const hiddenRuta = document.getElementById(`${tipo}-firma-1-ruta-existente`);
+
+    if (!select) return;
 
     const opt = select.options[select.selectedIndex];
-    if (opt && opt.value) {
-        const areaNombre = opt.getAttribute('data-area') || 'Área';
-        if (!inputCargo.value || inputCargo.value.startsWith('Jefe de')) {
-            inputCargo.value = `Jefe de Área / ${areaNombre}`;
-        }
+    if (!opt || !opt.value) {
+        if (badgeFirma) badgeFirma.classList.add('hidden');
+        if (badgeSinFirma) badgeSinFirma.classList.add('hidden');
+        if (hiddenRuta) hiddenRuta.value = '';
+        return;
+    }
+
+    const cargo = opt.getAttribute('data-cargo') || `Jefe de Área / ${opt.getAttribute('data-area') || 'Área'}`;
+    const areaId = opt.getAttribute('data-area-id');
+    const tieneFirma = opt.getAttribute('data-tiene-firma') === '1';
+    const firmaUrl = opt.getAttribute('data-firma-url') || '';
+    const firmaRuta = opt.getAttribute('data-firma-ruta') || '';
+
+    // Autocompletar cargo oficial
+    if (inputCargo) {
+        inputCargo.value = cargo;
+    }
+
+    // Autocompletar área vinculada si no se ha seleccionado una
+    if (selectArea && areaId && (!selectArea.value || tipo === 'crear')) {
+        selectArea.value = areaId;
+    }
+
+    // Autocompletar firma registrada en el perfil
+    if (tieneFirma && firmaUrl) {
+        if (hiddenRuta) hiddenRuta.value = firmaRuta;
+        if (thumbFirma) thumbFirma.src = firmaUrl;
+        if (badgeFirma) badgeFirma.classList.remove('hidden');
+        if (badgeSinFirma) badgeSinFirma.classList.add('hidden');
+    } else {
+        if (hiddenRuta) hiddenRuta.value = '';
+        if (badgeFirma) badgeFirma.classList.add('hidden');
+        if (badgeSinFirma) badgeSinFirma.classList.remove('hidden');
     }
 }
 
@@ -1007,6 +1103,14 @@ function abrirModalCrearPlantilla() {
     const modal = document.getElementById('modal-crear-plantilla');
     const backdrop = document.getElementById('modal-crear-backdrop');
     const panel = document.getElementById('modal-crear-panel');
+
+    // Resetear badges de firma
+    const badgeFirma = document.getElementById('crear-jefe-firma-badge');
+    const badgeSinFirma = document.getElementById('crear-jefe-sin-firma-badge');
+    const hiddenRuta = document.getElementById('crear-firma-1-ruta-existente');
+    if (badgeFirma) badgeFirma.classList.add('hidden');
+    if (badgeSinFirma) badgeSinFirma.classList.add('hidden');
+    if (hiddenRuta) hiddenRuta.value = '';
 
     modal.classList.remove('hidden');
     requestAnimationFrame(() => {
@@ -1060,6 +1164,8 @@ function abrirModalEditarPlantilla(datos) {
             selectJefe.appendChild(optTemp);
         }
     }
+
+    actualizarCargoJefe('edit');
 
     document.getElementById('edit-jefe-cargo').value = datos.jefe_cargo || datos.firma_1_cargo || '';
     document.getElementById('edit-gerente-nombre').value = datos.gerente_nombre || datos.firma_2_nombre || '';

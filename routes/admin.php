@@ -38,11 +38,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
 
     // Capacitaciones (con módulos y contenidos)
     Route::get('/capacitaciones', [CapacitacionController::class, 'index'])->name('capacitaciones.index');
+    Route::get('/capacitaciones/borradores', [CapacitacionController::class, 'borradores'])->name('capacitaciones.borradores');
     Route::get('/capacitaciones/crear', [CapacitacionController::class, 'create'])->name('capacitaciones.create');
     Route::post('/capacitaciones', [CapacitacionController::class, 'store'])->name('capacitaciones.store');
     Route::get('/capacitaciones/{capacitacion}/editar', [CapacitacionController::class, 'edit'])->name('capacitaciones.edit');
     Route::put('/capacitaciones/{capacitacion}', [CapacitacionController::class, 'update'])->name('capacitaciones.update');
     Route::patch('/capacitaciones/{capacitacion}/estado', [CapacitacionController::class, 'toggleEstado'])->name('capacitaciones.estado');
+    Route::patch('/capacitaciones/{capacitacion}/publicar', [CapacitacionController::class, 'publicar'])->name('capacitaciones.publicar');
+    Route::delete('/capacitaciones/{capacitacion}', [CapacitacionController::class, 'destroy'])->name('capacitaciones.destroy');
 
     // Asignación de capacitaciones a áreas
     Route::get('/asignaciones', [AsignacionController::class, 'index'])->name('asignaciones.index');

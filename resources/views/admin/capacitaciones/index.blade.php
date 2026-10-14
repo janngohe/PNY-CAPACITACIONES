@@ -13,23 +13,25 @@
         'icono' => 'fa-book-open',
     ])
 
-    <!-- BARRA SUPERIOR DE ACCIONES Y ESTADÍSTICAS -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex flex-wrap items-center gap-2">
-            <span class="px-3 py-1.5 rounded-xl bg-white border border-line text-xs font-semibold text-slate-700 shadow-2xs">
-                Total: <strong class="text-brand-dark">{{ $estadisticas['total'] }}</strong>
-            </span>
-            <span class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
-                Activas: <strong>{{ $estadisticas['activas'] }}</strong>
-            </span>
-            <span class="px-3 py-1.5 rounded-xl bg-slate-100 border border-line text-xs font-semibold text-slate-600">
-                Desactivadas: <strong>{{ $estadisticas['inactivas'] }}</strong>
-            </span>
-            @if ($estadisticas['sin_area'] > 0)
-                <span class="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold text-amber-800">
-                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ $estadisticas['sin_area'] }} sin área asignada
+    <!-- BARRA SUPERIOR DE ACCIONES Y PESTAÑAS -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-4">
+        <div class="inline-flex p-1 bg-slate-100 rounded-2xl border border-line shadow-2xs">
+            <a href="{{ route('admin.capacitaciones.index') }}"
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-heading font-bold bg-white text-brand-blue shadow-xs border border-line/60 transition-all">
+                <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i>
+                <span>Publicadas</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700 font-bold">
+                    {{ $estadisticas['activas'] }}
                 </span>
-            @endif
+            </a>
+            <a href="{{ route('admin.capacitaciones.borradores') }}"
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-heading font-bold text-slate-600 hover:text-brand-blue hover:bg-white/60 transition-all">
+                <i class="fa-solid fa-file-pen text-amber-500 text-xs"></i>
+                <span>Borradores</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-800 font-bold">
+                    {{ $estadisticas['borradores'] }}
+                </span>
+            </a>
         </div>
 
         <div class="flex items-center gap-2 self-start sm:self-auto">
