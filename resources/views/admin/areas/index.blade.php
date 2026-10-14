@@ -31,6 +31,9 @@
                     <input type="text" id="nombre" name="nombre" required maxlength="150"
                            placeholder="Ej. Producción y Cosecha"
                            class="w-full px-3.5 py-2.5 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
+                    <span class="text-[10px] text-muted block mt-1 flex items-center gap-1">
+                        <i class="fa-solid fa-wand-magic-sparkles text-brand-blue/70"></i> Se convertirá automáticamente a formato título (ej. "Recursos Humanos").
+                    </span>
                 </div>
 
                 <div>
@@ -282,6 +285,31 @@
         const form = document.getElementById('form-area');
         form.action = "{{ route('admin.areas.store') }}";
         document.getElementById('method-container').innerHTML = '';
+    }
+
+    function formatearNombreArea(texto) {
+        if (!texto) return '';
+        return texto
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toLowerCase()
+            .split(' ')
+            .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
+            .join(' ');
+    }
+
+    const inputNombreArea = document.getElementById('nombre');
+    if (inputNombreArea) {
+        inputNombreArea.addEventListener('blur', function() {
+            this.value = formatearNombreArea(this.value);
+        });
+    }
+
+    const formArea = document.getElementById('form-area');
+    if (formArea && inputNombreArea) {
+        formArea.addEventListener('submit', function() {
+            inputNombreArea.value = formatearNombreArea(inputNombreArea.value);
+        });
     }
 </script>
 @endsection

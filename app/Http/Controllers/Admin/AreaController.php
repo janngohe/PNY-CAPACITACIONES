@@ -53,6 +53,12 @@ class AreaController extends Controller
 
     private function validar(Request $request, ?Area $area = null): array
     {
+        if ($request->filled('nombre')) {
+            $request->merge([
+                'nombre' => Area::formatearNombre($request->input('nombre')),
+            ]);
+        }
+
         return $request->validate([
             'nombre' => ['required', 'string', 'max:150', Rule::unique('areas', 'nombre')->ignore($area?->id)],
             'descripcion' => ['nullable', 'string', 'max:255'],
