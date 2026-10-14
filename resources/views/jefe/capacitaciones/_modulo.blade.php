@@ -5,13 +5,16 @@
 <div class="modulo-item bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden" data-modulo data-index="{{ $i }}">
     <input type="hidden" name="{{ $mid }}[id]" value="{{ $modulo['id'] ?? '' }}">
 
-    <div class="flex items-center justify-between gap-3 px-5 py-3 bg-gradient-to-r from-brand-light to-white border-b border-line/60">
+    <div class="flex items-center justify-between gap-3 px-5 py-3.5 bg-gradient-to-r from-brand-light/80 via-sky-50/40 to-white border-b border-line/60">
         <div class="flex items-center gap-2.5">
-            <span class="w-8 h-8 rounded-xl bg-brand-blue text-white font-heading font-extrabold text-xs flex items-center justify-center" data-modulo-numero>1</span>
-            <span class="font-heading font-bold text-sm text-brand-dark">Módulo</span>
+            <span class="w-8 h-8 rounded-xl bg-brand-blue text-white font-heading font-extrabold text-xs flex items-center justify-center shadow-2xs" data-modulo-numero>1</span>
+            <div>
+                <span class="font-heading font-bold text-sm text-brand-dark block sm:inline leading-none">Módulo de Capacitación</span>
+                <span class="text-[11px] text-slate-500 font-normal block sm:inline sm:ml-2">· Vista limpia enfocada</span>
+            </div>
         </div>
         <button type="button" data-remove-modulo
-                class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer">
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-all cursor-pointer">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             Quitar módulo
         </button>

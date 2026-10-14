@@ -224,7 +224,7 @@
                     </div>
                 </div>
 
-                <!-- ================= PASO 2: MÓDULOS Y RECURSOS ================= -->
+                <!-- ================= PASO 2: MÓDULOS Y RECURSOS (ASISTIDO PASO A PASO) ================= -->
                 <div id="seccion-paso-2" class="bg-white rounded-3xl border border-line/80 shadow-xs p-6 sm:p-8 space-y-6 hidden">
                     <div class="flex items-center justify-between border-b border-line/60 pb-4">
                         <div>
@@ -238,27 +238,100 @@
                         </span>
                     </div>
 
-                    <p class="text-xs text-muted leading-relaxed">
-                        Organiza la capacitación en secciones estructuradas. Agrega videos, lecturas en texto, guías en PDF o enlaces externos para tus colaboradores.
-                    </p>
+                    <!-- Asistente Superior: Pestañas de progreso entre módulos -->
+                    <div class="bg-slate-50/90 p-4 rounded-2xl border border-line/80 space-y-3 shadow-2xs">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line/50 pb-2.5">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-brand-blue animate-pulse"></span>
+                                <span class="text-xs font-bold text-brand-dark uppercase tracking-wider font-heading">
+                                    Navegación Asistida de Módulos
+                                </span>
+                                <span class="text-[11px] text-muted hidden sm:inline">· Vista limpia individual</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="text-muted">Total módulos:</span>
+                                <span id="badge-contador-modulos" class="px-2.5 py-0.5 rounded-full bg-brand-light text-brand-blue font-extrabold text-[11px]">
+                                    1
+                                </span>
+                            </div>
+                        </div>
 
+                        <!-- Píldoras / Tabs de módulos -->
+                        <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin" id="nav-tabs-modulos">
+                            <!-- Generado dinámicamente con JS -->
+                        </div>
+                    </div>
+
+                    <!-- Banner de Módulo Actual en Edición -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-sky-50/80 via-blue-50/50 to-white border border-brand-blue/20">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-xl bg-brand-blue text-white flex items-center justify-center font-heading font-extrabold text-sm shrink-0 shadow-2xs">
+                                <span id="modulo-asistido-num-badge">1</span>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[11px] font-extrabold uppercase tracking-wide text-brand-blue">
+                                        Editando Módulo <span id="modulo-asistido-actual-num">1</span> de <span id="modulo-asistido-total-num">1</span>
+                                    </span>
+                                    <span id="modulo-asistido-estado-chip" class="text-[10px] px-2 py-0.5 rounded-md bg-white border border-blue-200 text-slate-600 font-bold">
+                                        En edición
+                                    </span>
+                                </div>
+                                <p id="modulo-asistido-titulo-resumen" class="text-xs font-bold text-brand-dark truncate mt-0.5">
+                                    (Nuevo módulo sin título)
+                                </p>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-slate-500 italic shrink-0 hidden md:block">
+                            <i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Puedes regresar y editarlo cuando gustes.
+                        </p>
+                    </div>
+
+                    <!-- Contenedor con todos los módulos (los inactivos se ocultan con 'hidden') -->
                     <div id="lista-modulos" class="space-y-5">
                         @foreach ($modulosForm as $i => $modulo)
                             @include('jefe.capacitaciones._modulo', ['i' => $i, 'modulo' => $modulo, 'input' => $input, 'tiposContenido' => $tiposContenido])
                         @endforeach
                     </div>
 
-                    <button type="button" id="btn-add-modulo"
-                            class="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl border-2 border-dashed border-brand-blue/40 text-brand-blue hover:bg-brand-light font-heading font-bold text-xs sm:text-sm transition-colors cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                        + Agregar Nuevo Módulo
-                    </button>
+                    <!-- Barra Asistida de Controles (Anterior, Siguiente, Crear Nuevo Módulo) -->
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-line/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                        <button type="button" id="btn-asistente-anterior"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-heading font-bold text-xs border border-line transition-all cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="fa-solid fa-arrow-left text-[11px]"></i>
+                            <span>Módulo Anterior</span>
+                        </button>
 
+                        <div class="text-center font-heading text-xs text-slate-500 font-medium">
+                            Progreso: <strong class="text-brand-dark" id="txt-progreso-modulo-asistido">Módulo 1 de 1</strong>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <!-- Botón para avanzar si está revisando un módulo previo -->
+                            <button type="button" id="btn-asistente-siguiente"
+                                    class="hidden inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-heading font-bold text-xs transition-all cursor-pointer shadow-2xs">
+                                <span>Siguiente Módulo</span>
+                                <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                            </button>
+
+                            <!-- Botón para continuar a un nuevo módulo limpio -->
+                            <button type="button" id="btn-asistente-crear-siguiente"
+                                    class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs transition-all cursor-pointer shadow-xs hover:-translate-y-0.5">
+                                <i class="fa-solid fa-plus text-[11px]"></i>
+                                <span>+ Guardar y Siguiente Módulo</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Botón original preservado invisible para compatibilidad -->
+                    <button type="button" id="btn-add-modulo" class="hidden"></button>
+
+                    <!-- Navegación General entre Pasos -->
                     <div class="flex items-center justify-between pt-4 border-t border-line/60">
                         <button type="button" onclick="irAPaso(1)"
                                 class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs transition-colors cursor-pointer">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
-                            <span>Anterior</span>
+                            <span>Volver a Datos Generales</span>
                         </button>
                         <div class="flex items-center gap-2">
                             <button type="submit" name="accion" value="borrador"
@@ -530,6 +603,9 @@
             barra.style.width = '66.66%';
             texto.textContent = 'Módulos y Recursos (66%)';
             porcentaje.textContent = 'Paso 2/3';
+            if (typeof window.actualizarAsistenteModulos === 'function') {
+                window.actualizarAsistenteModulos();
+            }
         } else {
             badge.textContent = 'Paso 3 de 3: ¡Ya casi terminas!';
             subtitulo.textContent = 'Ya casi terminas: Revisa la vista previa en tiempo real y confirma la publicación.';
@@ -742,9 +818,12 @@
             videoElement.src = objectUrl;
         }
 
+        let moduloActivoIndex = 0;
+
         function renumerar() {
             lista.querySelectorAll('[data-modulo]').forEach((m, idx) => {
-                m.querySelector('[data-modulo-numero]').textContent = idx + 1;
+                const badge = m.querySelector('[data-modulo-numero]');
+                if (badge) badge.textContent = idx + 1;
             });
             actualizarVistaPrevia();
         }
@@ -753,16 +832,187 @@
             elemento.querySelectorAll('[data-contenido]').forEach(aplicarTipo);
         }
 
+        function actualizarAsistenteModulos(nuevoIndice = null) {
+            const modulos = lista.querySelectorAll('[data-modulo]');
+            if (modulos.length === 0) return;
+
+            if (nuevoIndice !== null) {
+                moduloActivoIndex = Math.max(0, Math.min(nuevoIndice, modulos.length - 1));
+            } else {
+                moduloActivoIndex = Math.max(0, Math.min(moduloActivoIndex, modulos.length - 1));
+            }
+
+            // Mostrar SOLO el módulo activo (vista limpia individual) y ocultar los demás
+            modulos.forEach((m, idx) => {
+                if (idx === moduloActivoIndex) {
+                    m.classList.remove('hidden');
+                } else {
+                    m.classList.add('hidden');
+                }
+            });
+
+            const modActual = modulos[moduloActivoIndex];
+            const inputTitulo = modActual ? modActual.querySelector('input[name*="[titulo]"]') : null;
+            const tituloActual = inputTitulo && inputTitulo.value.trim() ? inputTitulo.value.trim() : `Módulo ${moduloActivoIndex + 1}`;
+
+            const badgeContador = document.getElementById('badge-contador-modulos');
+            if (badgeContador) badgeContador.textContent = modulos.length + (modulos.length === 1 ? ' Módulo' : ' Módulos');
+
+            const numBadge = document.getElementById('modulo-asistido-num-badge');
+            if (numBadge) numBadge.textContent = (moduloActivoIndex + 1);
+
+            const actNum = document.getElementById('modulo-asistido-actual-num');
+            if (actNum) actNum.textContent = (moduloActivoIndex + 1);
+
+            const totNum = document.getElementById('modulo-asistido-total-num');
+            if (totNum) totNum.textContent = modulos.length;
+
+            const titResumen = document.getElementById('modulo-asistido-titulo-resumen');
+            if (titResumen) titResumen.textContent = tituloActual;
+
+            const txtProgreso = document.getElementById('txt-progreso-modulo-asistido');
+            if (txtProgreso) txtProgreso.textContent = `Módulo ${moduloActivoIndex + 1} de ${modulos.length}`;
+
+            // Control botón Anterior
+            const btnAnt = document.getElementById('btn-asistente-anterior');
+            if (btnAnt) {
+                btnAnt.disabled = (moduloActivoIndex === 0);
+                if (moduloActivoIndex === 0) {
+                    btnAnt.innerHTML = '<i class="fa-solid fa-arrow-left text-[11px]"></i> <span>Módulo Anterior</span>';
+                } else {
+                    btnAnt.innerHTML = `<i class="fa-solid fa-arrow-left text-[11px]"></i> <span>← Módulo ${moduloActivoIndex}</span>`;
+                }
+            }
+
+            // Control botón Siguiente (si ya existe un módulo posterior creado)
+            const btnSig = document.getElementById('btn-asistente-siguiente');
+            if (btnSig) {
+                if (moduloActivoIndex < modulos.length - 1) {
+                    btnSig.classList.remove('hidden');
+                    btnSig.innerHTML = `<span>Módulo ${moduloActivoIndex + 2} →</span> <i class="fa-solid fa-arrow-right text-[11px]"></i>`;
+                } else {
+                    btnSig.classList.add('hidden');
+                }
+            }
+
+            // Control botón Crear Siguiente / Guardar
+            const btnCrearSig = document.getElementById('btn-asistente-crear-siguiente');
+            if (btnCrearSig) {
+                if (moduloActivoIndex === modulos.length - 1) {
+                    btnCrearSig.innerHTML = '<i class="fa-solid fa-plus text-[11px]"></i> <span>+ Guardar y Siguiente Módulo</span>';
+                } else {
+                    btnCrearSig.innerHTML = '<i class="fa-solid fa-plus text-[11px]"></i> <span>+ Agregar Nuevo Módulo</span>';
+                }
+            }
+
+            // Re-renderizar tabs/pestañas de módulos superiores
+            const navTabs = document.getElementById('nav-tabs-modulos');
+            if (navTabs) {
+                navTabs.innerHTML = '';
+                modulos.forEach((m, idx) => {
+                    const tInput = m.querySelector('input[name*="[titulo]"]');
+                    const tit = tInput && tInput.value.trim() ? tInput.value.trim() : `Módulo ${idx + 1}`;
+                    const esActivo = (idx === moduloActivoIndex);
+                    const tieneTitulo = Boolean(tInput && tInput.value.trim());
+
+                    const btnTab = document.createElement('button');
+                    btnTab.type = 'button';
+                    btnTab.className = esActivo
+                        ? 'tab-modulo-btn inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-brand-blue text-white font-heading font-bold text-xs shadow-xs shrink-0 transition-all cursor-pointer ring-2 ring-brand-blue/30'
+                        : 'tab-modulo-btn inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-heading font-bold text-xs border border-line shrink-0 transition-all cursor-pointer';
+
+                    btnTab.innerHTML = `
+                        <span class="w-5 h-5 rounded-lg ${esActivo ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'} flex items-center justify-center text-[10px] font-extrabold">${idx + 1}</span>
+                        <span class="truncate max-w-[130px] sm:max-w-[160px] text-left tab-titulo-texto">${tit}</span>
+                        ${tieneTitulo ? `<i class="fa-solid fa-check text-[10px] ${esActivo ? 'text-cyan-300' : 'text-emerald-500'} ml-0.5"></i>` : ''}
+                    `;
+
+                    btnTab.addEventListener('click', () => {
+                        actualizarAsistenteModulos(idx);
+                        hacerScrollAModulo();
+                    });
+
+                    navTabs.appendChild(btnTab);
+                });
+
+                // Botón rápido en la barra de pestañas para añadir módulo
+                const btnTabAdd = document.createElement('button');
+                btnTabAdd.type = 'button';
+                btnTabAdd.className = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-brand-blue/40 text-brand-blue hover:bg-brand-light font-heading font-bold text-xs shrink-0 transition-colors cursor-pointer';
+                btnTabAdd.innerHTML = '<i class="fa-solid fa-plus text-[10px]"></i> <span>Nuevo</span>';
+                btnTabAdd.addEventListener('click', () => {
+                    agregarModulo();
+                });
+                navTabs.appendChild(btnTabAdd);
+            }
+        }
+
+        function hacerScrollAModulo() {
+            const paso2 = document.getElementById('seccion-paso-2');
+            if (paso2) {
+                paso2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        window.actualizarAsistenteModulos = actualizarAsistenteModulos;
+
         function agregarModulo() {
             const html = tplModulo.replaceAll('__M__', ++contador);
             lista.insertAdjacentHTML('beforeend', html);
             renumerar();
-            const nuevo = lista.lastElementChild;
-            nuevo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            nuevo.querySelector('input[type="text"]').focus({ preventScroll: true });
+            iniciar(lista.lastElementChild);
+
+            const modulos = lista.querySelectorAll('[data-modulo]');
+            const nuevoIdx = modulos.length - 1;
+            actualizarAsistenteModulos(nuevoIdx);
+
+            const nuevo = modulos[nuevoIdx];
+            hacerScrollAModulo();
+            const inputTxt = nuevo.querySelector('input[type="text"]');
+            if (inputTxt) {
+                try { inputTxt.focus({ preventScroll: true }); } catch (e) { inputTxt.focus(); }
+            }
         }
 
-        document.getElementById('btn-add-modulo').addEventListener('click', agregarModulo);
+        // Eventos de botones del asistente
+        const btnAnt = document.getElementById('btn-asistente-anterior');
+        if (btnAnt) {
+            btnAnt.addEventListener('click', () => {
+                if (moduloActivoIndex > 0) {
+                    actualizarAsistenteModulos(moduloActivoIndex - 1);
+                    hacerScrollAModulo();
+                }
+            });
+        }
+
+        const btnSig = document.getElementById('btn-asistente-siguiente');
+        if (btnSig) {
+            btnSig.addEventListener('click', () => {
+                const total = lista.querySelectorAll('[data-modulo]').length;
+                if (moduloActivoIndex < total - 1) {
+                    actualizarAsistenteModulos(moduloActivoIndex + 1);
+                    hacerScrollAModulo();
+                }
+            });
+        }
+
+        const btnCrearSig = document.getElementById('btn-asistente-crear-siguiente');
+        if (btnCrearSig) {
+            btnCrearSig.addEventListener('click', () => {
+                const total = lista.querySelectorAll('[data-modulo]').length;
+                if (moduloActivoIndex === total - 1) {
+                    agregarModulo();
+                } else {
+                    actualizarAsistenteModulos(moduloActivoIndex + 1);
+                    hacerScrollAModulo();
+                }
+            });
+        }
+
+        const btnLegacyAdd = document.getElementById('btn-add-modulo');
+        if (btnLegacyAdd) {
+            btnLegacyAdd.addEventListener('click', agregarModulo);
+        }
 
         lista.addEventListener('click', (e) => {
             const quitarModulo = e.target.closest('[data-remove-modulo]');
@@ -770,13 +1020,25 @@
             const quitarContenido = e.target.closest('[data-remove-contenido]');
 
             if (quitarModulo) {
-                if (lista.querySelectorAll('[data-modulo]').length === 1) {
+                const totalModulos = lista.querySelectorAll('[data-modulo]').length;
+                if (totalModulos === 1) {
                     alert('La capacitación debe tener al menos un módulo.');
                     return;
                 }
                 if (confirm('¿Quitar este módulo? Si ya estaba publicado, quedará desactivado.')) {
-                    quitarModulo.closest('[data-modulo]').remove();
+                    const moduloEl = quitarModulo.closest('[data-modulo]');
+                    const todos = Array.from(lista.querySelectorAll('[data-modulo]'));
+                    const idxEliminado = todos.indexOf(moduloEl);
+
+                    moduloEl.remove();
                     renumerar();
+
+                    const nuevosTodos = lista.querySelectorAll('[data-modulo]');
+                    if (idxEliminado <= moduloActivoIndex) {
+                        moduloActivoIndex = Math.max(0, Math.min(moduloActivoIndex, nuevosTodos.length - 1));
+                    }
+                    actualizarAsistenteModulos(moduloActivoIndex);
+                    hacerScrollAModulo();
                 }
             }
 
@@ -800,6 +1062,21 @@
         lista.addEventListener('input', (e) => {
             if (e.target.matches('input') || e.target.matches('textarea')) {
                 actualizarVistaPrevia();
+                if (e.target.matches('input[name*="[titulo]"]')) {
+                    const modulos = lista.querySelectorAll('[data-modulo]');
+                    const modActual = modulos[moduloActivoIndex];
+                    if (modActual && modActual.contains(e.target)) {
+                        const val = e.target.value.trim() || `Módulo ${moduloActivoIndex + 1}`;
+                        const titResumen = document.getElementById('modulo-asistido-titulo-resumen');
+                        if (titResumen) titResumen.textContent = val;
+
+                        const tabs = document.querySelectorAll('#nav-tabs-modulos .tab-modulo-btn');
+                        if (tabs[moduloActivoIndex]) {
+                            const txtSpan = tabs[moduloActivoIndex].querySelector('.tab-titulo-texto');
+                            if (txtSpan) txtSpan.textContent = val;
+                        }
+                    }
+                }
             }
         });
 
@@ -814,6 +1091,18 @@
 
         iniciar(lista);
         actualizarVistaPrevia();
+
+        // Si hay módulos con errores de validación de Laravel, posicionarse en el que tenga el error
+        const moduloConError = Array.from(lista.querySelectorAll('[data-modulo]')).findIndex(m => m.querySelector('.text-red-600, input:invalid'));
+        if (moduloConError !== -1) {
+            moduloActivoIndex = moduloConError;
+        }
+
+        actualizarAsistenteModulos(moduloActivoIndex);
+
+        @if ($errors->has('modulos') || $errors->has('modulos.*'))
+            irAPaso(2);
+        @endif
     })();
 </script>
 @endpush
