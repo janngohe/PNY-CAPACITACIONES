@@ -189,32 +189,44 @@
         @if($totalModulos > 0)
             <!-- Stepper / Barra de Ruta Acompañada -->
             <div class="bg-white rounded-3xl border border-line/80 p-4 sm:p-5 shadow-xs space-y-3.5">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line/60 pb-3">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-                            <i class="fa-solid fa-route text-sm"></i>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-line/60 pb-3">
+                    <div class="flex items-center justify-between sm:justify-start gap-2.5 w-full sm:w-auto">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                                <i class="fa-solid fa-route text-sm"></i>
+                            </div>
+                            <div>
+                                <span class="font-heading font-extrabold text-xs sm:text-sm text-brand-dark block">Ruta de Módulos</span>
+                                <span class="text-[11px] text-muted hidden sm:inline">Selecciona un paso para visualizar su material interactivo</span>
+                            </div>
                         </div>
-                        <div>
-                            <span class="font-heading font-extrabold text-xs sm:text-sm text-brand-dark block">Ruta de Módulos</span>
-                            <span class="text-[11px] text-muted hidden sm:inline">Selecciona un paso para visualizar su material interactivo</span>
+                        <!-- Controles táctiles móviles < > -->
+                        <div class="flex items-center gap-1 sm:hidden">
+                            <button type="button" onclick="scrollModulosStepperEmpleado(-1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs" title="Módulo anterior">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <button type="button" onclick="scrollModulosStepperEmpleado(1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs" title="Siguiente módulo">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="flex items-center gap-2">
-                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Progreso</span>
-                            <div class="w-24 sm:w-32 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                    <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-1 sm:pt-0">
+                        <div class="flex items-center gap-2 flex-1 sm:flex-initial">
+                            <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider shrink-0">Progreso</span>
+                            <div class="flex-1 sm:w-32 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
                                 <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: {{ $porcentajeProgreso }}%"></div>
                             </div>
                         </div>
-                        <span class="text-xs font-extrabold text-slate-800 font-mono px-2 py-0.5 rounded-lg bg-slate-100 border border-slate-200">
+                        <span class="text-xs font-extrabold text-slate-800 font-mono px-2 py-0.5 rounded-lg bg-slate-100 border border-slate-200 shrink-0">
                             {{ $modulosCompletados }}/{{ $totalModulos }} ({{ $porcentajeProgreso }}%)
                         </span>
                     </div>
                 </div>
 
                 <!-- Chips del Stepper sin barra de desplazamiento visible -->
-                <div class="no-scrollbar flex items-stretch gap-2.5 overflow-x-auto py-1 scroll-smooth w-full"
-                     style="scrollbar-width: none; -ms-overflow-style: none;">
+                <div class="no-scrollbar flex items-stretch gap-2 sm:gap-2.5 overflow-x-auto py-1.5 px-0.5 scroll-smooth w-full snap-x snap-mandatory"
+                     style="scrollbar-width: none; -ms-overflow-style: none;"
+                     id="stepper-modulos-scroll-container">
                     @foreach($capacitacion->modulos as $sIdx => $sMod)
                         @php
                             $sBloqueado = $haIniciado ? (bool) $sMod->bloqueado_usuario : false;
@@ -233,7 +245,7 @@
                                 data-modulo-id="{{ $sMod->id }}"
                                 data-es-completado="{{ $sCompletado ? '1' : '0' }}"
                                 data-es-bloqueado="{{ $sBloqueado ? '1' : '0' }}"
-                                class="stepper-tab flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 {{ $sEsActivo ? 'bg-gradient-to-r from-brand-blue to-[#004a99] text-white border-brand-blue shadow-md ring-2 ring-brand-blue/30 scale-[1.01]' : ($sCompletado ? 'bg-white hover:bg-emerald-50/60 text-slate-800 border-emerald-200 hover:border-emerald-400 shadow-2xs cursor-pointer' : ($sBloqueado ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed opacity-75' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-brand-blue cursor-pointer')) }}"
+                                class="stepper-tab snap-start shrink-0 w-[78vw] max-w-[270px] sm:w-auto sm:max-w-none sm:shrink sm:flex-1 flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 {{ $sEsActivo ? 'bg-gradient-to-r from-brand-blue to-[#004a99] text-white border-brand-blue shadow-md ring-2 ring-brand-blue/30 scale-[1.01]' : ($sCompletado ? 'bg-white hover:bg-emerald-50/60 text-slate-800 border-emerald-200 hover:border-emerald-400 shadow-2xs cursor-pointer' : ($sBloqueado ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed opacity-75' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-brand-blue cursor-pointer')) }}"
                                 {{ $sBloqueado && $haIniciado ? 'disabled' : '' }}>
                             
                             <div class="stepper-badge-icon w-8 h-8 rounded-xl flex items-center justify-center shrink-0 {{ $sEsActivo ? 'bg-white text-brand-blue font-black text-xs shadow-xs' : ($sCompletado ? 'bg-emerald-500 text-white font-bold text-xs shadow-xs' : ($sBloqueado ? 'bg-slate-200 text-slate-500 font-bold text-xs' : 'bg-brand-light text-brand-blue font-bold text-xs')) }}">
@@ -265,7 +277,7 @@
                     @if($evaluaciones->isNotEmpty())
                         <a href="#seccion-evaluaciones"
                            id="stepper-tab-evaluacion"
-                           class="flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 {{ $todosModulosCompletados ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-75' }}">
+                           class="stepper-tab snap-start shrink-0 w-[78vw] max-w-[270px] sm:w-auto sm:max-w-none sm:shrink sm:flex-1 flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 {{ $todosModulosCompletados ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-75' }}">
                             <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 {{ $todosModulosCompletados ? 'bg-white text-emerald-700 font-black text-xs shadow-xs' : 'bg-slate-200 text-slate-500 font-bold text-xs' }}">
                                 <i class="fa-solid fa-graduation-cap {{ $todosModulosCompletados ? 'text-sm' : 'text-xs' }}"></i>
                             </div>
@@ -1119,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const esCompletado = tab.dataset.esCompletado === '1';
             const esBloqueado = tab.dataset.esBloqueado === '1';
 
-            const baseClasses = 'stepper-tab flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200';
+            const baseClasses = 'stepper-tab snap-start shrink-0 w-[78vw] max-w-[270px] sm:w-auto sm:max-w-none sm:shrink sm:flex-1 flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200';
             const badgeIcon = tab.querySelector('.stepper-badge-icon');
             const badgeTag = tab.querySelector('.stepper-badge-tag');
             const titleEl = tab.querySelector('.stepper-title-text');
@@ -1226,6 +1238,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // Actualizar URL sin saltos
         if (history.replaceState) {
             history.replaceState(null, null, '#modulo-' + moduloId);
+        }
+    };
+
+    window.scrollModulosStepperEmpleado = function (direction) {
+        const container = document.getElementById('stepper-modulos-scroll-container');
+        if (container) {
+            const scrollAmount = container.clientWidth * 0.75 * direction;
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         }
     };
 

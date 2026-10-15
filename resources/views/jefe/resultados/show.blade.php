@@ -71,7 +71,6 @@
                         <tr>
                             <th class="px-5 sm:px-6 py-3 font-bold">Empleado</th>
                             <th class="px-4 py-3 font-bold text-center">Intentos</th>
-                            <th class="px-4 py-3 font-bold text-center">Mejor nota</th>
                             <th class="px-4 py-3 font-bold text-center">Último intento</th>
                             <th class="px-4 py-3 font-bold text-center">Resultado</th>
                             <th class="px-4 py-3 font-bold">Fecha</th>
@@ -96,8 +95,7 @@
                                     <span class="font-semibold text-brand-dark">{{ $f->intentos }}</span>
                                     <span class="text-muted">/ {{ $evaluacion->intentos_permitidos }}</span>
                                 </td>
-                                <td class="px-4 py-3.5 text-center font-bold text-brand-dark">{{ $formatoNota($f->mejor) }}</td>
-                                <td class="px-4 py-3.5 text-center">{{ $formatoNota($f->ultimo) }}</td>
+                                <td class="px-4 py-3.5 text-center font-bold text-brand-dark">{{ $formatoNota($f->ultimo) }}</td>
                                 <td class="px-4 py-3.5 text-center">
                                     <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold {{ $clase }}">{{ $etiqueta }}</span>
                                 </td>

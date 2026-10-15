@@ -215,22 +215,22 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between pt-4 border-t border-line/60">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-line/60">
                         <a href="{{ route(($panel ?? 'jefe') . '.capacitaciones.index') }}"
-                           class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs transition-colors">
+                           class="w-full sm:w-auto text-center px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs sm:text-sm transition-colors order-2 sm:order-1">
                             Cancelar
                         </a>
-                        <div class="flex items-center gap-2">
-                            <button type="submit" name="accion" value="borrador"
-                                    class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs border border-line transition-all cursor-pointer"
-                                    title="Guardar los datos actuales como borrador">
-                                <i class="fa-solid fa-file-pen text-amber-600 text-xs"></i>
-                                <span>Guardar Borrador</span>
-                            </button>
+                        <div class="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 order-1 sm:order-2">
                             <button type="button" onclick="irAPaso(2)"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer order-1 sm:order-2">
                                 <span>Siguiente: Módulos y Recursos</span>
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                            </button>
+                            <button type="submit" name="accion" value="borrador"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs sm:text-sm border border-line transition-all cursor-pointer order-2 sm:order-1"
+                                    title="Guardar los datos actuales como borrador">
+                                <i class="fa-solid fa-file-pen text-amber-600 text-xs shrink-0"></i>
+                                <span>Guardar Borrador</span>
                             </button>
                         </div>
                     </div>
@@ -250,22 +250,33 @@
                         </span>
                     </div>
 
-                    <!-- Asistente Superior: Pestañas de progreso entre módulos -->
-                    <div class="bg-white p-4 sm:p-5 rounded-3xl border border-line/80 space-y-3.5 shadow-xs">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line/60 pb-3">
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-                                    <i class="fa-solid fa-route text-sm"></i>
+                    <!-- Asistente Superior: Pestañas de progreso entre módulos (Oculto en móvil, visible en PC) -->
+                    <div class="hidden sm:block bg-white p-4 sm:p-5 rounded-3xl border border-line/80 space-y-3.5 shadow-xs">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-line/60 pb-3">
+                            <div class="flex items-center justify-between sm:justify-start gap-2.5 w-full sm:w-auto">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                                        <i class="fa-solid fa-route text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs sm:text-sm font-extrabold text-brand-dark uppercase tracking-wider font-heading block">
+                                            Navegación Asistida de Módulos
+                                        </span>
+                                        <span class="text-[11px] text-muted hidden sm:inline">Selecciona un módulo para visualizarlo o editarlo de forma limpia</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="text-xs sm:text-sm font-extrabold text-brand-dark uppercase tracking-wider font-heading block">
-                                        Navegación Asistida de Módulos
-                                    </span>
-                                    <span class="text-[11px] text-muted hidden sm:inline">Selecciona un módulo para visualizarlo o editarlo de forma limpia</span>
+                                <!-- Controles móviles < > -->
+                                <div class="flex items-center gap-1 sm:hidden">
+                                    <button type="button" onclick="scrollModulosTabsJefe(-1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs" title="Módulo anterior">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+                                    <button type="button" onclick="scrollModulosTabsJefe(1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs" title="Siguiente módulo">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 text-xs">
-                                <span class="text-muted font-medium">Total módulos:</span>
+                            <div class="flex items-center justify-between sm:justify-end gap-2 text-xs w-full sm:w-auto pt-1 sm:pt-0">
+                                <span class="text-muted font-medium">Total módulos configurados:</span>
                                 <span id="badge-contador-modulos" class="px-2.5 py-0.5 rounded-full bg-brand-light text-brand-blue font-extrabold text-[11px] font-mono">
                                     1
                                 </span>
@@ -273,7 +284,7 @@
                         </div>
 
                         <!-- Píldoras / Tabs de módulos sin barra de desplazamiento visible -->
-                        <div class="no-scrollbar flex items-stretch gap-2.5 overflow-x-auto py-1 scroll-smooth w-full"
+                        <div class="no-scrollbar flex items-stretch gap-2 sm:gap-2.5 overflow-x-auto py-1.5 px-0.5 scroll-smooth w-full snap-x snap-mandatory"
                              style="scrollbar-width: none; -ms-overflow-style: none;"
                              id="nav-tabs-modulos">
                             <!-- Generado dinámicamente con JS -->
@@ -313,30 +324,34 @@
                     </div>
 
                     <!-- Barra Asistida de Controles (Anterior, Siguiente, Crear Nuevo Módulo) -->
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-line/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                        <button type="button" id="btn-asistente-anterior"
-                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-heading font-bold text-xs border border-line transition-all cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed">
-                            <i class="fa-solid fa-arrow-left text-[11px]"></i>
-                            <span>Módulo Anterior</span>
-                        </button>
+                    <div class="bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-line/80 shadow-2xs space-y-2.5 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-3">
+                        <!-- Fila de Navegación entre Módulos: Anterior y Siguiente lado a lado en móvil -->
+                        <div class="flex items-center gap-2 flex-1 sm:flex-initial">
+                            <button type="button" id="btn-asistente-anterior"
+                                    class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-heading font-bold text-xs border border-line transition-all cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed">
+                                <i class="fa-solid fa-arrow-left text-[11px]"></i>
+                                <span>Módulo Anterior</span>
+                            </button>
 
-                        <div class="text-center font-heading text-xs text-slate-500 font-medium">
-                            Progreso: <strong class="text-brand-dark" id="txt-progreso-modulo-asistido">Módulo 1 de 1</strong>
-                        </div>
-
-                        <div class="flex items-center gap-2">
                             <!-- Botón para avanzar si está revisando un módulo previo -->
                             <button type="button" id="btn-asistente-siguiente"
-                                    class="hidden inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-heading font-bold text-xs transition-all cursor-pointer shadow-2xs">
+                                    class="hidden flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-heading font-bold text-xs transition-all cursor-pointer shadow-2xs">
                                 <span>Siguiente Módulo</span>
                                 <i class="fa-solid fa-arrow-right text-[11px]"></i>
                             </button>
+                        </div>
 
-                            <!-- Botón para continuar a un nuevo módulo limpio -->
+                        <!-- Indicador de Progreso -->
+                        <div class="text-center font-heading text-xs text-slate-500 font-medium py-1 sm:py-0">
+                            Progreso: <strong class="text-brand-dark px-2 py-0.5 rounded-md bg-white border border-slate-200" id="txt-progreso-modulo-asistido">Módulo 1 de 1</strong>
+                        </div>
+
+                        <!-- Botón para continuar a un nuevo módulo limpio o guardar -->
+                        <div class="w-full sm:w-auto">
                             <button type="button" id="btn-asistente-crear-siguiente"
-                                    class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs transition-all cursor-pointer shadow-xs hover:-translate-y-0.5">
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs transition-all cursor-pointer shadow-xs hover:-translate-y-0.5">
                                 <i class="fa-solid fa-plus text-[11px]"></i>
-                                <span>+ Guardar y Siguiente Módulo</span>
+                                <span>Guardar y Siguiente Módulo</span>
                             </button>
                         </div>
                     </div>
@@ -345,23 +360,23 @@
                     <button type="button" id="btn-add-modulo" class="hidden"></button>
 
                     <!-- Navegación General entre Pasos -->
-                    <div class="flex items-center justify-between pt-4 border-t border-line/60">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-line/60">
                         <button type="button" onclick="irAPaso(1)"
-                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs transition-colors cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs sm:text-sm transition-colors cursor-pointer order-2 sm:order-1">
+                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
                             <span>Volver a Datos Generales</span>
                         </button>
-                        <div class="flex items-center gap-2">
-                            <button type="submit" name="accion" value="borrador"
-                                    class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs border border-line transition-all cursor-pointer"
-                                    title="Guardar avances en borrador">
-                                <i class="fa-solid fa-file-pen text-amber-600 text-xs"></i>
-                                <span>Guardar Borrador</span>
-                            </button>
+                        <div class="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 order-1 sm:order-2">
                             <button type="button" onclick="irAPaso(3)"
-                                    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer">
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs sm:text-sm shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer order-1 sm:order-2">
                                 <span>Siguiente: Ya Casi Terminas</span>
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                            </button>
+                            <button type="submit" name="accion" value="borrador"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs sm:text-sm border border-line transition-all cursor-pointer order-2 sm:order-1"
+                                    title="Guardar avances en borrador">
+                                <i class="fa-solid fa-file-pen text-amber-600 text-xs shrink-0"></i>
+                                <span>Guardar Borrador</span>
                             </button>
                         </div>
                     </div>
@@ -447,20 +462,20 @@
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-line/60">
                         <button type="button" onclick="irAPaso(2)"
-                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs transition-colors cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs sm:text-sm transition-colors cursor-pointer order-2 sm:order-1">
+                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
                             <span>Volver a Módulos</span>
                         </button>
-                        <div class="flex items-center gap-2.5">
-                            <button type="submit" name="accion" value="borrador"
-                                    class="inline-flex items-center gap-1.5 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs sm:text-sm border border-line transition-all cursor-pointer">
-                                <i class="fa-solid fa-file-pen text-amber-600 text-xs"></i>
-                                <span>Guardar en Borradores</span>
-                            </button>
+                        <div class="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 order-1 sm:order-2">
                             <button type="submit" name="accion" value="publicar" id="btn-guardar-capacitacion"
-                                    class="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-r from-brand-blue via-brand-deep to-brand-dark hover:brightness-110 text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
-                                <i class="fa-solid fa-paper-plane mr-0.5"></i>
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-brand-blue via-brand-deep to-brand-dark hover:brightness-110 text-white font-heading font-extrabold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer order-1 sm:order-2">
+                                <i class="fa-solid fa-paper-plane mr-0.5 shrink-0"></i>
                                 <span>{{ $editando ? 'Guardar Cambios' : 'Publicar Capacitación' }}</span>
+                            </button>
+                            <button type="submit" name="accion" value="borrador"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs sm:text-sm border border-line transition-all cursor-pointer order-2 sm:order-1">
+                                <i class="fa-solid fa-file-pen text-amber-600 text-xs shrink-0"></i>
+                                <span>Guardar en Borradores</span>
                             </button>
                         </div>
                     </div>
@@ -984,7 +999,7 @@
                 if (moduloActivoIndex === 0) {
                     btnAnt.innerHTML = '<i class="fa-solid fa-arrow-left text-[11px]"></i> <span>Módulo Anterior</span>';
                 } else {
-                    btnAnt.innerHTML = `<i class="fa-solid fa-arrow-left text-[11px]"></i> <span>← Módulo ${moduloActivoIndex}</span>`;
+                    btnAnt.innerHTML = `<i class="fa-solid fa-arrow-left text-[11px]"></i> <span>Módulo ${moduloActivoIndex}</span>`;
                 }
             }
 
@@ -993,7 +1008,7 @@
             if (btnSig) {
                 if (moduloActivoIndex < modulos.length - 1) {
                     btnSig.classList.remove('hidden');
-                    btnSig.innerHTML = `<span>Módulo ${moduloActivoIndex + 2} →</span> <i class="fa-solid fa-arrow-right text-[11px]"></i>`;
+                    btnSig.innerHTML = `<span>Módulo ${moduloActivoIndex + 2}</span> <i class="fa-solid fa-arrow-right text-[11px]"></i>`;
                 } else {
                     btnSig.classList.add('hidden');
                 }
@@ -1003,9 +1018,9 @@
             const btnCrearSig = document.getElementById('btn-asistente-crear-siguiente');
             if (btnCrearSig) {
                 if (moduloActivoIndex === modulos.length - 1) {
-                    btnCrearSig.innerHTML = '<i class="fa-solid fa-plus text-[11px]"></i> <span>+ Guardar y Siguiente Módulo</span>';
+                    btnCrearSig.innerHTML = '<i class="fa-solid fa-plus text-[11px]"></i> <span>Guardar y Siguiente Módulo</span>';
                 } else {
-                    btnCrearSig.innerHTML = '<i class="fa-solid fa-plus text-[11px]"></i> <span>+ Agregar Nuevo Módulo</span>';
+                    btnCrearSig.innerHTML = '<i class="fa-solid fa-plus text-[11px]"></i> <span>Agregar Nuevo Módulo</span>';
                 }
             }
 
@@ -1024,9 +1039,10 @@
 
                     const btnTab = document.createElement('button');
                     btnTab.type = 'button';
+                    const tabBaseClass = 'tab-modulo-btn snap-start shrink-0 w-[78vw] max-w-[270px] sm:w-auto sm:max-w-none sm:shrink sm:flex-1 flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200';
                     btnTab.className = esActivo
-                        ? 'tab-modulo-btn flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 bg-gradient-to-r from-brand-blue to-[#004a99] text-white border-brand-blue shadow-md ring-2 ring-brand-blue/30 scale-[1.01]'
-                        : 'tab-modulo-btn flex-1 min-w-[170px] sm:min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 rounded-2xl text-xs font-heading border transition-all duration-200 bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-brand-blue shadow-2xs cursor-pointer';
+                        ? `${tabBaseClass} bg-gradient-to-r from-brand-blue to-[#004a99] text-white border-brand-blue shadow-md ring-2 ring-brand-blue/30 scale-[1.01]`
+                        : `${tabBaseClass} bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-brand-blue shadow-2xs cursor-pointer`;
 
                     btnTab.innerHTML = `
                         <div class="stepper-badge-icon w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${esActivo ? 'bg-white text-brand-blue font-black text-xs shadow-xs' : (tieneTitulo ? 'bg-emerald-500 text-white font-bold text-xs shadow-xs' : 'bg-brand-light text-brand-blue font-bold text-xs')}">
@@ -1056,7 +1072,7 @@
                 // Botón rápido en la barra de pestañas para añadir módulo
                 const btnTabAdd = document.createElement('button');
                 btnTabAdd.type = 'button';
-                btnTabAdd.className = 'flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 rounded-2xl border-2 border-dashed border-brand-blue/30 hover:border-brand-blue text-brand-blue hover:bg-brand-light/60 font-heading font-bold text-xs shrink-0 transition-all cursor-pointer';
+                btnTabAdd.className = 'snap-start shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 rounded-2xl border-2 border-dashed border-brand-blue/30 hover:border-brand-blue text-brand-blue hover:bg-brand-light/60 font-heading font-bold text-xs transition-all cursor-pointer';
                 btnTabAdd.innerHTML = '<i class="fa-solid fa-plus text-xs"></i> <span class="whitespace-nowrap">Nuevo Módulo</span>';
                 btnTabAdd.addEventListener('click', () => {
                     agregarModulo();
@@ -1078,6 +1094,14 @@
         }
 
         window.actualizarAsistenteModulos = actualizarAsistenteModulos;
+
+        window.scrollModulosTabsJefe = function(direction) {
+            const navTabs = document.getElementById('nav-tabs-modulos');
+            if (navTabs) {
+                const scrollAmount = navTabs.clientWidth * 0.75 * direction;
+                navTabs.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
+        };
 
         function agregarModulo() {
             const html = tplModulo.replaceAll('__M__', ++contador);

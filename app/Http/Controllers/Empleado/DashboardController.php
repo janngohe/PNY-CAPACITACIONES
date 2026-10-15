@@ -91,14 +91,22 @@ class DashboardController extends Controller
             return ($c->porcentaje_calculado > 0 && $c->porcentaje_calculado < 100) || ($c->estado_usuario === 'EN_PROGRESO');
         })->count();
 
+        $capacitacionesPendientes = $capacitaciones->filter(function ($c) {
+            return !in_array($c->estado_usuario, ['COMPLETADA', 'MODULOS_COMPLETOS']) && $c->porcentaje_calculado < 100;
+        })->values();
+
+        $capacitacionesCompletadas = $capacitaciones->filter(function ($c) {
+            return in_array($c->estado_usuario, ['COMPLETADA', 'MODULOS_COMPLETOS']) || $c->porcentaje_calculado >= 100;
+        })->values();
+
         $estadisticas = [
             'activas' => $capacitaciones->count(),
             'en_progreso' => $enProgresoCount,
-            'completadas' => $completadasCount,
+            'completadas' => $capacitacionesCompletadas->count(),
             'certificados' => $certificadosCount,
         ];
 
-        return view('empleado.capacitaciones', compact('usuario', 'capacitaciones', 'estadisticas'));
+        return view('empleado.capacitaciones', compact('usuario', 'capacitaciones', 'capacitacionesPendientes', 'capacitacionesCompletadas', 'estadisticas'));
     }
 
     /**

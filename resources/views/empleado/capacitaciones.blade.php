@@ -3,6 +3,20 @@
 @section('title', 'Capacitaciones e Inducciones')
 @section('page_title', 'Mis Capacitaciones')
 
+@push('styles')
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
 
@@ -74,10 +88,12 @@
          ======================================================== -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <!-- 1. Capacitaciones Activas -->
-        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs transition-shadow">
+        <button type="button"
+                onclick="cambiarPestanaCapacitaciones('todas')"
+                class="text-left bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs hover:border-brand-blue/50 transition-all cursor-pointer group">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-muted">Capacitaciones</span>
-                <div class="w-9 h-9 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center">
+                <span class="text-xs font-semibold text-muted group-hover:text-brand-blue transition-colors">Capacitaciones</span>
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center group-hover:scale-105 transition-transform">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                     </svg>
@@ -85,13 +101,15 @@
             </div>
             <p class="mt-2 text-2xl font-heading font-extrabold text-brand-dark">{{ $estadisticas['activas'] ?? 0 }}</p>
             <p class="text-[11px] text-muted mt-0.5">En tu plan actual</p>
-        </div>
+        </button>
 
         <!-- 2. En Progreso -->
-        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs transition-shadow">
+        <button type="button"
+                onclick="cambiarPestanaCapacitaciones('pendientes')"
+                class="text-left bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs hover:border-amber-400/60 transition-all cursor-pointer group">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-muted">En Progreso</span>
-                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <span class="text-xs font-semibold text-muted group-hover:text-amber-700 transition-colors">En Progreso</span>
+                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -99,13 +117,15 @@
             </div>
             <p class="mt-2 text-2xl font-heading font-extrabold text-brand-dark">{{ $estadisticas['en_progreso'] ?? 0 }}</p>
             <p class="text-[11px] text-amber-700 font-medium mt-0.5">Módulos en curso</p>
-        </div>
+        </button>
 
         <!-- 3. Finalizadas / Historial -->
-        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs transition-shadow">
+        <button type="button"
+                onclick="cambiarPestanaCapacitaciones('completadas')"
+                class="text-left bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs hover:border-emerald-400/60 transition-all cursor-pointer group">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-muted">Finalizadas</span>
-                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <span class="text-xs font-semibold text-muted group-hover:text-emerald-700 transition-colors">Finalizadas</span>
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -113,13 +133,14 @@
             </div>
             <p class="mt-2 text-2xl font-heading font-extrabold text-brand-dark">{{ $estadisticas['completadas'] ?? 0 }}</p>
             <p class="text-[11px] text-emerald-700 font-medium mt-0.5">Aprobadas con éxito</p>
-        </div>
+        </button>
 
         <!-- 4. Certificados Listos -->
-        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs transition-shadow">
+        <a href="{{ route('empleado.certificados') }}"
+           class="block bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs hover:border-sky-400/60 transition-all cursor-pointer group">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-muted">Certificados</span>
-                <div class="w-9 h-9 rounded-xl bg-sky-50 text-brand-sky flex items-center justify-center">
+                <span class="text-xs font-semibold text-muted group-hover:text-brand-blue transition-colors">Certificados</span>
+                <div class="w-9 h-9 rounded-xl bg-sky-50 text-brand-sky flex items-center justify-center group-hover:scale-105 transition-transform">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.004 0H9.496m5.004 0a3 3 0 002.996-2.67V5.625A2.625 2.625 0 0014.875 3h-5.75A2.625 2.625 0 006.5 5.625v7.08a3 3 0 002.996 2.67" />
                     </svg>
@@ -127,187 +148,222 @@
             </div>
             <p class="mt-2 text-2xl font-heading font-extrabold text-brand-dark">{{ $estadisticas['certificados'] ?? 0 }}</p>
             <p class="text-[11px] text-brand-blue font-medium mt-0.5">Listos para descargar</p>
-        </div>
+        </a>
     </div>
 
     <!-- ========================================================
-         SECCIÓN PRINCIPAL DE CAPACITACIONES E INDUCCIONES
+         SECCIÓN PRINCIPAL DE CAPACITACIONES CON VISTA SEPARADA
          ======================================================== -->
-    <div class="space-y-4">
+    <div id="seccion-listado-capacitaciones" class="space-y-5">
         
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-line/70 pb-4">
             <div>
-                <h2 class="font-heading font-bold text-lg sm:text-xl text-brand-dark">
-                    Cursos e Inducciones Asignadas
+                <h2 class="font-heading font-extrabold text-base sm:text-xl text-brand-dark flex items-center gap-2">
+                    <span>Mis Capacitaciones e Inducciones</span>
                 </h2>
-                <p class="text-xs text-muted">
-                    Ingresa a cualquier curso para visualizar libremente el contenido. Los módulos se desbloquean en secuencia.
+                <p id="subtitulo-filtro-capacitaciones" class="text-xs text-muted mt-0.5 leading-relaxed">
+                    Visualiza tus cursos activos en progreso o consulta tus capacitaciones ya completadas.
                 </p>
             </div>
 
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs font-semibold">
-                <span class="px-3 py-1.5 rounded-lg bg-brand-blue text-white shadow-xs">
-                    Todas ({{ count($capacitaciones) }})
-                </span>
+            <!-- Selector de Pestañas / Tabs Responsivo -->
+            <div class="w-full sm:w-auto p-1 rounded-2xl bg-slate-100 border border-slate-200/80 shadow-2xs overflow-x-auto no-scrollbar"
+                 style="scrollbar-width: none; -ms-overflow-style: none;">
+                <div class="flex items-center gap-1 min-w-full sm:min-w-0">
+                    <!-- Tab Pendientes / En Progreso -->
+                    <button type="button"
+                            id="tab-btn-pendientes"
+                            onclick="cambiarPestanaCapacitaciones('pendientes')"
+                            class="tab-filtro-btn flex-1 sm:flex-initial justify-center whitespace-nowrap px-2.5 sm:px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all duration-200 flex items-center gap-1.5 sm:gap-2 cursor-pointer bg-brand-blue text-white shadow-xs">
+                        <i class="fa-solid fa-clock-rotate-left text-xs shrink-0"></i>
+                        <span class="inline sm:hidden">Pendientes</span>
+                        <span class="hidden sm:inline">En Curso / Pendientes</span>
+                        <span id="badge-count-pendientes" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] bg-white/20 text-white font-extrabold shrink-0">
+                            {{ $capacitacionesPendientes->count() }}
+                        </span>
+                    </button>
+
+                    <!-- Tab Completadas -->
+                    <button type="button"
+                            id="tab-btn-completadas"
+                            onclick="cambiarPestanaCapacitaciones('completadas')"
+                            class="tab-filtro-btn flex-1 sm:flex-initial justify-center whitespace-nowrap px-2.5 sm:px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all duration-200 flex items-center gap-1.5 sm:gap-2 cursor-pointer text-slate-600 hover:text-brand-dark hover:bg-white/60">
+                        <i class="fa-solid fa-circle-check text-xs text-emerald-600 shrink-0"></i>
+                        <span>Completadas</span>
+                        <span id="badge-count-completadas" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700 font-extrabold shrink-0">
+                            {{ $capacitacionesCompletadas->count() }}
+                        </span>
+                    </button>
+
+                    <!-- Tab Todas (Opcional) -->
+                    <button type="button"
+                            id="tab-btn-todas"
+                            onclick="cambiarPestanaCapacitaciones('todas')"
+                            class="tab-filtro-btn flex-1 sm:flex-initial justify-center whitespace-nowrap px-2.5 sm:px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all duration-200 flex items-center gap-1.5 sm:gap-2 cursor-pointer text-slate-600 hover:text-brand-dark hover:bg-white/60">
+                        <span>Todas</span>
+                        <span id="badge-count-todas" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700 font-extrabold shrink-0">
+                            {{ $capacitaciones->count() }}
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- GRID DE TARJETAS DE CAPACITACIONES -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-            @forelse($capacitaciones as $cap)
-            @php
-                $titulo = $cap->titulo ?? ($cap['titulo'] ?? 'Capacitación');
-                $descripcion = $cap->descripcion ?? ($cap['descripcion'] ?? '');
-                $imagen = is_object($cap) ? $cap->url_imagen : (empty($cap['imagen']) ? asset('images/Img-login.jpg') : asset(ltrim($cap['imagen'], '/')));
-                $duracion = $cap->duracion_estimada ? $cap->duracion_estimada . ' horas' : ($cap['duracion'] ?? '4 horas');
-                $modulosCount = isset($cap->modulos) ? $cap->modulos->count() : ($cap['modulos_count'] ?? 0);
-                $modulosCompletados = $cap->modulos_completados_count ?? ($cap['modulos_completados'] ?? 0);
-                $porcentaje = $cap->porcentaje_calculado ?? ($cap['porcentaje'] ?? 0);
-                $aprobacion = $cap->porcentaje_aprobacion ?? ($cap['porcentaje_aprobacion'] ?? 80);
-                $intentos = $cap->intentos_permitidos ?? ($cap['intentos_permitidos'] ?? 3);
-                $estadoUsuario = $cap->estado_usuario ?? ($cap['estado'] ?? 'PENDIENTE');
-            @endphp
-            <div class="bg-white rounded-3xl border border-line/75 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between group">
-                
-                <!-- Hacer clic en cualquier parte del cuadro redirige a la visualización del contenido de la capacitación -->
-                <a href="{{ route('empleado.capacitaciones.ver', $cap) }}" class="block text-inherit flex-1 group/card" title="Haz clic para ver el contenido y módulos de {{ $titulo }}">
-                    <div>
-                        <!-- Contenedor de Imagen -->
-                        <div class="relative h-44 sm:h-48 w-full overflow-hidden bg-brand-light">
-                            <img src="{{ $imagen }}" 
-                                 alt="{{ $titulo }}" 
-                                 class="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500">
-                            
-                            <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/85 via-brand-dark/30 to-transparent"></div>
-
-                            <div class="absolute top-3.5 left-3.5">
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border backdrop-blur-md bg-white/20 text-white border-white/30">
-                                    <i class="fa-solid fa-award text-brand-sky text-xs"></i> Capacitación Oficial
-                                </span>
-                            </div>
-
-                            <div class="absolute top-3.5 right-3.5">
-                                @if($estadoUsuario === 'COMPLETADA')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-600 text-white backdrop-blur-xs">
-                                        <i class="fa-solid fa-circle-check text-xs"></i> Aprobada
-                                    </span>
-                                @elseif($porcentaje >= 100 || $estadoUsuario === 'MODULOS_COMPLETOS')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-600 text-white backdrop-blur-xs">
-                                        <i class="fa-solid fa-list-check text-xs"></i> Módulos Completos
-                                    </span>
-                                @elseif($estadoUsuario === 'EN_PROGRESO' || $porcentaje > 0)
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/90 text-white backdrop-blur-xs">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                                        En Progreso
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-600/90 text-white backdrop-blur-xs">
-                                        <i class="fa-solid fa-sparkles text-xs"></i> Disponible
-                                    </span>
-                                @endif
-                            </div>
-
-                            <div class="absolute bottom-3 left-4 right-4 text-white">
-                                <span class="text-[10px] uppercase font-bold tracking-wider text-brand-sky flex items-center gap-1.5">
-                                    <i class="fa-regular fa-clock text-xs"></i> Duración: {{ $duracion }} · {{ $modulosCount }} Módulos
-                                </span>
-                                <h3 class="font-heading font-extrabold text-base sm:text-lg leading-tight mt-0.5 line-clamp-1 group-hover/card:text-brand-sky transition-colors">
-                                    {{ $titulo }}
-                                </h3>
-                            </div>
-
-                            <svg class="absolute -bottom-1 left-0 w-full h-4 text-white" viewBox="0 0 600 20" preserveAspectRatio="none">
-                                <path d="M0,5 C100,18 200,3 300,14 C400,22 500,6 600,15 L600,20 L0,20 Z" fill="currentColor"/>
-                            </svg>
-                        </div>
-
-                        <!-- Cuerpo de la tarjeta -->
-                        <div class="p-5 sm:p-6 space-y-4">
-                            <p class="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
-                                {{ $descripcion }}
-                            </p>
-
-                            <div class="space-y-1.5">
-                                <div class="flex items-center justify-between text-xs">
-                                    <span class="font-semibold text-slate-700">Progreso del curso</span>
-                                    <span class="font-bold text-brand-blue">{{ $porcentaje }}%</span>
-                                </div>
-                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                    <div class="bg-brand-blue h-2 rounded-full transition-all duration-300" style="width: {{ $porcentaje }}%"></div>
-                                </div>
-                                <div class="flex items-center justify-between text-[11px] text-muted">
-                                    <span>{{ $modulosCompletados }} de {{ $modulosCount }} módulos completados</span>
-                                    <span>Mínimo aprobación: {{ $aprobacion }}%</span>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-line/60 text-[11px] text-slate-500">
-                                <div class="flex items-center gap-1.5">
-                                    <i class="fa-solid fa-rotate-right text-brand-blue"></i>
-                                    <span>{{ $intentos }} intentos de examen</span>
-                                </div>
-                                <div class="flex items-center gap-1.5 justify-end">
-                                    <i class="fa-solid fa-graduation-cap text-brand-blue"></i>
-                                    <span>Certificado Oficial</span>
-                                </div>
-                            </div>
-                        </div>
+        <!-- 1. PANEL: CAPACITACIONES PENDIENTES / EN PROGRESO (Activo por defecto) -->
+        <div id="panel-capacitaciones-pendientes" class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+            @forelse($capacitacionesPendientes as $cap)
+                @include('empleado._tarjeta_capacitacion', ['cap' => $cap])
+            @empty
+                <div class="col-span-full bg-white rounded-3xl border border-line/80 p-8 sm:p-12 text-center space-y-3">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl shadow-2xs">
+                        <i class="fa-solid fa-circle-check"></i>
                     </div>
-                </a>
-
-                <!-- Botón de Acción Principal: Iniciar, Continuar o Finalizar la Capacitación -->
-                <div class="px-5 pb-5 sm:px-6 sm:pb-6 pt-0">
-                    @if($estadoUsuario === 'COMPLETADA')
-                        <a href="{{ route('empleado.certificados') }}"
-                           class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5">
-                            <i class="fa-solid fa-graduation-cap text-base"></i>
-                            <span>Capacitación Finalizada · Ver Certificado</span>
-                        </a>
-                    @elseif($porcentaje >= 100 || $estadoUsuario === 'MODULOS_COMPLETOS')
-                        <form method="POST" action="{{ route('empleado.capacitaciones.finalizar', $cap) }}" class="w-full">
-                            @csrf
-                            <button type="submit"
-                                    class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5 cursor-pointer">
-                                <i class="fa-solid fa-circle-check text-base"></i>
-                                <span>Finalizar Capacitación</span>
+                    <h3 class="font-heading font-extrabold text-base sm:text-lg text-brand-dark">¡Estás al día! No tienes cursos pendientes</h3>
+                    <p class="text-xs text-muted max-w-md mx-auto leading-relaxed">
+                        Has completado todas las capacitaciones asignadas hasta la fecha. Puedes consultar tus certificados o repasar el material de tus cursos finalizados.
+                    </p>
+                    @if($capacitacionesCompletadas->isNotEmpty())
+                        <div class="pt-2">
+                            <button type="button"
+                                    onclick="cambiarPestanaCapacitaciones('completadas')"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-bold text-xs shadow-xs transition-all cursor-pointer">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                <span>Ver Mis Capacitaciones Completadas</span>
                             </button>
-                        </form>
-                    @elseif($estadoUsuario === 'EN_PROGRESO' || $porcentaje > 0)
-                        <a href="{{ route('empleado.capacitaciones.ver', $cap) }}"
-                           style="background-color: #0056b3; color: #ffffff;"
-                           class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-[#0056b3] hover:bg-[#003d80] text-white hover:-translate-y-0.5">
-                            <i class="fa-solid fa-circle-play text-base"></i>
-                            <span>Continuar Capacitación ({{ $porcentaje }}%)</span>
-                        </a>
-                    @else
-                        <form method="POST" action="{{ route('empleado.capacitaciones.iniciar', $cap) }}" class="w-full">
-                            @csrf
-                            <button type="submit"
-                                    style="background-color: #0056b3; color: #ffffff;"
-                                    class="w-full py-3 px-4 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-xs bg-[#0056b3] hover:bg-[#003d80] text-white hover:-translate-y-0.5 cursor-pointer">
-                                <i class="fa-solid fa-play text-base"></i>
-                                <span>Iniciar Capacitación</span>
-                            </button>
-                        </form>
+                        </div>
                     @endif
                 </div>
-
-            </div>
-            @empty
-            <div class="col-span-full bg-white rounded-3xl border border-line/80 p-10 text-center space-y-3">
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center">
-                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                    </svg>
-                </div>
-                <h3 class="font-heading font-extrabold text-base text-brand-dark">No hay capacitaciones asignadas actualmente</h3>
-                <p class="text-xs text-muted max-w-sm mx-auto">
-                    Tan pronto el administrador o jefe de área te asigne un nuevo plan de inducción o capacitación, lo verás disponible en este panel.
-                </p>
-            </div>
             @endforelse
         </div>
+
+        <!-- 2. PANEL: CAPACITACIONES YA COMPLETADAS (Aparte, limpio) -->
+        <div id="panel-capacitaciones-completadas" class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 hidden">
+            @forelse($capacitacionesCompletadas as $cap)
+                @include('empleado._tarjeta_capacitacion', ['cap' => $cap])
+            @empty
+                <div class="col-span-full bg-white rounded-3xl border border-line/80 p-8 sm:p-12 text-center space-y-3">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h3 class="font-heading font-extrabold text-base sm:text-lg text-brand-dark">Aún no tienes capacitaciones completadas</h3>
+                    <p class="text-xs text-muted max-w-md mx-auto leading-relaxed">
+                        A medida que finalices los módulos y apruebes las evaluaciones de tus cursos asignados, aparecerán archivados aquí con su certificado digital disponible.
+                    </p>
+                    @if($capacitacionesPendientes->isNotEmpty())
+                        <div class="pt-2">
+                            <button type="button"
+                                    onclick="cambiarPestanaCapacitaciones('pendientes')"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs shadow-xs transition-all cursor-pointer">
+                                <i class="fa-solid fa-play text-[11px]"></i>
+                                <span>Ir a Mis Cursos en Curso / Pendientes</span>
+                            </button>
+                        </div>
+                    @endif
+                </div>
+            @endforelse
+        </div>
+
+        <!-- 3. PANEL: TODAS LAS CAPACITACIONES (Vista Global) -->
+        <div id="panel-capacitaciones-todas" class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 hidden">
+            @forelse($capacitaciones as $cap)
+                @include('empleado._tarjeta_capacitacion', ['cap' => $cap])
+            @empty
+                <div class="col-span-full bg-white rounded-3xl border border-line/80 p-10 text-center space-y-3">
+                    <div class="w-14 h-14 mx-auto rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center">
+                        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                        </svg>
+                    </div>
+                    <h3 class="font-heading font-extrabold text-base text-brand-dark">No hay capacitaciones asignadas actualmente</h3>
+                    <p class="text-xs text-muted max-w-sm mx-auto">
+                        Tan pronto el administrador o jefe de área te asigne un nuevo plan de inducción o capacitación, lo verás disponible en este panel.
+                    </p>
+                </div>
+            @endforelse
+        </div>
+
     </div>
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function cambiarPestanaCapacitaciones(tipo) {
+    const panelPendientes = document.getElementById('panel-capacitaciones-pendientes');
+    const panelCompletadas = document.getElementById('panel-capacitaciones-completadas');
+    const panelTodas = document.getElementById('panel-capacitaciones-todas');
+
+    const btnPendientes = document.getElementById('tab-btn-pendientes');
+    const btnCompletadas = document.getElementById('tab-btn-completadas');
+    const btnTodas = document.getElementById('tab-btn-todas');
+
+    const subtitulo = document.getElementById('subtitulo-filtro-capacitaciones');
+
+    const baseTabClasses = 'tab-filtro-btn flex-1 sm:flex-initial justify-center whitespace-nowrap px-2.5 sm:px-4 py-2 rounded-xl text-xs font-heading font-bold transition-all duration-200 flex items-center gap-1.5 sm:gap-2 cursor-pointer';
+    const inactiveTabClasses = baseTabClasses + ' text-slate-600 hover:text-brand-dark hover:bg-white/60 bg-transparent';
+    const inactiveBadgeClasses = 'px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700 font-extrabold shrink-0';
+    const activeBadgeClasses = 'px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] bg-white/20 text-white font-extrabold shrink-0';
+
+    // Desactivar todos los botones
+    [btnPendientes, btnCompletadas, btnTodas].forEach(btn => {
+        if (!btn) return;
+        btn.className = inactiveTabClasses;
+        const badge = btn.querySelector('span[id^="badge-count-"]');
+        if (badge) {
+            badge.className = inactiveBadgeClasses;
+        }
+    });
+
+    // Ocultar todos los paneles
+    if (panelPendientes) panelPendientes.classList.add('hidden');
+    if (panelCompletadas) panelCompletadas.classList.add('hidden');
+    if (panelTodas) panelTodas.classList.add('hidden');
+
+    if (tipo === 'completadas') {
+        if (panelCompletadas) panelCompletadas.classList.remove('hidden');
+        if (btnCompletadas) {
+            btnCompletadas.className = baseTabClasses + ' bg-emerald-600 text-white shadow-xs';
+            const badge = document.getElementById('badge-count-completadas');
+            if (badge) badge.className = activeBadgeClasses;
+        }
+        if (subtitulo) subtitulo.textContent = 'Capacitaciones finalizadas satisfactoriamente con sus certificados disponibles.';
+        if (history.replaceState) history.replaceState(null, null, '#completadas');
+    } else if (tipo === 'todas') {
+        if (panelTodas) panelTodas.classList.remove('hidden');
+        if (btnTodas) {
+            btnTodas.className = baseTabClasses + ' bg-slate-800 text-white shadow-xs';
+            const badge = document.getElementById('badge-count-todas');
+            if (badge) badge.className = activeBadgeClasses;
+        }
+        if (subtitulo) subtitulo.textContent = 'Listado global de todos los cursos e inducciones asignados a tu usuario.';
+        if (history.replaceState) history.replaceState(null, null, '#todas');
+    } else {
+        // 'pendientes'
+        if (panelPendientes) panelPendientes.classList.remove('hidden');
+        if (btnPendientes) {
+            btnPendientes.className = baseTabClasses + ' bg-brand-blue text-white shadow-xs';
+            const badge = document.getElementById('badge-count-pendientes');
+            if (badge) badge.className = activeBadgeClasses;
+        }
+        if (subtitulo) subtitulo.textContent = 'Cursos asignados en los que debes avanzar o que tienes pendientes por iniciar.';
+        if (history.replaceState) history.replaceState(null, null, '#pendientes');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const hash = window.location.hash;
+    if (hash === '#completadas') {
+        cambiarPestanaCapacitaciones('completadas');
+    } else if (hash === '#todas') {
+        cambiarPestanaCapacitaciones('todas');
+    } else {
+        @if($capacitacionesPendientes->isEmpty() && $capacitacionesCompletadas->isNotEmpty())
+            cambiarPestanaCapacitaciones('completadas');
+        @else
+            cambiarPestanaCapacitaciones('pendientes');
+        @endif
+    }
+});
+</script>
+@endpush
