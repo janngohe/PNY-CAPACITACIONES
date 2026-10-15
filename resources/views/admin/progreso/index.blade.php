@@ -14,7 +14,7 @@
     ])
 
     <!-- TARJETAS DE INDICADORES -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div id="contenedor-resumen" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div class="bg-white rounded-3xl border border-line/80 shadow-2xs p-4 flex items-center gap-3">
             <span class="w-10 h-10 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center font-bold text-sm shrink-0">
                 <i class="fa-solid fa-list-check"></i>
@@ -56,20 +56,29 @@
         </div>
     </div>
 
-    <!-- FILTROS DE BÚSQUEDA -->
+    <!-- FILTROS DE BÚSQUEDA EN TIEMPO REAL -->
     <div class="bg-white p-4 sm:p-5 rounded-3xl border border-line/80 shadow-2xs">
-        <form method="GET" action="{{ route('admin.progreso.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <form id="form-filtro-progreso" method="GET" action="{{ route('admin.progreso.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
             <div>
-                <label for="filtro-q" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Buscar empleado</label>
-                <input type="text" id="filtro-q" name="q" value="{{ $filtros['q'] }}"
-                       placeholder="Nombre o Cédula..."
-                       class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
+                <label for="filtro-q" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                    Buscar empleado <span class="text-brand-blue font-normal lowercase">(en vivo)</span>
+                </label>
+                <div class="relative">
+                    <input type="text" id="filtro-q" name="q" value="{{ $filtros['q'] }}"
+                           placeholder="Nombre o Cédula..."
+                           autocomplete="off"
+                           class="w-full pl-9 pr-8 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue transition-colors">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                    <span id="spinner-busqueda" class="hidden absolute right-2.5 top-2.5 text-brand-blue text-xs">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    </span>
+                </div>
             </div>
 
             <div>
                 <label for="filtro-area" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Área</label>
                 <select id="filtro-area" name="area_id"
-                        class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
+                        class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue transition-colors cursor-pointer">
                     <option value="">Todas las áreas</option>
                     @foreach ($areas as $area)
                         <option value="{{ $area->id }}" {{ (string)$filtros['area_id'] === (string)$area->id ? 'selected' : '' }}>{{ $area->nombre }}</option>
@@ -80,7 +89,7 @@
             <div>
                 <label for="filtro-cap" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Capacitación</label>
                 <select id="filtro-cap" name="capacitacion_id"
-                        class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
+                        class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue transition-colors cursor-pointer">
                     <option value="">Todas las capacitaciones</option>
                     @foreach ($capacitaciones as $cap)
                         <option value="{{ $cap->id }}" {{ (string)$filtros['capacitacion_id'] === (string)$cap->id ? 'selected' : '' }}>{{ $cap->titulo }}</option>
@@ -91,7 +100,7 @@
             <div>
                 <label for="filtro-estado" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Estado</label>
                 <select id="filtro-estado" name="estado"
-                        class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
+                        class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue transition-colors cursor-pointer">
                     <option value="">Todos los estados</option>
                     @foreach ($estados as $clave => $nombre)
                         <option value="{{ $clave }}" {{ $filtros['estado'] === $clave ? 'selected' : '' }}>{{ $nombre }}</option>
@@ -99,21 +108,25 @@
                 </select>
             </div>
 
-            <div class="flex items-end gap-2">
-                <button type="submit" class="flex-1 py-2 px-4 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs transition-colors cursor-pointer">
-                    <i class="fa-solid fa-filter mr-1"></i> Filtrar
-                </button>
-                @if ($filtros['q'] || $filtros['area_id'] || $filtros['capacitacion_id'] || $filtros['estado'])
-                    <a href="{{ route('admin.progreso.index') }}" class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors" title="Limpiar">
-                        <i class="fa-solid fa-xmark"></i>
-                    </a>
-                @endif
+            <!-- ESTADO DEL FILTRADOR EN TIEMPO REAL Y BOTÓN LIMPIAR -->
+            <div class="flex items-center gap-2">
+                <div class="flex-1 flex items-center justify-between h-9 px-3 rounded-xl bg-slate-50/80 border border-line/70 text-[11px] text-slate-600 font-medium select-none">
+                    <span class="inline-flex items-center gap-1.5 min-w-0 truncate">
+                        <span id="indicador-en-vivo-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                        <span id="indicador-en-vivo-text" class="truncate text-[10.5px] font-semibold text-slate-500">Filtrado en vivo</span>
+                    </span>
+                    <button type="button" id="btn-limpiar-filtros"
+                            class="{{ ($filtros['q'] || $filtros['area_id'] || $filtros['capacitacion_id'] || $filtros['estado']) ? '' : 'hidden' }} ml-1 px-1.5 py-0.5 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 text-xs font-bold transition-all cursor-pointer"
+                            title="Limpiar todos los filtros">
+                        <i class="fa-solid fa-xmark mr-0.5"></i> Limpiar
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 
     <!-- TABLA DE SEGUIMIENTO (RESPONSIVE: TARJETAS EN MÓVIL, TABLA EN ESCRITORIO) -->
-    <div class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden">
+    <div id="contenedor-tabla-seguimiento" class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden transition-opacity duration-200">
         
         <!-- VISTA MÓVIL: TARJETAS (block md:hidden) -->
         <div class="block md:hidden divide-y divide-line/60">
@@ -522,24 +535,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 200);
     }
 
-    document.querySelectorAll('.btn-ver-asignaciones').forEach(btn => {
-        btn.addEventListener('click', () => {
-            try {
-                const rawLista = btn.getAttribute('data-lista');
-                const lista = rawLista ? JSON.parse(rawLista) : [];
-                abrirModal({
-                    nombre: btn.getAttribute('data-nombre'),
-                    identificacion: btn.getAttribute('data-identificacion'),
-                    area: btn.getAttribute('data-area'),
-                    asignadas: parseInt(btn.getAttribute('data-asignadas'), 10) || 0,
-                    promedio: parseInt(btn.getAttribute('data-promedio'), 10) || 0,
-                    lista: lista,
-                });
-            } catch (e) {
-                console.error('Error parseando asignaciones:', e);
-            }
+    // Función para inicializar botones del modal de asignaciones
+    function inicializarBotonesModal() {
+        document.querySelectorAll('.btn-ver-asignaciones').forEach(btn => {
+            btn.onclick = () => {
+                try {
+                    const rawLista = btn.getAttribute('data-lista');
+                    const lista = rawLista ? JSON.parse(rawLista) : [];
+                    abrirModal({
+                        nombre: btn.getAttribute('data-nombre'),
+                        identificacion: btn.getAttribute('data-identificacion'),
+                        area: btn.getAttribute('data-area'),
+                        asignadas: parseInt(btn.getAttribute('data-asignadas'), 10) || 0,
+                        promedio: parseInt(btn.getAttribute('data-promedio'), 10) || 0,
+                        lista: lista,
+                    });
+                } catch (e) {
+                    console.error('Error parseando asignaciones:', e);
+                }
+            };
         });
-    });
+    }
+
+    // Inicialización inicial de modales
+    inicializarBotonesModal();
 
     btnCerrar?.addEventListener('click', cerrarModal);
     btnCerrarPie?.addEventListener('click', cerrarModal);
@@ -550,6 +569,172 @@ document.addEventListener('DOMContentLoaded', () => {
             cerrarModal();
         }
     });
+
+    /* ==========================================================================
+       SISTEMA DE FILTRADO EN TIEMPO REAL (SIN RECARGA DE PÁGINA)
+       ========================================================================== */
+    const formFiltro = document.getElementById('form-filtro-progreso');
+    const inputQ = document.getElementById('filtro-q');
+    const selectArea = document.getElementById('filtro-area');
+    const selectCap = document.getElementById('filtro-cap');
+    const selectEstado = document.getElementById('filtro-estado');
+    const spinner = document.getElementById('spinner-busqueda');
+    const btnLimpiar = document.getElementById('btn-limpiar-filtros');
+    const contenedorTabla = document.getElementById('contenedor-tabla-seguimiento');
+    const contenedorResumen = document.getElementById('contenedor-resumen');
+
+    let debounceTimer = null;
+    let abortController = null;
+
+    function ejecutarFiltroEnVivo() {
+        if (!formFiltro) return;
+
+        // Cancelar petición anterior si aún estaba pendiente
+        if (abortController) {
+            abortController.abort();
+        }
+        abortController = new AbortController();
+
+        const formData = new FormData(formFiltro);
+        const params = new URLSearchParams();
+
+        for (const [key, value] of formData.entries()) {
+            if (value && value.toString().trim()) {
+                params.append(key, value.toString().trim());
+            }
+        }
+
+        const url = `${formFiltro.action}${params.toString() ? '?' + params.toString() : ''}`;
+
+        // Mostrar indicador visual de carga
+        if (spinner) spinner.classList.remove('hidden');
+        if (contenedorTabla) contenedorTabla.classList.add('opacity-50');
+
+        // Visibilidad del botón de limpiar filtros
+        const hayFiltros = Boolean(
+            (inputQ && inputQ.value.trim()) ||
+            (selectArea && selectArea.value) ||
+            (selectCap && selectCap.value) ||
+            (selectEstado && selectEstado.value)
+        );
+        if (btnLimpiar) {
+            if (hayFiltros) btnLimpiar.classList.remove('hidden');
+            else btnLimpiar.classList.add('hidden');
+        }
+
+        fetch(url, {
+            signal: abortController.signal,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+            return response.text();
+        })
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // Actualizar tarjetas de indicadores superiores
+            const nuevoResumen = doc.getElementById('contenedor-resumen');
+            if (nuevoResumen && contenedorResumen) {
+                contenedorResumen.innerHTML = nuevoResumen.innerHTML;
+            }
+
+            // Actualizar tabla/tarjetas de resultados
+            const nuevaTabla = doc.getElementById('contenedor-tabla-seguimiento');
+            if (nuevaTabla && contenedorTabla) {
+                contenedorTabla.innerHTML = nuevaTabla.innerHTML;
+            }
+
+            // Actualizar la URL en la barra de navegación sin recargar
+            window.history.replaceState({}, '', url);
+
+            // Re-vincular eventos del modal y de paginación AJAX
+            inicializarBotonesModal();
+            inicializarPaginacionAjax();
+        })
+        .catch(err => {
+            if (err.name !== 'AbortError') {
+                console.error('Error al filtrar progreso en tiempo real:', err);
+            }
+        })
+        .finally(() => {
+            if (spinner) spinner.classList.add('hidden');
+            if (contenedorTabla) contenedorTabla.classList.remove('opacity-50');
+        });
+    }
+
+    // Paginación suave vía AJAX sin perder filtros
+    function inicializarPaginacionAjax() {
+        if (!contenedorTabla) return;
+        contenedorTabla.querySelectorAll('nav[role="navigation"] a, .pagination a').forEach(enlace => {
+            enlace.onclick = (e) => {
+                e.preventDefault();
+                const href = enlace.getAttribute('href');
+                if (!href) return;
+
+                if (contenedorTabla) contenedorTabla.classList.add('opacity-50');
+
+                fetch(href, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    const nuevaTabla = doc.getElementById('contenedor-tabla-seguimiento');
+                    if (nuevaTabla) {
+                        contenedorTabla.innerHTML = nuevaTabla.innerHTML;
+                    }
+
+                    const nuevoResumen = doc.getElementById('contenedor-resumen');
+                    if (nuevoResumen && contenedorResumen) {
+                        contenedorResumen.innerHTML = nuevoResumen.innerHTML;
+                    }
+
+                    window.history.replaceState({}, '', href);
+                    inicializarBotonesModal();
+                    inicializarPaginacionAjax();
+                })
+                .catch(err => console.error('Error en paginación AJAX:', err))
+                .finally(() => {
+                    if (contenedorTabla) contenedorTabla.classList.remove('opacity-50');
+                });
+            };
+        });
+    }
+
+    // Eventos en tiempo real:
+    // 1. Entrada de texto (nombre o cédula) con debounce de 260ms
+    inputQ?.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(ejecutarFiltroEnVivo, 260);
+    });
+
+    // 2. Selección inmediata de área, capacitación o estado
+    selectArea?.addEventListener('change', ejecutarFiltroEnVivo);
+    selectCap?.addEventListener('change', ejecutarFiltroEnVivo);
+    selectEstado?.addEventListener('change', ejecutarFiltroEnVivo);
+
+    // 3. Prevenir recarga completa de formulario al presionar Enter
+    formFiltro?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        clearTimeout(debounceTimer);
+        ejecutarFiltroEnVivo();
+    });
+
+    // 4. Botón limpiar filtros
+    btnLimpiar?.addEventListener('click', () => {
+        if (inputQ) inputQ.value = '';
+        if (selectArea) selectArea.value = '';
+        if (selectCap) selectCap.value = '';
+        if (selectEstado) selectEstado.value = '';
+        ejecutarFiltroEnVivo();
+    });
+
+    // Inicializar paginación AJAX inicial
+    inicializarPaginacionAjax();
 });
 </script>
 @endsection

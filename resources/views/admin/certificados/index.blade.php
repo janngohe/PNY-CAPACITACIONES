@@ -66,34 +66,40 @@
         </div>
     @endif
 
-    <!-- TABS DE CERTIFICADOS: INSTITUCIONALES / EXTERNOS -->
-    <div class="flex items-center gap-2 border-b border-line/80 pb-3">
+    <!-- TABS DE CERTIFICADOS: INSTITUCIONALES / EXTERNOS / PLANTILLAS (RESPONSIVO) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 border-b border-line/80 pb-3">
         <button type="button" id="tab-btn-internos"
                 onclick="cambiarPestana('internos')"
-                class="px-4 py-2.5 rounded-2xl font-heading font-extrabold text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer bg-brand-blue text-white shadow-xs">
-            <i class="fa-solid fa-award"></i>
-            <span>Certificados Institucionales</span>
-            <span class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-mono">{{ $totalEmitidos }}</span>
+                class="w-full px-4 py-2.5 rounded-2xl font-heading font-extrabold text-xs sm:text-sm transition-all flex items-center justify-between sm:justify-center gap-2 cursor-pointer bg-brand-blue text-white shadow-xs">
+            <div class="flex items-center gap-2 truncate">
+                <i class="fa-solid fa-award text-sm"></i>
+                <span class="truncate">Certificados Institucionales</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-mono shrink-0">{{ $totalEmitidos }}</span>
         </button>
 
         <button type="button" id="tab-btn-externos"
                 onclick="cambiarPestana('externos')"
-                class="px-4 py-2.5 rounded-2xl font-heading font-extrabold text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer bg-slate-100 text-slate-600 hover:bg-slate-200">
-            <i class="fa-solid fa-file-arrow-up"></i>
-            <span>Certificados Externos (Talento Humano)</span>
+                class="w-full px-4 py-2.5 rounded-2xl font-heading font-extrabold text-xs sm:text-sm transition-all flex items-center justify-between sm:justify-center gap-2 cursor-pointer bg-slate-100 text-slate-600 hover:bg-slate-200">
+            <div class="flex items-center gap-2 truncate">
+                <i class="fa-solid fa-file-arrow-up text-sm"></i>
+                <span class="truncate">Certificados Externos</span>
+            </div>
             @if ($externosPendientes > 0)
-                <span class="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[11px] font-mono animate-pulse font-bold">{{ $externosPendientes }} pend.</span>
+                <span class="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10.5px] font-mono animate-pulse font-bold shrink-0">{{ $externosPendientes }} pend.</span>
             @else
-                <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[11px] font-mono">{{ $totalExternos }}</span>
+                <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[11px] font-mono shrink-0">{{ $totalExternos }}</span>
             @endif
         </button>
 
         <button type="button" id="tab-btn-plantillas"
                 onclick="cambiarPestana('plantillas')"
-                class="px-4 py-2.5 rounded-2xl font-heading font-extrabold text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer bg-slate-100 text-slate-600 hover:bg-slate-200">
-            <i class="fa-solid fa-stamp"></i>
-            <span>Plantillas de Certificado</span>
-            <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[11px] font-mono">{{ $totalPlantillas }}</span>
+                class="w-full sm:col-span-2 lg:col-span-1 px-4 py-2.5 rounded-2xl font-heading font-extrabold text-xs sm:text-sm transition-all flex items-center justify-between sm:justify-center gap-2 cursor-pointer bg-slate-100 text-slate-600 hover:bg-slate-200">
+            <div class="flex items-center gap-2 truncate">
+                <i class="fa-solid fa-stamp text-sm"></i>
+                <span class="truncate">Plantillas de Certificado</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[11px] font-mono shrink-0">{{ $totalPlantillas }}</span>
         </button>
     </div>
 
@@ -338,17 +344,126 @@
 
     <!-- SECCIÓN 2: CERTIFICADOS EXTERNOS RADICADOS POR EMPLEADOS -->
     <div id="panel-externos" class="space-y-6 hidden">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
                 <h3 class="font-heading font-extrabold text-base text-brand-dark">Acreditación de Saberes Externos</h3>
                 <p class="text-xs text-muted">Documentos y constancias aportados por los colaboradores (SENA, ICA, Bomberos, etc.) para validación oficial.</p>
             </div>
-            <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
+            <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full self-start sm:self-auto shrink-0">
                 Total Radicados: <strong>{{ $certificadosExternos->count() }}</strong>
             </span>
         </div>
 
-        <div class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden">
+        <!-- 1. VISTA MÓVIL: TARJETAS EN COLUMNA TOUCH-FRIENDLY (block md:hidden) -->
+        <div class="block md:hidden space-y-3.5">
+            @forelse ($certificadosExternos as $ext)
+                @php
+                    $badgeClase = match($ext->estado) {
+                        'APROBADO' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                        'PENDIENTE' => 'bg-amber-50 text-amber-800 border-amber-200',
+                        default => 'bg-rose-50 text-rose-700 border-rose-200',
+                    };
+                    $badgeIcono = match($ext->estado) {
+                        'APROBADO' => 'fa-circle-check',
+                        'PENDIENTE' => 'fa-clock',
+                        default => 'fa-circle-xmark',
+                    };
+                @endphp
+                <div class="bg-white rounded-3xl border border-line/80 p-4.5 shadow-2xs space-y-3.5">
+                    <!-- Fila 1: Colaborador y Estado -->
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-deep to-brand-cyan text-white font-heading font-extrabold text-xs flex items-center justify-center shadow-2xs shrink-0">
+                                {{ strtoupper(substr($ext->usuario->nombre_completo ?? 'U', 0, 1)) }}
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="font-heading font-bold text-sm text-brand-dark truncate leading-tight" title="{{ $ext->usuario->nombre_completo }}">
+                                    {{ $ext->usuario->nombre_completo ?? 'Colaborador' }}
+                                </h4>
+                                <p class="text-[11px] text-muted font-mono mt-0.5">C.C. {{ $ext->usuario->identificacion ?? '—' }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Estado Badge -->
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0 {{ $badgeClase }}">
+                            <i class="fa-solid {{ $badgeIcono }} text-[10px]"></i>
+                            <span>{{ ucfirst(strtolower($ext->estado)) }}</span>
+                        </span>
+                    </div>
+
+                    <!-- Fila 2: Información en cuadrícula interna -->
+                    <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50/70 p-3 rounded-2xl border border-line/60">
+                        <div>
+                            <span class="text-[9.5px] font-bold uppercase text-muted block mb-0.5">Área</span>
+                            <span class="text-xs font-semibold text-slate-700 truncate block">
+                                {{ $ext->usuario->area->nombre ?? 'Sin área' }}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-[9.5px] font-bold uppercase text-muted block mb-0.5">Expedición</span>
+                            <span class="text-xs font-semibold text-slate-700 block">
+                                {{ $ext->fecha_emision ? $ext->fecha_emision->format('d/m/Y') : '—' }}
+                            </span>
+                        </div>
+                        <div class="col-span-2 pt-1 border-t border-line/50">
+                            <span class="text-[9.5px] font-bold uppercase text-muted block mb-0.5">Entidad Emisora</span>
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-brand-dark truncate">
+                                <i class="fa-solid fa-building-columns text-slate-400 text-[11px] shrink-0"></i>
+                                <span class="truncate">{{ $ext->entidad_emisora }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Soporte y Acciones -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-line/60">
+                        <a href="{{ asset('storage/' . $ext->ruta_archivo) }}" target="_blank"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-brand-blue font-heading font-bold text-xs transition-colors shadow-2xs">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                            <span>Ver Soporte</span>
+                        </a>
+
+                        <div class="flex items-center gap-1.5 ml-auto">
+                            @if ($ext->estado !== 'APROBADO')
+                                <form method="POST" action="{{ route('admin.certificados.externos.aprobar', $ext) }}" class="m-0"
+                                      onsubmit="return confirm('¿Aprobar este certificado externo para el colaborador?');">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-bold text-xs transition-colors cursor-pointer shadow-2xs"
+                                            title="Aprobar Certificado">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                        <span>Aprobar</span>
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if ($ext->estado !== 'RECHAZADO')
+                                <form method="POST" action="{{ route('admin.certificados.externos.rechazar', $ext) }}" class="m-0"
+                                      onsubmit="return confirm('¿Rechazar este certificado externo?');">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-heading font-bold text-xs transition-colors cursor-pointer shadow-2xs"
+                                            title="Rechazar Certificado">
+                                        <i class="fa-solid fa-xmark text-xs"></i>
+                                        <span>Rechazar</span>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="p-10 bg-white rounded-3xl border border-line/80 text-center text-muted">
+                    <i class="fa-solid fa-folder-open text-4xl mb-3 text-slate-300 block"></i>
+                    <p class="font-heading font-bold text-sm text-brand-dark mb-1">Sin certificados externos</p>
+                    <p class="text-xs">No se registran certificados externos pendientes ni radicados por colaboradores.</p>
+                </div>
+            @endforelse
+        </div>
+
+        <!-- 2. VISTA ESCRITORIO / PC: TABLA COMPLETA TRADICIONAL (hidden md:block) -->
+        <div class="hidden md:block bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted border-b border-line/60">
@@ -398,7 +513,7 @@
                                 </td>
                                 <td class="px-4 py-3.5">
                                     <a href="{{ asset('storage/' . $ext->ruta_archivo) }}" target="_blank"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-brand-blue font-heading font-bold text-[11px] transition-colors">
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-brand-blue font-heading font-bold text-[11px] transition-colors shadow-2xs">
                                         <i class="fa-solid fa-file-arrow-down"></i>
                                         <span>Ver soporte</span>
                                     </a>
@@ -823,14 +938,14 @@
      MODAL PARA CREAR / SUBIR NUEVA PLANTILLA DE CERTIFICADO
      ======================================================== -->
 <div id="modal-crear-plantilla" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
-    <div id="modal-crear-backdrop" class="fixed inset-0 bg-brand-dark/70 backdrop-blur-sm transition-opacity opacity-0" onclick="cerrarModalCrearPlantilla()"></div>
+    <div id="modal-crear-backdrop" class="fixed inset-0 bg-brand-dark/70 backdrop-blur-sm transition-opacity opacity-0 cursor-pointer" onclick="cerrarModalCrearPlantilla()"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 flex items-center justify-center min-h-full">
-        <div id="modal-crear-panel" class="relative bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-line/80 overflow-hidden transform transition-all scale-95 opacity-0">
+    <div class="fixed inset-0 z-10 overflow-y-auto p-3 sm:p-4 md:p-6 flex min-h-full items-start sm:items-center justify-center">
+        <div id="modal-crear-panel" class="relative bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-line/80 overflow-hidden transform transition-all scale-95 opacity-0 my-auto my-3 sm:my-6 flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)]">
             
-            <div class="bg-gradient-to-r from-brand-dark via-brand-deep to-brand-blue text-white px-6 py-4 flex items-center justify-between">
+            <div class="shrink-0 bg-gradient-to-r from-brand-dark via-brand-deep to-brand-blue text-white px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b border-brand-blue/30">
                 <div class="flex items-center gap-3">
-                    <span class="w-9 h-9 rounded-xl bg-white/10 text-cyan-300 flex items-center justify-center text-sm font-bold">
+                    <span class="w-9 h-9 rounded-xl bg-white/10 text-cyan-300 flex items-center justify-center text-sm font-bold shrink-0">
                         <i class="fa-solid fa-stamp"></i>
                     </span>
                     <div>
@@ -838,12 +953,12 @@
                         <p class="text-[11px] text-slate-200">Carga el diseño base y personaliza los datos del Jefe Inmediato y Gerente.</p>
                     </div>
                 </div>
-                <button type="button" onclick="cerrarModalCrearPlantilla()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer">
+                <button type="button" onclick="cerrarModalCrearPlantilla()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
 
-            <form method="POST" action="{{ route('admin.certificados.plantillas.store') }}" enctype="multipart/form-data" class="p-6 space-y-4 text-xs">
+            <form method="POST" action="{{ route('admin.certificados.plantillas.store') }}" enctype="multipart/form-data" class="p-5 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1 sidebar-scrollbar">
                 @csrf
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1019,14 +1134,14 @@
      MODAL PARA EDITAR PLANTILLA DE CERTIFICADO
      ======================================================== -->
 <div id="modal-editar-plantilla" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
-    <div id="modal-editar-backdrop" class="fixed inset-0 bg-brand-dark/70 backdrop-blur-sm transition-opacity opacity-0" onclick="cerrarModalEditarPlantilla()"></div>
+    <div id="modal-editar-backdrop" class="fixed inset-0 bg-brand-dark/70 backdrop-blur-sm transition-opacity opacity-0 cursor-pointer" onclick="cerrarModalEditarPlantilla()"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 flex items-center justify-center min-h-full">
-        <div id="modal-editar-panel" class="relative bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-line/80 overflow-hidden transform transition-all scale-95 opacity-0">
+    <div class="fixed inset-0 z-10 overflow-y-auto p-3 sm:p-4 md:p-6 flex min-h-full items-start sm:items-center justify-center">
+        <div id="modal-editar-panel" class="relative bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-line/80 overflow-hidden transform transition-all scale-95 opacity-0 my-auto my-3 sm:my-6 flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)]">
             
-            <div class="bg-gradient-to-r from-brand-dark via-brand-deep to-brand-blue text-white px-6 py-4 flex items-center justify-between">
+            <div class="shrink-0 bg-gradient-to-r from-brand-dark via-brand-deep to-brand-blue text-white px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b border-brand-blue/30">
                 <div class="flex items-center gap-3">
-                    <span class="w-9 h-9 rounded-xl bg-white/10 text-cyan-300 flex items-center justify-center text-sm font-bold">
+                    <span class="w-9 h-9 rounded-xl bg-white/10 text-cyan-300 flex items-center justify-center text-sm font-bold shrink-0">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </span>
                     <div>
@@ -1034,12 +1149,12 @@
                         <p class="text-[11px] text-slate-200">Actualiza los datos institucionales, firmas o reemplaza la imagen base.</p>
                     </div>
                 </div>
-                <button type="button" onclick="cerrarModalEditarPlantilla()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer">
+                <button type="button" onclick="cerrarModalEditarPlantilla()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
 
-            <form id="form-editar-plantilla" method="POST" action="" enctype="multipart/form-data" class="p-6 space-y-4 text-xs">
+            <form id="form-editar-plantilla" method="POST" action="" enctype="multipart/form-data" class="p-5 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1 sidebar-scrollbar">
                 @csrf
                 @method('PUT')
 
@@ -1221,26 +1336,27 @@ function cambiarPestana(tipo) {
     const btnExternos = document.getElementById('tab-btn-externos');
     const btnPlantillas = document.getElementById('tab-btn-plantillas');
 
-    const claseActivo = "px-4 py-2.5 rounded-2xl font-heading font-extrabold text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer bg-brand-blue text-white shadow-xs";
-    const claseInactivo = "px-4 py-2.5 rounded-2xl font-heading font-extrabold text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer bg-slate-100 text-slate-600 hover:bg-slate-200";
+    const baseClasses = "px-4 py-2.5 rounded-2xl font-heading font-extrabold text-xs sm:text-sm transition-all flex items-center justify-between sm:justify-center gap-2 cursor-pointer";
+    const claseActivo = `${baseClasses} bg-brand-blue text-white shadow-xs`;
+    const claseInactivo = `${baseClasses} bg-slate-100 text-slate-600 hover:bg-slate-200`;
 
     pnlInternos.classList.add('hidden');
     pnlExternos.classList.add('hidden');
     if (pnlPlantillas) pnlPlantillas.classList.add('hidden');
 
-    btnInternos.className = claseInactivo;
-    btnExternos.className = claseInactivo;
-    if (btnPlantillas) btnPlantillas.className = claseInactivo;
+    btnInternos.className = `w-full ${claseInactivo}`;
+    btnExternos.className = `w-full ${claseInactivo}`;
+    if (btnPlantillas) btnPlantillas.className = `w-full sm:col-span-2 lg:col-span-1 ${claseInactivo}`;
 
     if (tipo === 'internos') {
         pnlInternos.classList.remove('hidden');
-        btnInternos.className = claseActivo;
+        btnInternos.className = `w-full ${claseActivo}`;
     } else if (tipo === 'externos') {
         pnlExternos.classList.remove('hidden');
-        btnExternos.className = claseActivo;
+        btnExternos.className = `w-full ${claseActivo}`;
     } else if (tipo === 'plantillas') {
         if (pnlPlantillas) pnlPlantillas.classList.remove('hidden');
-        if (btnPlantillas) btnPlantillas.className = claseActivo;
+        if (btnPlantillas) btnPlantillas.className = `w-full sm:col-span-2 lg:col-span-1 ${claseActivo}`;
     }
 }
 
