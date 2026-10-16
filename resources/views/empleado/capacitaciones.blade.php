@@ -64,6 +64,7 @@
         </div>
     </div>
 
+
     <!-- NOTIFICACIONES FLASH -->
     @if(session('success_modulo'))
         <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center gap-2.5 shadow-2xs" role="status">
@@ -83,73 +84,6 @@
         </div>
     @endif
 
-    <!-- ========================================================
-         TARJETAS DE RESUMEN KPI
-         ======================================================== -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <!-- 1. Capacitaciones Activas -->
-        <button type="button"
-                onclick="cambiarPestanaCapacitaciones('todas')"
-                class="text-left bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs hover:border-brand-blue/50 transition-all cursor-pointer group">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-muted group-hover:text-brand-blue transition-colors">Capacitaciones</span>
-                <div class="w-9 h-9 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                    </svg>
-                </div>
-            </div>
-            <p class="mt-2 text-2xl font-heading font-extrabold text-brand-dark">{{ $estadisticas['activas'] ?? 0 }}</p>
-            <p class="text-[11px] text-muted mt-0.5">En tu plan actual</p>
-        </button>
-
-        <!-- 2. En Progreso -->
-        <button type="button"
-                onclick="cambiarPestanaCapacitaciones('pendientes')"
-                class="text-left bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs hover:border-amber-400/60 transition-all cursor-pointer group">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-muted group-hover:text-amber-700 transition-colors">En Progreso</span>
-                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-            </div>
-            <p class="mt-2 text-2xl font-heading font-extrabold text-brand-dark">{{ $estadisticas['en_progreso'] ?? 0 }}</p>
-            <p class="text-[11px] text-amber-700 font-medium mt-0.5">Módulos en curso</p>
-        </button>
-
-        <!-- 3. Finalizadas / Historial -->
-        <button type="button"
-                onclick="cambiarPestanaCapacitaciones('completadas')"
-                class="text-left bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs hover:border-emerald-400/60 transition-all cursor-pointer group">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-muted group-hover:text-emerald-700 transition-colors">Finalizadas</span>
-                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-            </div>
-            <p class="mt-2 text-2xl font-heading font-extrabold text-brand-dark">{{ $estadisticas['completadas'] ?? 0 }}</p>
-            <p class="text-[11px] text-emerald-700 font-medium mt-0.5">Aprobadas con éxito</p>
-        </button>
-
-        <!-- 4. Certificados Listos -->
-        <a href="{{ route('empleado.certificados') }}"
-           class="block bg-white p-4 sm:p-5 rounded-2xl border border-line/70 shadow-2xs hover:shadow-xs hover:border-sky-400/60 transition-all cursor-pointer group">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-muted group-hover:text-brand-blue transition-colors">Certificados</span>
-                <div class="w-9 h-9 rounded-xl bg-sky-50 text-brand-sky flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.004 0H9.496m5.004 0a3 3 0 002.996-2.67V5.625A2.625 2.625 0 0014.875 3h-5.75A2.625 2.625 0 006.5 5.625v7.08a3 3 0 002.996 2.67" />
-                    </svg>
-                </div>
-            </div>
-            <p class="mt-2 text-2xl font-heading font-extrabold text-brand-dark">{{ $estadisticas['certificados'] ?? 0 }}</p>
-            <p class="text-[11px] text-brand-blue font-medium mt-0.5">Listos para descargar</p>
-        </a>
-    </div>
 
     <!-- ========================================================
          SECCIÓN PRINCIPAL DE CAPACITACIONES CON VISTA SEPARADA

@@ -286,32 +286,6 @@
             transform: translateY(-1px);
         }
 
-        /* ==========================================================================
-           4. TÍTULO CON ONDA AL CARGAR
-           ========================================================================== */
-        .wave-text-char {
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(22px) rotate(6deg) scale(0.85);
-            animation: waveCharIn 0.85s cubic-bezier(0.2, 0.85, 0.3, 1.25) forwards;
-            animation-delay: calc(var(--char-i, 0) * 0.035s + 0.15s);
-            will-change: transform, opacity;
-        }
-
-        @keyframes waveCharIn {
-            0% {
-                opacity: 0;
-                transform: translateY(24px) rotate(8deg) scale(0.85);
-            }
-            60% {
-                opacity: 0.9;
-                transform: translateY(-5px) rotate(-2deg) scale(1.04);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) rotate(0deg) scale(1);
-            }
-        }
 
         /* ==========================================================================
            FORMA COLGANTE CORPORATIVA PNY (ESTILO PENDÓN FOTOGRAFÍA OFICIAL)
@@ -431,9 +405,9 @@
                             <span>Plataforma de Capacitaciones</span>
                         </div>
 
-                        <!-- TÍTULO PRINCIPAL CON EFECTO DE ONDA LETRA POR LETRA -->
+                        <!-- TÍTULO PRINCIPAL ESTÁTICO -->
                         <h1 id="login-heading" class="font-heading font-extrabold text-3xl sm:text-4xl tracking-tight leading-[1.12] mb-2 select-none" style="color: var(--text-heading);">
-                            <span class="wave-text-wrapper" id="wave-title-chars">Iniciar sesión</span>
+                            Iniciar sesión
                         </h1>
 
                         <!-- SUBTÍTULO LIMPIO ESTÁTICO (SIN LETREROS ROTATIVOS AUTOMÁTICOS) -->
@@ -692,21 +666,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            /* ================================================================
-               1. EFECTO LETRA POR LETRA EN EL TÍTULO AL CARGAR LA PÁGINA
-               ================================================================ */
-            const titleElement = document.getElementById('wave-title-chars');
-            if (titleElement) {
-                const text = titleElement.textContent.trim();
-                titleElement.innerHTML = '';
-                [...text].forEach((char, index) => {
-                    const span = document.createElement('span');
-                    span.className = 'wave-text-char';
-                    span.style.setProperty('--char-i', index);
-                    span.innerHTML = char === ' ' ? '&nbsp;' : char;
-                    titleElement.appendChild(span);
-                });
-            }
 
             /* ================================================================
                2. FONDO CON OLAS SVG ANIMADAS QUE REACCIONAN AL CURSOR (REQ #1)
