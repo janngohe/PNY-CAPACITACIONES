@@ -36,6 +36,7 @@
     $enResultados = request()->routeIs('jefe.resultados.*');
     $enPersonal = request()->routeIs('jefe.personal.*');
     $enPlantillas = request()->routeIs('jefe.plantillas.*');
+    $enInducciones = request()->routeIs('jefe.inducciones.*');
     $grupoEvaluacionAbierto = $enCrearEvaluacion || $enMisEvaluaciones || $enResultados;
 
     $claseItemActivo = 'bg-brand-light text-brand-blue shadow-2xs font-bold border-l-4 border-brand-blue pl-2.5';
@@ -198,13 +199,18 @@
                             <i class="fa-solid fa-stamp text-sm w-5 text-center transition-colors {{ $enPlantillas ? 'text-brand-blue' : 'text-slate-400 group-hover:text-brand-blue' }}"></i>
                             <span>Mis Plantillas</span>
                         </div>
-                        {{-- OCULTO TEMPORALMENTE: Firma para implementación futura
-                        @if($usuario->tieneFirmaRegistrada())
-                            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                Firma Lista
-                            </span>
-                        @endif
-                        --}}
+                    </a>
+
+                    <!-- 6. Inducciones y PIN -->
+                    <a href="{{ route('jefe.inducciones.index') }}" id="nav-inducciones"
+                       class="group flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-150 {{ $enInducciones ? $claseItemActivo : $claseItemInactivo }}">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-chalkboard-user text-sm w-5 text-center transition-colors {{ $enInducciones ? 'text-brand-blue' : 'text-slate-400 group-hover:text-brand-blue' }}"></i>
+                            <span>Inducciones</span>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $enInducciones ? 'bg-brand-blue text-white' : 'bg-cyan-50 text-cyan-700 border border-cyan-200' }}">
+                            PIN
+                        </span>
                     </a>
                 </nav>
             </div>

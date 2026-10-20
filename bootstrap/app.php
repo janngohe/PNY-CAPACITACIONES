@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'rol' => \App\Http\Middleware\RolMiddleware::class,
+            'facilitador' => \App\Http\Middleware\FacilitadorAuth::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

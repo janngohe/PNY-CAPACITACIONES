@@ -54,4 +54,8 @@ Route::prefix('jefe')->name('jefe.')->middleware(['auth', 'rol:JEFE_AREA'])->gro
 
     // Personal de Área
     Route::get('/personal', [PersonalController::class, 'index'])->name('personal.index');
+
+    // Inducciones y Consulta de PIN
+    Route::get('/inducciones', [\App\Http\Controllers\Jefe\InduccionJefeController::class, 'index'])->name('inducciones.index');
+    Route::get('/inducciones/pin', [\App\Http\Controllers\Jefe\InduccionJefeController::class, 'consultarPin'])->name('inducciones.pin');
 });

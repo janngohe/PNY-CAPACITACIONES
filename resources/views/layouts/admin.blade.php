@@ -104,6 +104,14 @@
                     ],
                 ],
             ],
+            [
+                'tipo' => 'enlace',
+                'id' => 'nav-inducciones',
+                'ruta' => 'admin.inducciones.index',
+                'patrones' => ['admin.inducciones.*'],
+                'icono' => 'fa-chalkboard-user',
+                'etiqueta' => 'Inducciones (PIN)',
+            ],
         ],
         'Seguimiento' => [
             [

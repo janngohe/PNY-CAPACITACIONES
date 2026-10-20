@@ -100,4 +100,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
         ->whereIn('tipo', ['progreso', 'resultados', 'certificados', 'usuarios'])
         ->whereIn('formato', ['csv', 'pdf'])
         ->name('reportes.descargar');
+
+    // Inducciones y Gestión de PIN de Facilitador
+    Route::get('/inducciones', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'index'])->name('inducciones.index');
+    Route::post('/inducciones/regenerar-pin', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'regenerarPin'])->name('inducciones.regenerar_pin');
+    Route::get('/inducciones/sesiones/{sesion}/acta-pdf', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'descargarActaPdf'])->name('inducciones.acta_pdf');
 });
