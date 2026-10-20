@@ -42,9 +42,9 @@ return new class extends Migration
         if (!Schema::hasTable('movimientos_puntos')) {
             Schema::create('movimientos_puntos', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
-                $table->foreignId('capacitacion_id')->nullable()->constrained('capacitaciones')->nullOnDelete();
-                $table->unsignedBigInteger('beneficio_id')->nullable();
+                $table->integer('usuario_id');
+                $table->integer('capacitacion_id')->nullable();
+                $table->foreignId('beneficio_id')->nullable()->constrained('beneficios')->nullOnDelete();
                 $table->string('tipo', 30); // ACREDITACION, CANJE, AJUSTE
                 $table->integer('puntos'); // positivo para suma, negativo para resta
                 $table->integer('saldo_anterior')->default(0);
@@ -52,7 +52,8 @@ return new class extends Migration
                 $table->string('motivo', 255);
                 $table->timestamps();
 
-                $table->foreign('beneficio_id')->references('id')->on('beneficios')->nullOnDelete();
+                $table->foreign('usuario_id')->references('id')->on('usuarios')->cascadeOnDelete();
+                $table->foreign('capacitacion_id')->references('id')->on('capacitaciones')->nullOnDelete();
                 $table->index(['usuario_id', 'tipo']);
                 $table->index(['usuario_id', 'capacitacion_id']);
             });
@@ -62,7 +63,7 @@ return new class extends Migration
         if (!Schema::hasTable('canjes_beneficios')) {
             Schema::create('canjes_beneficios', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
+                $table->integer('usuario_id');
                 $table->foreignId('beneficio_id')->constrained('beneficios')->cascadeOnDelete();
                 $table->unsignedInteger('puntos_utilizados');
                 $table->string('estado', 30)->default('CANJEADO'); // CANJEADO, ENTREGADO, CANCELADO
@@ -71,6 +72,7 @@ return new class extends Migration
                 $table->text('notas')->nullable();
                 $table->timestamps();
 
+                $table->foreign('usuario_id')->references('id')->on('usuarios')->cascadeOnDelete();
                 $table->index(['usuario_id', 'estado']);
             });
         }
