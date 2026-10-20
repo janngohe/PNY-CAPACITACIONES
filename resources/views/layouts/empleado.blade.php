@@ -127,7 +127,21 @@
                         </span>
                     </a>
 
-                    <!-- 4. Anexo Certificados -->
+                    <!-- 4. Puntos y Beneficios -->
+                    <a href="{{ route('empleado.beneficios') }}"
+                       class="group flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-150 {{ request()->routeIs('empleado.beneficios') ? 'bg-amber-50 text-amber-800 shadow-2xs font-bold border-l-4 border-amber-500 pl-2.5' : 'text-slate-600 hover:text-amber-700 hover:bg-amber-50/60' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 transition-colors {{ request()->routeIs('empleado.beneficios') ? 'text-amber-500' : 'text-slate-400 group-hover:text-amber-500' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                            <span>Puntos y Beneficios</span>
+                        </div>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full {{ request()->routeIs('empleado.beneficios') ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-800' }}">
+                            {{ $usuario->puntos_saldo ?? 0 }} pts
+                        </span>
+                    </a>
+
+                    <!-- 5. Anexo Certificados -->
                     <a href="{{ route('empleado.anexo') }}"
                        class="group flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-150 {{ request()->routeIs('empleado.anexo') ? 'bg-brand-light text-brand-blue shadow-2xs font-bold border-l-4 border-brand-blue pl-2.5' : 'text-slate-600 hover:text-brand-blue hover:bg-slate-50' }}">
                         <div class="flex items-center gap-3">
@@ -218,6 +232,14 @@
                         </svg>
                         {{ date('d M Y') }}
                     </span>
+
+                    <!-- Saldo de Puntos Acumulables -->
+                    <a href="{{ route('empleado.beneficios') }}"
+                       title="Mi saldo de puntos y beneficios disponibles"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-linear-to-r from-amber-500 to-amber-600 text-white font-heading font-extrabold text-xs shadow-2xs hover:shadow-xs hover:from-amber-600 hover:to-amber-700 transition transform hover:scale-102">
+                        <i class="fa-solid fa-star text-[11px] text-amber-200"></i>
+                        <span>{{ number_format($usuario->puntos_saldo ?? 0) }} pts</span>
+                    </a>
 
                     <!-- Nombre del usuario en la barra superior -->
                     <div class="flex items-center gap-2 pl-2 border-l border-line/60">

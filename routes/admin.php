@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AreaController;
 use App\Http\Controllers\Admin\AsignacionController;
+use App\Http\Controllers\Admin\BeneficioController;
 use App\Http\Controllers\Admin\CapacitacionController;
 use App\Http\Controllers\Admin\CertificadoController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Admin\EvaluacionController;
 use App\Http\Controllers\Admin\ProgresoController;
 use App\Http\Controllers\Admin\ReporteController;
 use App\Http\Controllers\Admin\ResultadoController;
+use App\Http\Controllers\Admin\SedeController;
 use App\Http\Controllers\Admin\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +22,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Sedes
+    Route::get('/sedes', [SedeController::class, 'index'])->name('sedes.index');
+    Route::post('/sedes', [SedeController::class, 'store'])->name('sedes.store');
+    Route::put('/sedes/{sede}', [SedeController::class, 'update'])->name('sedes.update');
+    Route::patch('/sedes/{sede}/estado', [SedeController::class, 'toggleEstado'])->name('sedes.estado');
 
     // Usuarios (se registran, consultan, editan y desactivan; nunca se eliminan)
     Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
@@ -50,6 +58,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
     // Asignación de capacitaciones a áreas
     Route::get('/asignaciones', [AsignacionController::class, 'index'])->name('asignaciones.index');
     Route::put('/asignaciones/{capacitacion}', [AsignacionController::class, 'update'])->name('asignaciones.update');
+
+    // Catálogo de Beneficios y Puntos
+    Route::get('/beneficios', [BeneficioController::class, 'index'])->name('beneficios.index');
+    Route::post('/beneficios', [BeneficioController::class, 'store'])->name('beneficios.store');
+    Route::put('/beneficios/{beneficio}', [BeneficioController::class, 'update'])->name('beneficios.update');
+    Route::match(['post', 'patch'], '/beneficios/{beneficio}/toggle-estado', [BeneficioController::class, 'toggleEstado'])->name('beneficios.toggle-estado');
+    Route::match(['post', 'patch'], '/beneficios/{beneficio}/estado', [BeneficioController::class, 'toggleEstado'])->name('beneficios.estado');
+    Route::delete('/beneficios/{beneficio}', [BeneficioController::class, 'destroy'])->name('beneficios.destroy');
 
     // Evaluaciones, preguntas y respuestas
     Route::get('/evaluaciones', [EvaluacionController::class, 'index'])->name('evaluaciones.index');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Capacitacion;
+use App\Models\Sede;
 use App\Support\Seguimiento;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -16,6 +17,7 @@ class ProgresoController extends Controller
         $filtros = [
             'q' => trim((string) $request->query('q')),
             'area_id' => $request->query('area_id'),
+            'sede_id' => $request->query('sede_id'),
             'capacitacion_id' => $request->query('capacitacion_id'),
             'estado' => $request->query('estado'),
         ];
@@ -44,6 +46,7 @@ class ProgresoController extends Controller
             'filas' => $paginado,
             'resumen' => $resumen,
             'filtros' => $filtros,
+            'sedes' => Sede::where('estado', true)->orderBy('nombre')->get(['id', 'nombre', 'ciudad']),
             'areas' => Area::orderBy('nombre')->get(['id', 'nombre']),
             'capacitaciones' => Capacitacion::orderBy('titulo')->get(['id', 'titulo']),
             'estados' => Seguimiento::ESTADOS,

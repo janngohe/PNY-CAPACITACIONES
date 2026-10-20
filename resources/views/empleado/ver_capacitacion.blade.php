@@ -35,6 +35,9 @@
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 backdrop-blur-md border border-white/20 text-brand-sky">
                     Área: {{ $usuario->area->nombre ?? 'Producción Piscícola' }}
                 </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400 text-amber-950 shadow-xs">
+                    <i class="fa-solid fa-star text-xs"></i> +{{ $capacitacion->puntos ?? 20 }} Puntos
+                </span>
                 @if($capacitacion->duracion_estimada)
                     <span class="px-3 py-1 rounded-full bg-white/10 text-xs font-bold text-white border border-white/20">
                         <i class="fa-regular fa-clock text-brand-sky mr-1"></i> {{ $capacitacion->duracion_estimada }} Horas

@@ -125,9 +125,10 @@
                 @php
                     $imagen = $cap->url_imagen;
                     $activa = (bool) $cap->estado;
+                    $vencida = $cap->estaVencida();
                 @endphp
                 <article id="capacitacion-{{ $cap->id }}"
-                         class="bg-white rounded-3xl border border-line/75 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col sm:flex-row {{ $activa ? '' : 'opacity-90' }}">
+                         class="bg-white rounded-3xl border {{ $vencida ? 'border-rose-200 shadow-rose-100/50' : 'border-line/75' }} shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col sm:flex-row {{ $activa ? '' : 'opacity-90' }}">
 
                     <!-- Portada con ola -->
                     <div class="relative sm:w-44 h-40 sm:h-auto shrink-0 overflow-hidden bg-brand-light">
@@ -141,10 +142,21 @@
                             <path d="M20,0 C5,40 18,80 8,120 C0,160 16,200 6,240 C2,270 14,285 20,300 L20,0 Z" fill="currentColor"/>
                         </svg>
 
-                        <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold backdrop-blur-md {{ $activa ? 'bg-emerald-600/90 text-white' : 'bg-slate-700/85 text-white' }}">
-                            <span class="w-1.5 h-1.5 rounded-full bg-white {{ $activa ? 'animate-pulse' : '' }}"></span>
-                            {{ $activa ? 'Activa' : 'Desactivada' }}
-                        </span>
+                        @if ($vencida)
+                            <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold backdrop-blur-md bg-rose-600/95 text-white shadow-xs">
+                                <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
+                                <span>Vencida</span>
+                            </span>
+                        @elseif ($activa)
+                            <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold backdrop-blur-md bg-emerald-600/90 text-white">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <span>Activa</span>
+                            </span>
+                        @else
+                            <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold backdrop-blur-md bg-slate-700/85 text-white">
+                                <span>Desactivada</span>
+                            </span>
+                        @endif
                     </div>
 
                     <!-- Contenido -->
@@ -152,11 +164,18 @@
                         <div class="space-y-3">
                             <div>
                                 <h3 class="font-heading font-extrabold text-base sm:text-lg leading-tight text-brand-dark line-clamp-2">{{ $cap->titulo }}</h3>
-                                <p class="text-[11px] text-muted mt-1">
-                                    {{ $cap->modulos_activos_count }} {{ \Illuminate\Support\Str::plural('módulo', $cap->modulos_activos_count) }}
-                                    @if ($cap->duracion_estimada) · {{ $cap->duracion_estimada }} h @endif
-                                    · Aprobación {{ rtrim(rtrim(number_format((float) $cap->porcentaje_aprobacion, 2), '0'), '.') }}%
-                                    @if ($cap->fecha_limite) · Límite {{ $cap->fecha_limite->format('d/m/Y') }} @endif
+                                <p class="text-[11px] text-muted mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                                    <span>{{ $cap->modulos_activos_count }} {{ \Illuminate\Support\Str::plural('módulo', $cap->modulos_activos_count) }}</span>
+                                    @if ($cap->duracion_estimada) <span>· {{ $cap->duracion_estimada }} h</span> @endif
+                                    <span>· Aprobación {{ rtrim(rtrim(number_format((float) $cap->porcentaje_aprobacion, 2), '0'), '.') }}%</span>
+                                    @if ($vencida)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
+                                            <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
+                                            Venció el {{ $cap->fecha_limite->format('d/m/Y') }}
+                                        </span>
+                                    @elseif ($cap->fecha_limite)
+                                        <span>· Límite {{ $cap->fecha_limite->format('d/m/Y') }}</span>
+                                    @endif
                                 </p>
                             </div>
 
@@ -168,17 +187,24 @@
                                 @endforeach
                             </div>
 
-                            <div class="space-y-1.5">
+                            <!-- Porcentaje completado -->
+                            <div class="space-y-1.5 pt-2 border-t border-line/60">
                                 <div class="flex items-center justify-between text-xs">
-                                    <span class="font-semibold text-slate-700">
-                                        {{ $cap->participantes_count }} de {{ $estadisticas['empleados'] }} empleados han participado
+                                    <span class="font-bold text-slate-700 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-chart-pie text-brand-blue text-xs"></i>
+                                        <span>Porcentaje completado</span>
                                     </span>
-                                    <span class="font-bold text-brand-blue">{{ $cap->progreso_promedio }}%</span>
+                                    <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg {{ $cap->progreso_promedio >= 100 ? 'bg-emerald-100 text-emerald-800' : ($cap->progreso_promedio > 0 ? 'bg-blue-100 text-brand-blue' : 'bg-slate-100 text-slate-600') }}">
+                                        {{ $cap->progreso_promedio }}%
+                                    </span>
                                 </div>
                                 <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                    <div class="bg-brand-blue h-2 rounded-full transition-all duration-300" style="width: {{ $cap->progreso_promedio }}%"></div>
+                                    <div class="h-2 rounded-full transition-all duration-300 {{ $cap->progreso_promedio >= 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-brand-blue to-cyan-500' }}" style="width: {{ $cap->progreso_promedio }}%"></div>
                                 </div>
-                                <p class="text-[10px] text-muted">Progreso promedio del área</p>
+                                <div class="flex items-center justify-between text-[11px] text-muted">
+                                    <span>{{ $cap->participantes_count }} de {{ $estadisticas['empleados'] }} empleados participaron</span>
+                                    <span>Progreso promedio del área</span>
+                                </div>
                             </div>
                         </div>
 

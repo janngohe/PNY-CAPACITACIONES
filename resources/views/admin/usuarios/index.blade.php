@@ -36,7 +36,7 @@
 
     <!-- FILTROS DE BÚSQUEDA EN TIEMPO REAL -->
     <div class="bg-white p-4 sm:p-5 rounded-3xl border border-line/80 shadow-2xs">
-        <form method="GET" action="{{ route('admin.usuarios.index') }}" id="form-filtro-usuarios" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <form method="GET" action="{{ route('admin.usuarios.index') }}" id="form-filtro-usuarios" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
             <div class="lg:col-span-2">
                 <div class="flex items-center justify-between mb-1">
                     <label for="filtro-q" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">Buscar por nombre o cédula</label>
@@ -71,12 +71,23 @@
             </div>
 
             <div>
+                <label for="filtro-sede" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Sede</label>
+                <select id="filtro-sede" name="sede_id"
+                        class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue transition-colors cursor-pointer">
+                    <option value="">Todas las sedes</option>
+                    @foreach ($sedes as $sede)
+                        <option value="{{ $sede->id }}" {{ (string)($filtros['sedeId'] ?? '') === (string)$sede->id ? 'selected' : '' }}>{{ $sede->nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
                 <label for="filtro-area" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Área</label>
                 <select id="filtro-area" name="area_id"
                         class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue transition-colors cursor-pointer">
                     <option value="">Todas las áreas</option>
                     @foreach ($areas as $area)
-                        <option value="{{ $area->id }}" {{ (string)$filtros['areaId'] === (string)$area->id ? 'selected' : '' }}>{{ $area->nombre }}</option>
+                        <option value="{{ $area->id }}" data-sede-id="{{ $area->sede_id }}" {{ (string)$filtros['areaId'] === (string)$area->id ? 'selected' : '' }}>{{ $area->nombre }}</option>
                     @endforeach
                 </select>
             </div>
@@ -91,7 +102,7 @@
                         <option value="0" {{ $filtros['estado'] === '0' ? 'selected' : '' }}>Inactivos</option>
                     </select>
                     <button type="button" id="btn-limpiar-filtros-usuarios"
-                            class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0 {{ ($filtros['q'] || $filtros['rol'] || $filtros['areaId'] || $filtros['estado'] !== null) ? '' : 'hidden' }}"
+                            class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0 {{ ($filtros['q'] || $filtros['rol'] || $filtros['areaId'] || ($filtros['sedeId'] ?? null) || $filtros['estado'] !== null) ? '' : 'hidden' }}"
                             title="Limpiar todos los filtros">
                         <i class="fa-solid fa-arrow-rotate-left text-xs"></i>
                         <span>Limpiar</span>
@@ -153,10 +164,16 @@
                             </span>
                         </div>
                         <div class="bg-slate-50 p-2.5 rounded-xl border border-line/60">
-                            <span class="text-[9px] uppercase font-bold text-muted block mb-0.5">Área Asignada</span>
+                            <span class="text-[9px] uppercase font-bold text-muted block mb-0.5">Área y Sede</span>
                             <span class="text-xs font-semibold text-slate-700 truncate block">
                                 {{ $u->area->nombre ?? '— Sin área —' }}
                             </span>
+                            @php $sedeMob = $u->sedeActual(); @endphp
+                            @if ($sedeMob)
+                                <span class="text-[10px] text-brand-blue font-bold block truncate mt-0.5">
+                                    <i class="fa-solid fa-building text-[9px]"></i> {{ $sedeMob->nombre }}
+                                </span>
+                            @endif
                         </div>
                     </div>
 
@@ -244,7 +261,13 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3.5 text-slate-600">
-                                {{ $u->area->nombre ?? '— Sin área —' }}
+                                <p class="font-semibold text-brand-dark leading-tight">{{ $u->area->nombre ?? '— Sin área —' }}</p>
+                                @php $sedeUsuario = $u->sedeActual(); @endphp
+                                @if ($sedeUsuario)
+                                    <span class="inline-flex items-center gap-1 text-[10px] text-brand-blue font-bold mt-0.5">
+                                        <i class="fa-solid fa-building text-[9px]"></i> {{ $sedeUsuario->nombre }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-4 py-3.5 text-center">
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $u->estado ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-300' }}">
@@ -312,6 +335,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const formFiltro = document.getElementById('form-filtro-usuarios');
     const inputQ = document.getElementById('filtro-q');
     const selectRol = document.getElementById('filtro-rol');
+    const selectSede = document.getElementById('filtro-sede');
     const selectArea = document.getElementById('filtro-area');
     const selectEstado = document.getElementById('filtro-estado');
     const btnBorrarQ = document.getElementById('btn-borrar-q');
@@ -360,6 +384,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const hayFiltros = Boolean(
             (inputQ && inputQ.value.trim()) ||
             (selectRol && selectRol.value) ||
+            (selectSede && selectSede.value) ||
             (selectArea && selectArea.value) ||
             (selectEstado && selectEstado.value !== '')
         );
@@ -464,8 +489,33 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Filtrado instantáneo al seleccionar Rol, Área o Estado
+    function sincronizarFiltroAreasPorSede() {
+        if (!selectSede || !selectArea) return;
+        const sedeId = selectSede.value;
+        const opciones = selectArea.querySelectorAll('option[data-sede-id]');
+        let opcionSeleccionadaValida = false;
+
+        opciones.forEach(opt => {
+            const optSedeId = opt.getAttribute('data-sede-id');
+            const coincide = !sedeId || String(optSedeId) === String(sedeId);
+            opt.hidden = !coincide;
+            opt.disabled = !coincide;
+            if (opt.selected && coincide) {
+                opcionSeleccionadaValida = true;
+            }
+        });
+
+        if (selectArea.value && !opcionSeleccionadaValida) {
+            selectArea.value = '';
+        }
+    }
+
+    // Filtrado instantáneo al seleccionar Rol, Sede, Área o Estado
     selectRol?.addEventListener('change', ejecutarFiltroEnVivo);
+    selectSede?.addEventListener('change', function () {
+        sincronizarFiltroAreasPorSede();
+        ejecutarFiltroEnVivo();
+    });
     selectArea?.addEventListener('change', ejecutarFiltroEnVivo);
     selectEstado?.addEventListener('change', ejecutarFiltroEnVivo);
 
@@ -481,11 +531,14 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
         if (inputQ) inputQ.value = '';
         if (selectRol) selectRol.value = '';
+        if (selectSede) selectSede.value = '';
         if (selectArea) selectArea.value = '';
         if (selectEstado) selectEstado.value = '';
+        sincronizarFiltroAreasPorSede();
         ejecutarFiltroEnVivo();
     });
 
+    sincronizarFiltroAreasPorSede();
     vincularPaginacion();
 });
 </script>

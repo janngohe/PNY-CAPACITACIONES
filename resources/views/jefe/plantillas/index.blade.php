@@ -19,7 +19,7 @@
                 Plantillas de Certificados del Área
             </h1>
             <p class="text-xs text-muted max-w-2xl mt-0.5">
-                Carga tu firma oficial en las plantillas asignadas por la administración y diseña plantillas personalizadas para las capacitaciones de tu equipo.
+                Explora las plantillas institucionales asignadas y diseña plantillas personalizadas para las capacitaciones de tu equipo.
             </p>
         </div>
 
@@ -43,18 +43,15 @@
             </div>
         </div>
 
-        <!-- Alerta de Firmas Pendientes -->
-        <div class="bg-white p-5 rounded-3xl border {{ $firmasPendientesCount > 0 ? 'border-amber-300 bg-amber-50/30' : 'border-line/80' }} shadow-2xs flex items-center gap-4 relative overflow-hidden">
-            @if($firmasPendientesCount > 0)
-                <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-            @endif
-            <div class="w-12 h-12 rounded-2xl {{ $firmasPendientesCount > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500' }} flex items-center justify-center text-lg font-bold shrink-0">
-                <i class="fa-solid fa-signature"></i>
+        <!-- KPI Plantillas Activas (Reemplaza Firmas Pendientes temporalmente) -->
+        <div class="bg-white p-5 rounded-3xl border border-line/80 shadow-2xs flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold shrink-0">
+                <i class="fa-solid fa-circle-check"></i>
             </div>
             <div>
-                <span class="text-[11px] {{ $firmasPendientesCount > 0 ? 'text-amber-800' : 'text-muted' }} font-bold uppercase tracking-wider block">Firmas Pendientes</span>
-                <span class="text-xl sm:text-2xl font-heading font-extrabold {{ $firmasPendientesCount > 0 ? 'text-amber-700' : 'text-slate-700' }}">
-                    {{ $firmasPendientesCount }}
+                <span class="text-[11px] text-muted font-bold uppercase tracking-wider block">Plantillas Activas</span>
+                <span class="text-xl sm:text-2xl font-heading font-extrabold text-brand-dark">
+                    {{ collect($todasPlantillas)->where('estado', true)->count() }}
                 </span>
             </div>
         </div>
@@ -80,7 +77,7 @@
         </div>
     </div>
 
-    <!-- BANNER DE ALERTA SI HAY FIRMAS PENDIENTES -->
+    {{-- OCULTO TEMPORALMENTE: Banner de Firmas Pendientes para implementación futura
     @if($firmasPendientesCount > 0)
         <div class="p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
             <div class="flex items-start gap-3">
@@ -101,6 +98,7 @@
             </button>
         </div>
     @endif
+    --}}
 
     <!-- PESTAÑAS DE FILTRO -->
     <div class="flex items-center gap-2 border-b border-line/70 pb-2 overflow-x-auto text-xs font-semibold">
@@ -111,9 +109,11 @@
         <button type="button" onclick="filtrarTab('admin')" id="tab-btn-admin"
                 class="tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-brand-blue hover:bg-slate-100 transition-all cursor-pointer">
             Institucionales del Admin ({{ count($plantillasAdmin) }})
+            {{-- OCULTO TEMPORALMENTE: Badge firmas pendientes
             @if($firmasPendientesCount > 0)
                 <span class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">{{ $firmasPendientesCount }} pendientes</span>
             @endif
+            --}}
         </button>
         <button type="button" onclick="filtrarTab('propias')" id="tab-btn-propias"
                 class="tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-brand-blue hover:bg-slate-100 transition-all cursor-pointer">
@@ -192,6 +192,7 @@
 
                                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
                                     <span>Área vinculada: <strong class="text-slate-700 font-semibold">{{ $pl->area->nombre ?? 'General Institucional' }}</strong></span>
+                                    {{-- OCULTO TEMPORALMENTE: Estado de firma en cabecera de tarjeta
                                     <span>•</span>
                                     @if($tieneFirmaJefe)
                                         <span class="inline-flex items-center gap-1 text-emerald-700 font-bold bg-emerald-50/80 px-2 py-0.5 rounded-full border border-emerald-200">
@@ -202,12 +203,13 @@
                                             <i class="fa-solid fa-triangle-exclamation text-[10px] text-amber-700"></i> Firma Pendiente
                                         </span>
                                     @endif
+                                    --}}
                                 </div>
                             </div>
                         </div>
 
                         <!-- Lado derecho del resumen (Acción rápida y chevron interactivo) -->
-                        <div class="flex items-center gap-2.5 self-end sm:self-center shrink-0">
+                            {{-- OCULTO TEMPORALMENTE: Botón firmar ahora para implementación futura
                             @if(!$tieneFirmaJefe)
                                 <button type="button"
                                         onclick="event.stopPropagation(); abrirModalFirmaJefe({{ $pl->id }}, '{{ addslashes($pl->nombre) }}', '{{ addslashes($pl->firma_1_nombre ?? $usuario->nombre_completo) }}', '{{ addslashes($pl->firma_1_cargo ?? ('Jefe de Área ' . ($area->nombre ?? ''))) }}', '{{ $pl->firma_1_ruta ? asset('storage/' . $pl->firma_1_ruta) : '' }}', '{{ route('jefe.plantillas.firma', $pl) }}')"
@@ -216,6 +218,7 @@
                                     <span>Firmar Ahora</span>
                                 </button>
                             @endif
+                            --}}
 
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:text-brand-blue hover:bg-slate-200 text-xs font-bold transition-all">
                                 <span id="texto-chevron-{{ $pl->id }}">Desglosar</span>
@@ -257,7 +260,7 @@
                             @endif
                         </div>
 
-                        <!-- ESTADO DE FIRMAS: JEFE INMEDIATO Y GERENCIA -->
+                        {{-- OCULTO TEMPORALMENTE: Bloque de firmas en tarjeta para implementación futura
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             
                             <!-- Columna Firma del Jefe (Acción central) -->
@@ -339,6 +342,7 @@
                                 <p class="text-[10px] text-slate-400 italic">Segundo firmante institucional</p>
                             </div>
                         </div>
+                        --}}
 
                         <!-- BARRA INFERIOR DE ACCIONES Y PREVISUALIZACIÓN EN TIEMPO REAL -->
                         <div class="pt-3 border-t border-line/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
@@ -662,72 +666,74 @@
                             </div>
                         </div>
 
-                        <!-- 4. FIRMAS OFICIALES -->
-                        <div class="bg-white p-3.5 rounded-2xl border border-line/80 shadow-2xs space-y-3">
-                            <label class="block font-heading font-bold text-brand-dark text-xs">Firmas Oficiales del Certificado</label>
+                        <!-- 4. FIRMAS OFICIALES (OCULTAS TEMPORALMENTE PARA IMPLEMENTACIÓN A FUTURO) -->
+                        <div class="hidden" style="display: none;">
+                            <div class="bg-white p-3.5 rounded-2xl border border-line/80 shadow-2xs space-y-3">
+                                <label class="block font-heading font-bold text-brand-dark text-xs">Firmas Oficiales del Certificado</label>
 
-                            <!-- Firma 1: Jefe -->
-                            <div class="p-3 bg-slate-50 rounded-xl border border-line/60 space-y-2">
-                                <span class="font-heading font-extrabold text-[11px] text-brand-blue block">Firma 1: Jefe de Área (Tu Firma)</span>
-                                <input type="text" name="firma_1_nombre" id="crear-firma-1-nombre" value="{{ $usuario->nombre_completo }}" placeholder="Nombre del Jefe" required
-                                       class="w-full px-2.5 py-1.5 rounded-lg border border-line text-xs font-semibold">
-                                <input type="text" name="firma_1_cargo" id="crear-firma-1-cargo" value="{{ $usuario->cargoOficial() }}" placeholder="Cargo del Jefe" required
-                                       class="w-full px-2.5 py-1.5 rounded-lg border border-line text-xs font-semibold">
-                                
-                                @if($usuario->tieneFirmaRegistrada())
-                                    <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs shadow-2xs">
-                                        <div class="flex items-center gap-1.5">
-                                            <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
-                                            <span class="text-[11px] text-emerald-800 font-bold">Firma guardada en tu cuenta cargada automáticamente</span>
-                                        </div>
-                                        <div class="h-7 w-20 bg-white rounded-lg border border-emerald-200 p-0.5 flex items-center justify-center shrink-0">
-                                            <img src="{{ $usuario->firmaUrl() }}" alt="Firma" class="max-h-6 max-w-full object-contain">
-                                        </div>
-                                    </div>
-                                @endif
-
-                                <div>
-                                    <label class="block text-[10px] text-muted font-bold mb-0.5">Reemplazar Imagen de Firma (Opcional)</label>
-                                    <input type="file" name="firma_1_archivo" id="crear-firma-1-archivo" accept="image/png,image/jpeg,image/webp"
-                                           class="w-full text-[10px]">
-                                </div>
-                            </div>
-
-                            <!-- Firma 2: Aval Institucional / Gerencia General (Definida exclusivamente por el Administrador) -->
-                            <div class="p-3 bg-slate-50/80 rounded-xl border border-line/70 space-y-2.5">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="font-heading font-extrabold text-[11px] text-brand-dark flex items-center gap-1.5">
-                                        <i class="fa-solid fa-building-shield text-brand-blue text-xs"></i>
-                                        <span>Firma 2: Aval Institucional (Gerencia)</span>
-                                    </span>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
-                                        <i class="fa-solid fa-lock text-[8px]"></i>
-                                        Solo Administrador
-                                    </span>
-                                </div>
-
-                                <div class="p-2.5 bg-white rounded-lg border border-line/70 space-y-1.5 shadow-2xs">
-                                    <div class="flex items-start justify-between gap-2">
-                                        <div>
-                                            <p class="font-heading font-bold text-xs text-brand-dark leading-tight">
-                                                {{ $firma2Oficial['nombre'] }}
-                                            </p>
-                                            <p class="text-[10px] text-muted">
-                                                {{ $firma2Oficial['cargo'] }}
-                                            </p>
-                                        </div>
-                                        @if(!empty($firma2Oficial['url']))
-                                            <div class="h-8 w-20 bg-slate-50 rounded border border-line/60 p-0.5 flex items-center justify-center shrink-0">
-                                                <img src="{{ $firma2Oficial['url'] }}" alt="Firma Institucional" class="max-h-7 max-w-full object-contain">
+                                <!-- Firma 1: Jefe -->
+                                <div class="p-3 bg-slate-50 rounded-xl border border-line/60 space-y-2">
+                                    <span class="font-heading font-extrabold text-[11px] text-brand-blue block">Firma 1: Jefe de Área (Tu Firma)</span>
+                                    <input type="text" name="firma_1_nombre" id="crear-firma-1-nombre" value="{{ $usuario->nombre_completo }}" placeholder="Nombre del Jefe"
+                                           class="w-full px-2.5 py-1.5 rounded-lg border border-line text-xs font-semibold">
+                                    <input type="text" name="firma_1_cargo" id="crear-firma-1-cargo" value="{{ $usuario->cargoOficial() }}" placeholder="Cargo del Jefe"
+                                           class="w-full px-2.5 py-1.5 rounded-lg border border-line text-xs font-semibold">
+                                    
+                                    @if($usuario->tieneFirmaRegistrada())
+                                        <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs shadow-2xs">
+                                            <div class="flex items-center gap-1.5">
+                                                <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                                                <span class="text-[11px] text-emerald-800 font-bold">Firma guardada en tu cuenta cargada automáticamente</span>
                                             </div>
-                                        @else
-                                            <span class="text-[9px] text-slate-400 italic">Rúbrica institucional</span>
-                                        @endif
+                                            <div class="h-7 w-20 bg-white rounded-lg border border-emerald-200 p-0.5 flex items-center justify-center shrink-0">
+                                                <img src="{{ $usuario->firmaUrl() }}" alt="Firma" class="max-h-6 max-w-full object-contain">
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    <div>
+                                        <label class="block text-[10px] text-muted font-bold mb-0.5">Reemplazar Imagen de Firma (Opcional)</label>
+                                        <input type="file" name="firma_1_archivo" id="crear-firma-1-archivo" accept="image/png,image/jpeg,image/webp"
+                                               class="w-full text-[10px]">
                                     </div>
-                                    <p class="text-[10px] text-slate-500 leading-normal flex items-center gap-1 pt-1 border-t border-slate-100">
-                                        <i class="fa-solid fa-circle-info text-brand-blue text-[9px]"></i>
-                                        Esta firma es estándar e institucional. Solo el Administrador general puede modificar sus datos.
-                                    </p>
+                                </div>
+
+                                <!-- Firma 2: Aval Institucional / Gerencia General (Definida exclusivamente por el Administrador) -->
+                                <div class="p-3 bg-slate-50/80 rounded-xl border border-line/70 space-y-2.5">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-heading font-extrabold text-[11px] text-brand-dark flex items-center gap-1.5">
+                                            <i class="fa-solid fa-building-shield text-brand-blue text-xs"></i>
+                                            <span>Firma 2: Aval Institucional (Gerencia)</span>
+                                        </span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
+                                            <i class="fa-solid fa-lock text-[8px]"></i>
+                                            Solo Administrador
+                                        </span>
+                                    </div>
+
+                                    <div class="p-2.5 bg-white rounded-lg border border-line/70 space-y-1.5 shadow-2xs">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div>
+                                                <p class="font-heading font-bold text-xs text-brand-dark leading-tight">
+                                                    {{ $firma2Oficial['nombre'] }}
+                                                </p>
+                                                <p class="text-[10px] text-muted">
+                                                    {{ $firma2Oficial['cargo'] }}
+                                                </p>
+                                            </div>
+                                            @if(!empty($firma2Oficial['url']))
+                                                <div class="h-8 w-20 bg-slate-50 rounded border border-line/60 p-0.5 flex items-center justify-center shrink-0">
+                                                    <img src="{{ $firma2Oficial['url'] }}" alt="Firma Institucional" class="max-h-7 max-w-full object-contain">
+                                                </div>
+                                            @else
+                                                <span class="text-[9px] text-slate-400 italic">Rúbrica institucional</span>
+                                            @endif
+                                        </div>
+                                        <p class="text-[10px] text-slate-500 leading-normal flex items-center gap-1 pt-1 border-t border-slate-100">
+                                            <i class="fa-solid fa-circle-info text-brand-blue text-[9px]"></i>
+                                            Esta firma es estándar e institucional. Solo el Administrador general puede modificar sus datos.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -808,11 +814,6 @@
                                     <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-14 sm:h-16 w-auto object-contain drop-shadow-sm">
                                 </div>
 
-                                <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200/80 shadow-2xs">
-                                    <i class="fa-solid fa-certificate text-amber-500"></i>
-                                    <span>Acreditación Institucional Oficial</span>
-                                </div>
-
                                 <h1 id="preview-crear-titulo" class="font-heading font-black text-2xl sm:text-3xl text-brand-dark tracking-tight uppercase leading-tight">
                                     CERTIFICADO DE CAPACITACIÓN Y APROBACIÓN
                                 </h1>
@@ -861,49 +862,49 @@
                                 </div>
                             </div>
 
-                            <!-- FIRMAS DINÁMICAS (JEFE INMEDIATO & GERENCIA) -->
-                            <div class="pt-6 border-t border-line/70 grid grid-cols-2 gap-6 text-center text-xs relative z-10">
-                                
-                                <!-- Firma 1: Jefe Inmediato -->
-                                <div class="space-y-1.5">
-                                    <div class="h-14 flex items-end justify-center pb-1">
-                                        <img id="preview-crear-firma-1-img" src="" alt="Firma Jefe" class="max-h-14 max-w-[170px] object-contain mx-auto hidden">
-                                        <span id="preview-crear-firma-1-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-bold text-xs border border-blue-200/80">
-                                            <i class="fa-solid fa-signature"></i>
-                                            <span>Firma Verificada</span>
-                                        </span>
+                            <!-- FIRMAS DINÁMICAS (OCULTAS TEMPORALMENTE PARA IMPLEMENTACIÓN A FUTURO) -->
+                            <div class="hidden" style="display: none;">
+                                <div class="pt-6 border-t border-line/70 grid grid-cols-2 gap-6 text-center text-xs relative z-10">
+                                    <!-- Firma 1: Jefe Inmediato -->
+                                    <div class="space-y-1.5">
+                                        <div class="h-14 flex items-end justify-center pb-1">
+                                            <img id="preview-crear-firma-1-img" src="" alt="Firma Jefe" class="max-h-14 max-w-[170px] object-contain mx-auto hidden">
+                                            <span id="preview-crear-firma-1-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-bold text-xs border border-blue-200/80">
+                                                <i class="fa-solid fa-signature"></i>
+                                                <span>Firma Verificada</span>
+                                            </span>
+                                        </div>
+                                        <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
+                                            <p id="preview-crear-firma-1-nombre" class="font-heading font-extrabold text-sm text-brand-dark truncate leading-tight">
+                                                {{ $usuario->nombre_completo }}
+                                            </p>
+                                            <p id="preview-crear-firma-1-cargo" class="text-[11px] text-muted font-medium truncate">
+                                                Jefe de Área {{ $area->nombre ?? '' }}
+                                            </p>
+                                            <span class="inline-block text-[10px] font-bold text-brand-blue uppercase mt-0.5 tracking-wider">Jefe de Área</span>
+                                        </div>
                                     </div>
-                                    <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
-                                        <p id="preview-crear-firma-1-nombre" class="font-heading font-extrabold text-sm text-brand-dark truncate leading-tight">
-                                            {{ $usuario->nombre_completo }}
-                                        </p>
-                                        <p id="preview-crear-firma-1-cargo" class="text-[11px] text-muted font-medium truncate">
-                                            Jefe de Área {{ $area->nombre ?? '' }}
-                                        </p>
-                                        <span class="inline-block text-[10px] font-bold text-brand-blue uppercase mt-0.5 tracking-wider">Jefe de Área</span>
+
+                                    <!-- Firma 2: Gerente General -->
+                                    <div class="space-y-1.5">
+                                        <div class="h-14 flex items-end justify-center pb-1">
+                                            <img id="preview-crear-firma-2-img" src="" alt="Firma Gerencia" class="max-h-14 max-w-[170px] object-contain mx-auto hidden">
+                                            <span id="preview-crear-firma-2-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-bold text-xs border border-blue-200/80">
+                                                <i class="fa-solid fa-signature"></i>
+                                                <span>Firma Verificada</span>
+                                            </span>
+                                        </div>
+                                        <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
+                                            <p id="preview-crear-firma-2-nombre" class="font-heading font-extrabold text-sm text-brand-dark truncate leading-tight">
+                                                Dra. Elena Ramos
+                                            </p>
+                                            <p id="preview-crear-firma-2-cargo" class="text-[11px] text-muted font-medium truncate">
+                                                Gerente General
+                                            </p>
+                                            <span class="inline-block text-[10px] font-bold text-brand-dark uppercase mt-0.5 tracking-wider">Gerencia General</span>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <!-- Firma 2: Gerente General -->
-                                <div class="space-y-1.5">
-                                    <div class="h-14 flex items-end justify-center pb-1">
-                                        <img id="preview-crear-firma-2-img" src="" alt="Firma Gerencia" class="max-h-14 max-w-[170px] object-contain mx-auto hidden">
-                                        <span id="preview-crear-firma-2-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-bold text-xs border border-blue-200/80">
-                                            <i class="fa-solid fa-signature"></i>
-                                            <span>Firma Verificada</span>
-                                        </span>
-                                    </div>
-                                    <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
-                                        <p id="preview-crear-firma-2-nombre" class="font-heading font-extrabold text-sm text-brand-dark truncate leading-tight">
-                                            Dra. Elena Ramos
-                                        </p>
-                                        <p id="preview-crear-firma-2-cargo" class="text-[11px] text-muted font-medium truncate">
-                                            Gerente General
-                                        </p>
-                                        <span class="inline-block text-[10px] font-bold text-brand-dark uppercase mt-0.5 tracking-wider">Gerencia General</span>
-                                    </div>
-                                </div>
-
                             </div>
 
                         </div>
@@ -1046,56 +1047,58 @@
                             </div>
                         </div>
 
-                        <!-- 4. FIRMAS OFICIALES -->
-                        <div class="bg-white p-3.5 rounded-2xl border border-line/80 shadow-2xs space-y-3">
-                            <label class="block font-heading font-bold text-brand-dark text-xs">Firmas Oficiales del Certificado</label>
+                        <!-- 4. FIRMAS OFICIALES (OCULTAS TEMPORALMENTE PARA IMPLEMENTACIÓN A FUTURO) -->
+                        <div class="hidden" style="display: none;">
+                            <div class="bg-white p-3.5 rounded-2xl border border-line/80 shadow-2xs space-y-3">
+                                <label class="block font-heading font-bold text-brand-dark text-xs">Firmas Oficiales del Certificado</label>
 
-                            <!-- Firma 1: Jefe -->
-                            <div class="p-3 bg-slate-50 rounded-xl border border-line/60 space-y-2">
-                                <span class="font-heading font-extrabold text-[11px] text-brand-blue block">Firma 1: Jefe de Área (Tu Firma)</span>
-                                <input type="text" name="firma_1_nombre" id="editar-firma-1-nombre" placeholder="Nombre del Jefe"
-                                       class="w-full px-2.5 py-1.5 rounded-lg border border-line text-xs font-semibold">
-                                <input type="text" name="firma_1_cargo" id="editar-firma-1-cargo" placeholder="Cargo del Jefe"
-                                       class="w-full px-2.5 py-1.5 rounded-lg border border-line text-xs">
-                                <div>
-                                    <label class="block text-[10px] text-muted font-bold mb-0.5">Reemplazar Firma Digital (PNG)</label>
-                                    <input type="file" name="firma_1_archivo" id="editar-firma-1-archivo" accept="image/png,image/jpeg,image/webp"
-                                           class="w-full text-[10px]">
-                                </div>
-                            </div>
-
-                            <!-- Firma 2: Aval Institucional / Gerente General (Solo Administrador) -->
-                            <div class="p-3 bg-slate-50/80 rounded-xl border border-line/70 space-y-2.5">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="font-heading font-extrabold text-[11px] text-brand-dark flex items-center gap-1.5">
-                                        <i class="fa-solid fa-building-shield text-brand-blue text-xs"></i>
-                                        <span>Firma 2: Aval Institucional (Gerencia)</span>
-                                    </span>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
-                                        <i class="fa-solid fa-lock text-[8px]"></i>
-                                        Solo Administrador
-                                    </span>
-                                </div>
-
-                                <div class="p-2.5 bg-white rounded-lg border border-line/70 space-y-1.5 shadow-2xs">
-                                    <div class="flex items-start justify-between gap-2">
-                                        <div>
-                                            <p id="editar-firma-2-nombre-label" class="font-heading font-bold text-xs text-brand-dark leading-tight">
-                                                Dra. Elena Ramos
-                                            </p>
-                                            <p id="editar-firma-2-cargo-label" class="text-[10px] text-muted">
-                                                Gerente General
-                                            </p>
-                                        </div>
-                                        <div id="editar-firma-2-preview-box" class="h-8 w-20 bg-slate-50 rounded border border-line/60 p-0.5 flex items-center justify-center shrink-0">
-                                            <img id="editar-firma-2-img" src="" alt="Firma Institucional" class="max-h-7 max-w-full object-contain hidden">
-                                            <span id="editar-firma-2-placeholder" class="text-[9px] text-slate-400 italic">Rúbrica activa</span>
-                                        </div>
+                                <!-- Firma 1: Jefe -->
+                                <div class="p-3 bg-slate-50 rounded-xl border border-line/60 space-y-2">
+                                    <span class="font-heading font-extrabold text-[11px] text-brand-blue block">Firma 1: Jefe de Área (Tu Firma)</span>
+                                    <input type="text" name="firma_1_nombre" id="editar-firma-1-nombre" placeholder="Nombre del Jefe"
+                                           class="w-full px-2.5 py-1.5 rounded-lg border border-line text-xs font-semibold">
+                                    <input type="text" name="firma_1_cargo" id="editar-firma-1-cargo" placeholder="Cargo del Jefe"
+                                           class="w-full px-2.5 py-1.5 rounded-lg border border-line text-xs">
+                                    <div>
+                                        <label class="block text-[10px] text-muted font-bold mb-0.5">Reemplazar Firma Digital (PNG)</label>
+                                        <input type="file" name="firma_1_archivo" id="editar-firma-1-archivo" accept="image/png,image/jpeg,image/webp"
+                                               class="w-full text-[10px]">
                                     </div>
-                                    <p class="text-[10px] text-slate-500 leading-normal flex items-center gap-1 pt-1 border-t border-slate-100">
-                                        <i class="fa-solid fa-circle-info text-brand-blue text-[9px]"></i>
-                                        Los datos de esta firma corresponden al aval de Gerencia y únicamente la Administración puede modificarlos.
-                                    </p>
+                                </div>
+
+                                <!-- Firma 2: Aval Institucional / Gerente General (Solo Administrador) -->
+                                <div class="p-3 bg-slate-50/80 rounded-xl border border-line/70 space-y-2.5">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-heading font-extrabold text-[11px] text-brand-dark flex items-center gap-1.5">
+                                            <i class="fa-solid fa-building-shield text-brand-blue text-xs"></i>
+                                            <span>Firma 2: Aval Institucional (Gerencia)</span>
+                                        </span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
+                                            <i class="fa-solid fa-lock text-[8px]"></i>
+                                            Solo Administrador
+                                        </span>
+                                    </div>
+
+                                    <div class="p-2.5 bg-white rounded-lg border border-line/70 space-y-1.5 shadow-2xs">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div>
+                                                <p id="editar-firma-2-nombre-label" class="font-heading font-bold text-xs text-brand-dark leading-tight">
+                                                    Dra. Elena Ramos
+                                                </p>
+                                                <p id="editar-firma-2-cargo-label" class="text-[10px] text-muted">
+                                                    Gerente General
+                                                </p>
+                                            </div>
+                                            <div id="editar-firma-2-preview-box" class="h-8 w-20 bg-slate-50 rounded border border-line/60 p-0.5 flex items-center justify-center shrink-0">
+                                                <img id="editar-firma-2-img" src="" alt="Firma Institucional" class="max-h-7 max-w-full object-contain hidden">
+                                                <span id="editar-firma-2-placeholder" class="text-[9px] text-slate-400 italic">Rúbrica activa</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-[10px] text-slate-500 leading-normal flex items-center gap-1 pt-1 border-t border-slate-100">
+                                            <i class="fa-solid fa-circle-info text-brand-blue text-[9px]"></i>
+                                            Los datos de esta firma corresponden al aval de Gerencia y únicamente la Administración puede modificarlos.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1175,11 +1178,6 @@
                                     <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-14 sm:h-16 w-auto object-contain drop-shadow-sm">
                                 </div>
 
-                                <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200/80 shadow-2xs">
-                                    <i class="fa-solid fa-certificate text-amber-500"></i>
-                                    <span>Acreditación Institucional Oficial</span>
-                                </div>
-
                                 <h1 id="preview-editar-titulo" class="font-heading font-black text-2xl sm:text-3xl text-brand-dark tracking-tight uppercase leading-tight">
                                     CERTIFICADO DE CAPACITACIÓN Y APROBACIÓN
                                 </h1>
@@ -1228,49 +1226,49 @@
                                 </div>
                             </div>
 
-                            <!-- FIRMAS DINÁMICAS (JEFE INMEDIATO & GERENCIA) -->
-                            <div class="pt-6 border-t border-line/70 grid grid-cols-2 gap-6 text-center text-xs relative z-10">
-                                
-                                <!-- Firma 1: Jefe Inmediato -->
-                                <div class="space-y-1.5">
-                                    <div class="h-14 flex items-end justify-center pb-1">
-                                        <img id="preview-editar-firma-1-img" src="" alt="Firma Jefe" class="max-h-14 max-w-[170px] object-contain mx-auto hidden">
-                                        <span id="preview-editar-firma-1-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-bold text-xs border border-blue-200/80">
-                                            <i class="fa-solid fa-signature"></i>
-                                            <span>Firma Verificada</span>
-                                        </span>
+                            <!-- FIRMAS DINÁMICAS (OCULTAS TEMPORALMENTE PARA IMPLEMENTACIÓN A FUTURO) -->
+                            <div class="hidden" style="display: none;">
+                                <div class="pt-6 border-t border-line/70 grid grid-cols-2 gap-6 text-center text-xs relative z-10">
+                                    <!-- Firma 1: Jefe Inmediato -->
+                                    <div class="space-y-1.5">
+                                        <div class="h-14 flex items-end justify-center pb-1">
+                                            <img id="preview-editar-firma-1-img" src="" alt="Firma Jefe" class="max-h-14 max-w-[170px] object-contain mx-auto hidden">
+                                            <span id="preview-editar-firma-1-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-bold text-xs border border-blue-200/80">
+                                                <i class="fa-solid fa-signature"></i>
+                                                <span>Firma Verificada</span>
+                                            </span>
+                                        </div>
+                                        <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
+                                            <p id="preview-editar-firma-1-nombre" class="font-heading font-extrabold text-sm text-brand-dark truncate leading-tight">
+                                                {{ $usuario->nombre_completo }}
+                                            </p>
+                                            <p id="preview-editar-firma-1-cargo" class="text-[11px] text-muted font-medium truncate">
+                                                Jefe de Área {{ $area->nombre ?? '' }}
+                                            </p>
+                                            <span class="inline-block text-[10px] font-bold text-brand-blue uppercase mt-0.5 tracking-wider">Jefe de Área</span>
+                                        </div>
                                     </div>
-                                    <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
-                                        <p id="preview-editar-firma-1-nombre" class="font-heading font-extrabold text-sm text-brand-dark truncate leading-tight">
-                                            {{ $usuario->nombre_completo }}
-                                        </p>
-                                        <p id="preview-editar-firma-1-cargo" class="text-[11px] text-muted font-medium truncate">
-                                            Jefe de Área {{ $area->nombre ?? '' }}
-                                        </p>
-                                        <span class="inline-block text-[10px] font-bold text-brand-blue uppercase mt-0.5 tracking-wider">Jefe de Área</span>
+
+                                    <!-- Firma 2: Gerente General -->
+                                    <div class="space-y-1.5">
+                                        <div class="h-14 flex items-end justify-center pb-1">
+                                            <img id="preview-editar-firma-2-img" src="" alt="Firma Gerencia" class="max-h-14 max-w-[170px] object-contain mx-auto hidden">
+                                            <span id="preview-editar-firma-2-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-bold text-xs border border-blue-200/80">
+                                                <i class="fa-solid fa-signature"></i>
+                                                <span>Firma Verificada</span>
+                                            </span>
+                                        </div>
+                                        <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
+                                            <p id="preview-editar-firma-2-nombre" class="font-heading font-extrabold text-sm text-brand-dark truncate leading-tight">
+                                                Dra. Elena Ramos
+                                            </p>
+                                            <p id="preview-editar-firma-2-cargo" class="text-[11px] text-muted font-medium truncate">
+                                                Gerente General
+                                            </p>
+                                            <span class="inline-block text-[10px] font-bold text-brand-dark uppercase mt-0.5 tracking-wider">Gerencia General</span>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <!-- Firma 2: Gerente General -->
-                                <div class="space-y-1.5">
-                                    <div class="h-14 flex items-end justify-center pb-1">
-                                        <img id="preview-editar-firma-2-img" src="" alt="Firma Gerencia" class="max-h-14 max-w-[170px] object-contain mx-auto hidden">
-                                        <span id="preview-editar-firma-2-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-bold text-xs border border-blue-200/80">
-                                            <i class="fa-solid fa-signature"></i>
-                                            <span>Firma Verificada</span>
-                                        </span>
-                                    </div>
-                                    <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
-                                        <p id="preview-editar-firma-2-nombre" class="font-heading font-extrabold text-sm text-brand-dark truncate leading-tight">
-                                            Dra. Elena Ramos
-                                        </p>
-                                        <p id="preview-editar-firma-2-cargo" class="text-[11px] text-muted font-medium truncate">
-                                            Gerente General
-                                        </p>
-                                        <span class="inline-block text-[10px] font-bold text-brand-dark uppercase mt-0.5 tracking-wider">Gerencia General</span>
-                                    </div>
-                                </div>
-
                             </div>
 
                         </div>
@@ -1358,10 +1356,6 @@
                         </div>
 
                         <div class="relative z-10 space-y-2">
-                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200 shadow-2xs">
-                                <i class="fa-solid fa-certificate text-amber-500"></i>
-                                <span>Acreditación Institucional Oficial</span>
-                            </div>
                             <h3 class="font-heading font-black text-xl sm:text-2xl text-brand-dark uppercase tracking-tight">
                                 CERTIFICADO DE CAPACITACIÓN Y APROBACIÓN
                             </h3>
@@ -1402,43 +1396,45 @@
                             </div>
                         </div>
 
-                        <!-- FIRMAS OFICIALES EN TIEMPO REAL -->
-                        <div class="relative z-10 pt-4 border-t border-line/70 grid grid-cols-2 gap-4 text-center text-xs">
-                            <!-- Firma 1: Jefe de Área -->
-                            <div class="space-y-1">
-                                <div class="h-12 flex items-center justify-center">
-                                    <img id="visor-envivo-firma-1-img" src="" alt="Firma Jefe" class="max-h-12 object-contain mx-auto hidden">
-                                    <span id="visor-envivo-firma-1-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-heading font-bold text-xs border border-blue-200/80 select-none">
-                                        <i class="fa-solid fa-signature text-[10px]"></i>
-                                        <span>Firma Verificada</span>
-                                    </span>
+                        <!-- FIRMAS OFICIALES EN TIEMPO REAL (OCULTAS TEMPORALMENTE PARA IMPLEMENTACIÓN A FUTURO) -->
+                        <div class="hidden" style="display: none;">
+                            <div class="relative z-10 pt-4 border-t border-line/70 grid grid-cols-2 gap-4 text-center text-xs">
+                                <!-- Firma 1: Jefe de Área -->
+                                <div class="space-y-1">
+                                    <div class="h-12 flex items-center justify-center">
+                                        <img id="visor-envivo-firma-1-img" src="" alt="Firma Jefe" class="max-h-12 object-contain mx-auto hidden">
+                                        <span id="visor-envivo-firma-1-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-heading font-bold text-xs border border-blue-200/80 select-none">
+                                            <i class="fa-solid fa-signature text-[10px]"></i>
+                                            <span>Firma Verificada</span>
+                                        </span>
+                                    </div>
+                                    <div class="w-44 mx-auto border-t border-brand-dark/40 pt-1">
+                                        <p id="visor-envivo-firma-1-nombre" class="font-heading font-bold text-xs text-brand-dark truncate leading-tight">
+                                            {{ $usuario->nombre_completo }}
+                                        </p>
+                                        <p id="visor-envivo-firma-1-cargo" class="text-[10px] text-muted truncate">
+                                            Jefe de Área {{ $area->nombre ?? '' }}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div class="w-44 mx-auto border-t border-brand-dark/40 pt-1">
-                                    <p id="visor-envivo-firma-1-nombre" class="font-heading font-bold text-xs text-brand-dark truncate leading-tight">
-                                        {{ $usuario->nombre_completo }}
-                                    </p>
-                                    <p id="visor-envivo-firma-1-cargo" class="text-[10px] text-muted truncate">
-                                        Jefe de Área {{ $area->nombre ?? '' }}
-                                    </p>
-                                </div>
-                            </div>
 
-                            <!-- Firma 2: Gerente General -->
-                            <div class="space-y-1">
-                                <div class="h-12 flex items-center justify-center">
-                                    <img id="visor-envivo-firma-2-img" src="" alt="Firma Gerencia" class="max-h-12 object-contain mx-auto hidden">
-                                    <span id="visor-envivo-firma-2-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-heading font-bold text-xs border border-blue-200/80 select-none">
-                                        <i class="fa-solid fa-signature text-[10px]"></i>
-                                        <span>Firma Verificada</span>
-                                    </span>
-                                </div>
-                                <div class="w-44 mx-auto border-t border-brand-dark/40 pt-1">
-                                    <p id="visor-envivo-firma-2-nombre" class="font-heading font-bold text-xs text-brand-dark truncate leading-tight">
-                                        Dra. Elena Ramos
-                                    </p>
-                                    <p id="visor-envivo-firma-2-cargo" class="text-[10px] text-muted truncate">
-                                        Gerente General
-                                    </p>
+                                <!-- Firma 2: Gerente General -->
+                                <div class="space-y-1">
+                                    <div class="h-12 flex items-center justify-center">
+                                        <img id="visor-envivo-firma-2-img" src="" alt="Firma Gerencia" class="max-h-12 object-contain mx-auto hidden">
+                                        <span id="visor-envivo-firma-2-placeholder" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-brand-blue font-heading font-bold text-xs border border-blue-200/80 select-none">
+                                            <i class="fa-solid fa-signature text-[10px]"></i>
+                                            <span>Firma Verificada</span>
+                                        </span>
+                                    </div>
+                                    <div class="w-44 mx-auto border-t border-brand-dark/40 pt-1">
+                                        <p id="visor-envivo-firma-2-nombre" class="font-heading font-bold text-xs text-brand-dark truncate leading-tight">
+                                            Dra. Elena Ramos
+                                        </p>
+                                        <p id="visor-envivo-firma-2-cargo" class="text-[10px] text-muted truncate">
+                                            Gerente General
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

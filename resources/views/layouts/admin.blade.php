@@ -143,10 +143,16 @@
             [
                 'tipo' => 'desplegable',
                 'id' => 'submenu-areas',
-                'icono' => 'fa-sitemap',
-                'etiqueta' => 'Áreas',
-                'patrones' => ['admin.areas.*', 'admin.asignaciones.*'],
+                'icono' => 'fa-building-shield',
+                'etiqueta' => 'Sedes y Áreas',
+                'patrones' => ['admin.sedes.*', 'admin.areas.*', 'admin.asignaciones.*'],
                 'subitems' => [
+                    [
+                        'id' => 'nav-sedes-gestion',
+                        'ruta' => 'admin.sedes.index',
+                        'patrones' => ['admin.sedes.*'],
+                        'etiqueta' => 'Gestión de Sedes',
+                    ],
                     [
                         'id' => 'nav-areas-gestion',
                         'ruta' => 'admin.areas.index',
@@ -160,6 +166,14 @@
                         'etiqueta' => 'Asignar a Áreas',
                     ],
                 ],
+            ],
+            [
+                'tipo' => 'enlace',
+                'id' => 'nav-beneficios',
+                'ruta' => 'admin.beneficios.index',
+                'patrones' => ['admin.beneficios.*'],
+                'icono' => 'fa-gift',
+                'etiqueta' => 'Beneficios y Puntos',
             ],
         ],
     ];
@@ -358,7 +372,7 @@
             @endforeach
 
             <!-- CONTENIDO DE LA PÁGINA -->
-            <main class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+            <main class="flex-1 p-4 sm:p-6 md:p-8 w-full min-w-0">
                 @yield('content')
             </main>
 

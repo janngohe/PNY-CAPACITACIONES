@@ -23,9 +23,11 @@ class Usuario extends Authenticatable
         'password',
         'rol',
         'area_id',
+        'sede_id',
         'firma_digital',
         'cargo',
         'firma_actualizada_el',
+        'puntos_saldo',
         'usuario_nuevo',
         'estado',
     ];
@@ -36,6 +38,7 @@ class Usuario extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'puntos_saldo' => 'integer',
             'usuario_nuevo' => 'boolean',
             'estado' => 'boolean',
             'firma_actualizada_el' => 'datetime',
@@ -81,6 +84,19 @@ class Usuario extends Authenticatable
     public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class, 'area_id');
+    }
+
+    public function sede(): BelongsTo
+    {
+        return $this->belongsTo(Sede::class, 'sede_id');
+    }
+
+    /**
+     * Retorna la sede asignada directamente o deducida a través de su área institucional.
+     */
+    public function sedeActual(): ?Sede
+    {
+        return $this->sede ?? $this->area?->sede;
     }
 
     public function capacitaciones(): BelongsToMany
@@ -135,5 +151,15 @@ class Usuario extends Authenticatable
     public function certificadosExternos(): HasMany
     {
         return $this->hasMany(CertificadoExterno::class, 'usuario_id');
+    }
+
+    public function movimientosPuntos(): HasMany
+    {
+        return $this->hasMany(MovimientoPuntos::class, 'usuario_id')->orderByDesc('id');
+    }
+
+    public function canjesBeneficios(): HasMany
+    {
+        return $this->hasMany(CanjeBeneficio::class, 'usuario_id')->orderByDesc('id');
     }
 }

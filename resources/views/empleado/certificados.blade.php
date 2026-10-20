@@ -13,7 +13,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Acreditación Institucional</span>
+                <span>Certificación Institucional</span>
             </div>
             <h1 class="font-heading font-extrabold text-xl sm:text-2xl text-brand-dark">
                 Certificados Oficiales de Capacitación
@@ -85,7 +85,7 @@
                         <span class="font-semibold text-slate-700">{{ $fecha }}</span>
                     </div>
                     <div class="flex items-center justify-between pt-1 border-t border-line/40">
-                        <span class="text-muted">Firma / Emisor:</span>
+                        <span class="text-muted">Emisor institucional:</span>
                         <span class="text-[11px] font-medium text-slate-600 truncate max-w-[200px]" title="{{ $firma }}">
                             {{ $firma }}
                         </span>

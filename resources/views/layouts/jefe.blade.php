@@ -198,11 +198,13 @@
                             <i class="fa-solid fa-stamp text-sm w-5 text-center transition-colors {{ $enPlantillas ? 'text-brand-blue' : 'text-slate-400 group-hover:text-brand-blue' }}"></i>
                             <span>Mis Plantillas</span>
                         </div>
+                        {{-- OCULTO TEMPORALMENTE: Firma para implementación futura
                         @if($usuario->tieneFirmaRegistrada())
                             <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                                 Firma Lista
                             </span>
                         @endif
+                        --}}
                     </a>
                 </nav>
             </div>
@@ -275,7 +277,7 @@
                         {{ date('d M Y') }}
                     </span>
 
-                    <!-- BOTÓN DE FIRMA DIGITAL DEL JEFE DE ÁREA -->
+                    {{-- OCULTO TEMPORALMENTE: Firma oficial del jefe para implementación futura
                     @if($usuario->tieneFirmaRegistrada())
                         <button type="button" onclick="abrirModalConfigurarFirmaInicial()"
                                 class="inline-flex items-center gap-2 px-3 py-2 sm:px-3.5 sm:py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold transition-all shadow-2xs hover:shadow-xs group cursor-pointer"
@@ -298,6 +300,7 @@
                             <span>Registrar Mi Firma Oficial</span>
                         </button>
                     @endif
+                    --}}
 
                     <div class="flex items-center gap-2 pl-2 border-l border-line/60">
                         <div class="text-right hidden sm:block">

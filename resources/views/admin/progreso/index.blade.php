@@ -58,7 +58,7 @@
 
     <!-- FILTROS DE BÚSQUEDA EN TIEMPO REAL -->
     <div class="bg-white p-4 sm:p-5 rounded-3xl border border-line/80 shadow-2xs">
-        <form id="form-filtro-progreso" method="GET" action="{{ route('admin.progreso.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+        <form id="form-filtro-progreso" method="GET" action="{{ route('admin.progreso.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
             <div>
                 <label for="filtro-q" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                     Buscar empleado <span class="text-brand-blue font-normal lowercase">(en vivo)</span>
@@ -73,6 +73,17 @@
                         <i class="fa-solid fa-circle-notch fa-spin"></i>
                     </span>
                 </div>
+            </div>
+
+            <div>
+                <label for="filtro-sede" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Sede</label>
+                <select id="filtro-sede" name="sede_id"
+                        class="w-full px-3 py-2 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue transition-colors cursor-pointer">
+                    <option value="">Todas las sedes</option>
+                    @foreach ($sedes as $s)
+                        <option value="{{ $s->id }}" {{ (string)($filtros['sede_id'] ?? '') === (string)$s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
+                    @endforeach
+                </select>
             </div>
 
             <div>
@@ -575,6 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
        ========================================================================== */
     const formFiltro = document.getElementById('form-filtro-progreso');
     const inputQ = document.getElementById('filtro-q');
+    const selectSede = document.getElementById('filtro-sede');
     const selectArea = document.getElementById('filtro-area');
     const selectCap = document.getElementById('filtro-cap');
     const selectEstado = document.getElementById('filtro-estado');
@@ -613,6 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Visibilidad del botón de limpiar filtros
         const hayFiltros = Boolean(
             (inputQ && inputQ.value.trim()) ||
+            (selectSede && selectSede.value) ||
             (selectArea && selectArea.value) ||
             (selectCap && selectCap.value) ||
             (selectEstado && selectEstado.value)
@@ -712,7 +725,8 @@ document.addEventListener('DOMContentLoaded', () => {
         debounceTimer = setTimeout(ejecutarFiltroEnVivo, 260);
     });
 
-    // 2. Selección inmediata de área, capacitación o estado
+    // 2. Selección inmediata de sede, área, capacitación o estado
+    selectSede?.addEventListener('change', ejecutarFiltroEnVivo);
     selectArea?.addEventListener('change', ejecutarFiltroEnVivo);
     selectCap?.addEventListener('change', ejecutarFiltroEnVivo);
     selectEstado?.addEventListener('change', ejecutarFiltroEnVivo);
@@ -727,6 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Botón limpiar filtros
     btnLimpiar?.addEventListener('click', () => {
         if (inputQ) inputQ.value = '';
+        if (selectSede) selectSede.value = '';
         if (selectArea) selectArea.value = '';
         if (selectCap) selectCap.value = '';
         if (selectEstado) selectEstado.value = '';

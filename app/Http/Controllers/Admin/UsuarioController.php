@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Area;
+use App\Models\Sede;
 use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,15 +28,19 @@ class UsuarioController extends Controller
         $q = trim((string) $request->query('q'));
         $rol = $request->query('rol');
         $areaId = $request->query('area_id');
+        $sedeId = $request->query('sede_id');
         $estado = $request->query('estado');
 
         $usuarios = Usuario::query()
-            ->with('area:id,nombre')
+            ->with(['area:id,nombre,sede_id', 'sede:id,nombre,ciudad'])
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
                 ->where('nombre_completo', 'like', "%$q%")
                 ->orWhere('identificacion', 'like', "%$q%")))
             ->when(isset(self::ROLES[$rol]), fn ($query) => $query->where('rol', $rol))
             ->when($areaId, fn ($query) => $query->where('area_id', $areaId))
+            ->when($sedeId, fn ($query) => $query->where(fn ($w) => $w
+                ->where('sede_id', $sedeId)
+                ->orWhereHas('area', fn ($a) => $a->where('sede_id', $sedeId))))
             ->when(in_array($estado, ['1', '0'], true), fn ($query) => $query->where('estado', $estado === '1'))
             ->orderBy('nombre_completo')
             ->paginate(15)
@@ -43,9 +48,10 @@ class UsuarioController extends Controller
 
         return view('admin.usuarios.index', [
             'usuarios' => $usuarios,
-            'areas' => Area::orderBy('nombre')->get(['id', 'nombre']),
+            'areas' => Area::orderBy('nombre')->get(['id', 'nombre', 'sede_id']),
+            'sedes' => Sede::where('estado', true)->orderBy('nombre')->get(['id', 'nombre', 'ciudad']),
             'roles' => self::ROLES,
-            'filtros' => compact('q', 'rol', 'areaId', 'estado'),
+            'filtros' => compact('q', 'rol', 'areaId', 'sedeId', 'estado'),
             'resumen' => [
                 'total' => Usuario::count(),
                 'activos' => Usuario::where('estado', true)->count(),
@@ -58,7 +64,8 @@ class UsuarioController extends Controller
     {
         return view('admin.usuarios.form', [
             'usuarioEditado' => null,
-            'areas' => Area::where('estado', true)->orderBy('nombre')->get(['id', 'nombre']),
+            'areas' => Area::where('estado', true)->orderBy('nombre')->get(['id', 'nombre', 'sede_id']),
+            'sedes' => Sede::where('estado', true)->orderBy('nombre')->get(['id', 'nombre', 'ciudad']),
             'roles' => self::ROLES,
         ]);
     }
@@ -67,11 +74,17 @@ class UsuarioController extends Controller
     {
         $datos = $this->validar($request);
 
+        $sedeId = $datos['sede_id'] ?? null;
+        if (!$sedeId && !empty($datos['area_id'])) {
+            $sedeId = Area::where('id', $datos['area_id'])->value('sede_id');
+        }
+
         Usuario::create([
             'identificacion' => $datos['identificacion'],
             'nombre_completo' => $datos['nombre_completo'],
             'rol' => $datos['rol'],
             'area_id' => $datos['area_id'] ?? null,
+            'sede_id' => $sedeId,
             // Contraseña inicial = número de identificación; se exige cambiarla en el primer ingreso
             'password' => $datos['identificacion'],
             'usuario_nuevo' => true,
@@ -86,7 +99,8 @@ class UsuarioController extends Controller
     {
         return view('admin.usuarios.form', [
             'usuarioEditado' => $usuario,
-            'areas' => Area::where('estado', true)->orWhere('id', $usuario->area_id)->orderBy('nombre')->get(['id', 'nombre']),
+            'areas' => Area::where('estado', true)->orWhere('id', $usuario->area_id)->orderBy('nombre')->get(['id', 'nombre', 'sede_id']),
+            'sedes' => Sede::where('estado', true)->orWhere('id', $usuario->sede_id)->orWhere('id', $usuario->area?->sede_id)->orderBy('nombre')->get(['id', 'nombre', 'ciudad']),
             'roles' => self::ROLES,
         ]);
     }
@@ -99,11 +113,17 @@ class UsuarioController extends Controller
             return back()->withInput()->with('error', 'No puedes quitarte a ti mismo el rol de administrador.');
         }
 
+        $sedeId = $datos['sede_id'] ?? null;
+        if (!$sedeId && !empty($datos['area_id'])) {
+            $sedeId = Area::where('id', $datos['area_id'])->value('sede_id');
+        }
+
         $usuario->update([
             'identificacion' => $datos['identificacion'],
             'nombre_completo' => $datos['nombre_completo'],
             'rol' => $datos['rol'],
             'area_id' => $datos['area_id'] ?? null,
+            'sede_id' => $sedeId,
         ]);
 
         return redirect()->route('admin.usuarios.index')->with('success', 'Usuario actualizado correctamente.');
@@ -138,9 +158,21 @@ class UsuarioController extends Controller
             'identificacion' => ['required', 'string', 'max:30', 'regex:/^[A-Za-z0-9\-]+$/', Rule::unique('usuarios', 'identificacion')->ignore($usuario?->id)],
             'nombre_completo' => ['required', 'string', 'max:150'],
             'rol' => ['required', Rule::in(array_keys(self::ROLES))],
+            'sede_id' => [
+                Rule::requiredIf(fn () => in_array($request->input('rol'), ['EMPLEADO', 'JEFE_AREA'], true)),
+                'nullable',
+                'integer',
+                'exists:sedes,id',
+            ],
             'area_id' => [
                 Rule::requiredIf(fn () => in_array($request->input('rol'), ['EMPLEADO', 'JEFE_AREA'], true)),
-                'nullable', 'integer', 'exists:areas,id',
+                'nullable',
+                'integer',
+                Rule::exists('areas', 'id')->where(function ($query) use ($request) {
+                    if ($request->filled('sede_id')) {
+                        $query->where('sede_id', $request->input('sede_id'));
+                    }
+                }),
             ],
         ], [
             'identificacion.required' => 'El número de identificación es obligatorio.',
@@ -148,7 +180,10 @@ class UsuarioController extends Controller
             'identificacion.regex' => 'La identificación solo admite letras, números y guiones.',
             'nombre_completo.required' => 'El nombre completo es obligatorio.',
             'rol.required' => 'Selecciona un rol.',
+            'sede_id.required' => 'Debes asignar una sede institucional al colaborador.',
+            'sede_id.exists' => 'La sede seleccionada no es válida.',
             'area_id.required' => 'Los empleados y jefes de área deben pertenecer a un área.',
+            'area_id.exists' => 'El área seleccionada no es válida o no pertenece a la sede asignada.',
         ]);
     }
 }

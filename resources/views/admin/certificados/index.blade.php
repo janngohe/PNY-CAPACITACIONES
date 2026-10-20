@@ -696,7 +696,7 @@
                             @endif
                         </div>
 
-                        <!-- Firmas configuradas: Jefe Inmediato y Gerente -->
+                        {{-- OCULTO TEMPORALMENTE: Firmas configuradas en tarjetas de plantilla para implementación futura
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-line/60 text-xs">
                             <!-- Jefe Inmediato -->
                             <div class="bg-slate-50 p-3 rounded-2xl border border-line/60 space-y-1">
@@ -730,6 +730,7 @@
                                 <p class="text-[11px] text-muted truncate">{{ $pl->firma_2_cargo ?? 'Gerente General' }}</p>
                             </div>
                         </div>
+                        --}}
 
                         <!-- Botón para Previsualizar Certificado con esta Plantilla -->
                         <div class="pt-2 border-t border-line/60">
@@ -849,10 +850,6 @@
                                 <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-12 w-auto object-contain">
                             </div>
 
-                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200">
-                                <i class="fa-solid fa-certificate text-amber-500"></i>
-                                <span>Acreditación Institucional Oficial</span>
-                            </div>
                             <h3 class="font-heading font-black text-xl sm:text-2xl text-brand-dark uppercase tracking-tight">
                                 CERTIFICADO DE CAPACITACIÓN Y APROBACIÓN
                             </h3>
@@ -889,35 +886,37 @@
                             </div>
                         </div>
 
-                        <!-- Firmas Dinámicas en el Visor -->
-                        <div class="relative z-10 pt-6 border-t border-line/70 grid grid-cols-1 sm:grid-cols-2 gap-6 text-center text-xs">
-                            <!-- Firma 1: Jefe Inmediato -->
-                            <div class="space-y-1.5">
-                                <div class="h-14 flex items-end justify-center pb-1">
-                                    <img id="diploma-jefe-firma-img" src="" alt="Firma Jefe" class="max-h-12 max-w-[150px] object-contain mx-auto hidden">
-                                    <span id="diploma-jefe-firma-texto" class="font-serif italic text-base text-brand-dark font-bold block select-none">
-                                        Firma Digital Verificada
-                                    </span>
+                        <!-- Firmas Dinámicas en el Visor (OCULTAS TEMPORALMENTE PARA IMPLEMENTACIÓN A FUTURO) -->
+                        <div class="hidden" style="display: none;">
+                            <div class="relative z-10 pt-6 border-t border-line/70 grid grid-cols-1 sm:grid-cols-2 gap-6 text-center text-xs">
+                                <!-- Firma 1: Jefe Inmediato -->
+                                <div class="space-y-1.5">
+                                    <div class="h-14 flex items-end justify-center pb-1">
+                                        <img id="diploma-jefe-firma-img" src="" alt="Firma Jefe" class="max-h-12 max-w-[150px] object-contain mx-auto hidden">
+                                        <span id="diploma-jefe-firma-texto" class="font-serif italic text-base text-brand-dark font-bold block select-none">
+                                            Firma Digital Verificada
+                                        </span>
+                                    </div>
+                                    <div class="w-48 mx-auto border-t-2 border-brand-dark/40 pt-1">
+                                        <p id="diploma-jefe-nombre" class="font-heading font-extrabold text-xs text-brand-dark truncate leading-tight">Ing. Carlos Mendoza</p>
+                                        <p id="diploma-jefe-cargo" class="text-[10px] text-muted truncate">Jefe Inmediato</p>
+                                        <span class="inline-block text-[9px] font-bold text-brand-blue uppercase tracking-wider mt-0.5">Jefe Inmediato</span>
+                                    </div>
                                 </div>
-                                <div class="w-48 mx-auto border-t-2 border-brand-dark/40 pt-1">
-                                    <p id="diploma-jefe-nombre" class="font-heading font-extrabold text-xs text-brand-dark truncate leading-tight">Ing. Carlos Mendoza</p>
-                                    <p id="diploma-jefe-cargo" class="text-[10px] text-muted truncate">Jefe Inmediato</p>
-                                    <span class="inline-block text-[9px] font-bold text-brand-blue uppercase tracking-wider mt-0.5">Jefe Inmediato</span>
-                                </div>
-                            </div>
 
-                            <!-- Firma 2: Gerente -->
-                            <div class="space-y-1.5">
-                                <div class="h-14 flex items-end justify-center pb-1">
-                                    <img id="diploma-gerente-firma-img" src="" alt="Firma Gerente" class="max-h-12 max-w-[150px] object-contain mx-auto hidden">
-                                    <span id="diploma-gerente-firma-texto" class="font-serif italic text-base text-brand-blue font-bold block select-none">
-                                        Firma Digital Verificada
-                                    </span>
-                                </div>
-                                <div class="w-48 mx-auto border-t-2 border-brand-dark/40 pt-1">
-                                    <p id="diploma-gerente-nombre" class="font-heading font-extrabold text-xs text-brand-dark truncate leading-tight">Dra. Elena Ramos</p>
-                                    <p id="diploma-gerente-cargo" class="text-[10px] text-muted truncate">Gerente General</p>
-                                    <span class="inline-block text-[9px] font-bold text-cyan-700 uppercase tracking-wider mt-0.5">Gerencia General</span>
+                                <!-- Firma 2: Gerente -->
+                                <div class="space-y-1.5">
+                                    <div class="h-14 flex items-end justify-center pb-1">
+                                        <img id="diploma-gerente-firma-img" src="" alt="Firma Gerente" class="max-h-12 max-w-[150px] object-contain mx-auto hidden">
+                                        <span id="diploma-gerente-firma-texto" class="font-serif italic text-base text-brand-blue font-bold block select-none">
+                                            Firma Digital Verificada
+                                        </span>
+                                    </div>
+                                    <div class="w-48 mx-auto border-t-2 border-brand-dark/40 pt-1">
+                                        <p id="diploma-gerente-nombre" class="font-heading font-extrabold text-xs text-brand-dark truncate leading-tight">Dra. Elena Ramos</p>
+                                        <p id="diploma-gerente-cargo" class="text-[10px] text-muted truncate">Gerente General</p>
+                                        <span class="inline-block text-[9px] font-bold text-cyan-700 uppercase tracking-wider mt-0.5">Gerencia General</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -995,101 +994,104 @@
                            class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-blue file:text-white hover:file:bg-brand-deep cursor-pointer">
                 </div>
 
-                <!-- SECCIÓN: JEFE INMEDIATO -->
-                <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-6 h-6 rounded-lg bg-blue-100 text-brand-blue flex items-center justify-center text-xs font-bold">1</span>
-                            <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Jefe Inmediato</h5>
-                        </div>
-                        <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                            Solo usuarios con rol Jefe de Área
-                        </span>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Seleccionar Jefe de Área <span class="text-rose-500">*</span></label>
-                            <select id="crear-jefe-select" name="firma_1_nombre" required
-                                    onchange="actualizarCargoJefe('crear')"
-                                    class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
-                                <option value="">-- Seleccionar Jefe de Área --</option>
-                                @foreach($jefes as $jf)
-                                    <option value="{{ $jf->nombre_completo }}" 
-                                            data-cargo="{{ $jf->cargoOficial() }}"
-                                            data-area-id="{{ $jf->area_id ?? '' }}"
-                                            data-area-nombre="{{ $jf->area?->nombre ?? '' }}"
-                                            data-tiene-firma="{{ $jf->tieneFirmaRegistrada() ? '1' : '0' }}"
-                                            data-firma-url="{{ $jf->firmaUrl() ?? '' }}"
-                                            data-firma-ruta="{{ $jf->firma_digital ?? '' }}">
-                                        {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }}) {{ $jf->tieneFirmaRegistrada() ? '✓ [Firma Registrada]' : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
-                            <input type="text" id="crear-jefe-cargo" name="firma_1_cargo" placeholder="Ej: Jefe de Área / Sistemas"
-                                   class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
-                        </div>
-                    </div>
-
-                    <!-- Input oculto para reutilizar firma registrada del Jefe -->
-                    <input type="hidden" id="crear-firma-1-ruta-existente" name="firma_1_ruta_existente" value="">
-
-                    <!-- Badge informativo si el Jefe ya tiene firma registrada -->
-                    <div id="crear-jefe-firma-badge" class="hidden p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between shadow-2xs">
-                        <div class="flex items-center gap-2">
-                            <span class="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0">
-                                <i class="fa-solid fa-check"></i>
+                <!-- SECCIÓN: FIRMAS (OCULTAS TEMPORALMENTE PARA IMPLEMENTACIÓN A FUTURO) -->
+                <div class="hidden" style="display: none;">
+                    <!-- SECCIÓN: JEFE INMEDIATO -->
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-blue-100 text-brand-blue flex items-center justify-center text-xs font-bold">1</span>
+                                <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Jefe Inmediato</h5>
+                            </div>
+                            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                Solo usuarios con rol Jefe de Área
                             </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <p class="font-bold">Firma digital registrada disponible</p>
-                                <p class="text-[11px] text-emerald-700">Se vinculará automáticamente la firma oficial de este Jefe de Área.</p>
+                                <label class="block font-bold text-slate-700 mb-1">Seleccionar Jefe de Área</label>
+                                <select id="crear-jefe-select" name="firma_1_nombre"
+                                        onchange="actualizarCargoJefe('crear')"
+                                        class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
+                                    <option value="">-- Seleccionar Jefe de Área --</option>
+                                    @foreach($jefes as $jf)
+                                        <option value="{{ $jf->nombre_completo }}" 
+                                                data-cargo="{{ $jf->cargoOficial() }}"
+                                                data-area-id="{{ $jf->area_id ?? '' }}"
+                                                data-area-nombre="{{ $jf->area?->nombre ?? '' }}"
+                                                data-tiene-firma="{{ $jf->tieneFirmaRegistrada() ? '1' : '0' }}"
+                                                data-firma-url="{{ $jf->firmaUrl() ?? '' }}"
+                                                data-firma-ruta="{{ $jf->firma_digital ?? '' }}">
+                                            {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }}) {{ $jf->tieneFirmaRegistrada() ? '✓ [Firma Registrada]' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
+                                <input type="text" id="crear-jefe-cargo" name="firma_1_cargo" placeholder="Ej: Jefe de Área / Sistemas"
+                                       class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
                             </div>
                         </div>
-                        <div class="h-10 w-28 bg-white rounded-xl border border-emerald-200 p-1 flex items-center justify-center shrink-0 shadow-2xs">
-                            <img id="crear-jefe-firma-thumb" src="" alt="Firma" class="max-h-8 max-w-full object-contain">
+
+                        <!-- Input oculto para reutilizar firma registrada del Jefe -->
+                        <input type="hidden" id="crear-firma-1-ruta-existente" name="firma_1_ruta_existente" value="">
+
+                        <!-- Badge informativo si el Jefe ya tiene firma registrada -->
+                        <div id="crear-jefe-firma-badge" class="hidden p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between shadow-2xs">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                                <div>
+                                    <p class="font-bold">Firma digital registrada disponible</p>
+                                    <p class="text-[11px] text-emerald-700">Se vinculará automáticamente la firma oficial de este Jefe de Área.</p>
+                                </div>
+                            </div>
+                            <div class="h-10 w-28 bg-white rounded-xl border border-emerald-200 p-1 flex items-center justify-center shrink-0 shadow-2xs">
+                                <img id="crear-jefe-firma-thumb" src="" alt="Firma" class="max-h-8 max-w-full object-contain">
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Aviso si el Jefe NO tiene firma registrada -->
-                    <div id="crear-jefe-sin-firma-badge" class="hidden p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
-                        <i class="fa-solid fa-circle-info text-amber-500 text-xs shrink-0"></i>
-                        <span>Este Jefe aún no tiene firma en su perfil. Puedes adjuntar un archivo o él la registrará en su próximo ingreso.</span>
-                    </div>
+                        <!-- Aviso si el Jefe NO tiene firma registrada -->
+                        <div id="crear-jefe-sin-firma-badge" class="hidden p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-amber-500 text-xs shrink-0"></i>
+                            <span>Este Jefe aún no tiene firma en su perfil. Puedes adjuntar un archivo o él la registrará en su próximo ingreso.</span>
+                        </div>
 
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Cargar Imagen de Firma Digital (PNG opcional o reemplazo)</label>
-                        <input type="file" name="firma_1_archivo" accept="image/png,image/jpeg,image/webp"
-                               class="w-full text-[11px] text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300 cursor-pointer">
-                    </div>
-                </div>
-
-                <!-- SECCIÓN: GERENTE -->
-                <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
-                    <div class="flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-800 flex items-center justify-center text-xs font-bold">2</span>
-                        <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Gerente</h5>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Nombre Completo</label>
-                            <input type="text" name="firma_2_nombre" placeholder="Ej: Dra. Elena Ramos"
-                                   class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
-                        </div>
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
-                            <input type="text" name="firma_2_cargo" placeholder="Ej: Gerente General"
-                                   class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                            <label class="block font-bold text-slate-700 mb-1">Cargar Imagen de Firma Digital (PNG opcional o reemplazo)</label>
+                            <input type="file" name="firma_1_archivo" accept="image/png,image/jpeg,image/webp"
+                                   class="w-full text-[11px] text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300 cursor-pointer">
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Imagen de Firma Digital (PNG fondo transparente, opcional)</label>
-                        <input type="file" name="firma_2_archivo" accept="image/png,image/jpeg,image/webp"
-                               class="w-full text-[11px] text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300 cursor-pointer">
+                    <!-- SECCIÓN: GERENTE -->
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-800 flex items-center justify-center text-xs font-bold">2</span>
+                            <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Gerente</h5>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Nombre Completo</label>
+                                <input type="text" name="firma_2_nombre" placeholder="Ej: Dra. Elena Ramos"
+                                       class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
+                                <input type="text" name="firma_2_cargo" placeholder="Ej: Gerente General"
+                                       class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Imagen de Firma Digital (PNG fondo transparente, opcional)</label>
+                            <input type="file" name="firma_2_archivo" accept="image/png,image/jpeg,image/webp"
+                                   class="w-full text-[11px] text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300 cursor-pointer">
+                        </div>
                     </div>
                 </div>
 
@@ -1192,101 +1194,104 @@
                            class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-blue file:text-white hover:file:bg-brand-deep cursor-pointer">
                 </div>
 
-                <!-- SECCIÓN: JEFE INMEDIATO -->
-                <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-6 h-6 rounded-lg bg-blue-100 text-brand-blue flex items-center justify-center text-xs font-bold">1</span>
-                            <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Jefe Inmediato</h5>
-                        </div>
-                        <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                            Solo usuarios con rol Jefe de Área
-                        </span>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Seleccionar Jefe de Área <span class="text-rose-500">*</span></label>
-                            <select id="edit-jefe-select" name="firma_1_nombre" required
-                                    onchange="actualizarCargoJefe('edit')"
-                                    class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
-                                <option value="">-- Seleccionar Jefe de Área --</option>
-                                @foreach($jefes as $jf)
-                                    <option value="{{ $jf->nombre_completo }}" 
-                                            data-cargo="{{ $jf->cargoOficial() }}"
-                                            data-area-id="{{ $jf->area_id ?? '' }}"
-                                            data-area-nombre="{{ $jf->area?->nombre ?? '' }}"
-                                            data-tiene-firma="{{ $jf->tieneFirmaRegistrada() ? '1' : '0' }}"
-                                            data-firma-url="{{ $jf->firmaUrl() ?? '' }}"
-                                            data-firma-ruta="{{ $jf->firma_digital ?? '' }}">
-                                        {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }}) {{ $jf->tieneFirmaRegistrada() ? '✓ [Firma Registrada]' : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
-                            <input type="text" id="edit-jefe-cargo" name="firma_1_cargo"
-                                   class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
-                        </div>
-                    </div>
-
-                    <!-- Input oculto para reutilizar firma registrada del Jefe -->
-                    <input type="hidden" id="edit-firma-1-ruta-existente" name="firma_1_ruta_existente" value="">
-
-                    <!-- Badge informativo si el Jefe ya tiene firma registrada -->
-                    <div id="edit-jefe-firma-badge" class="hidden p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between shadow-2xs">
-                        <div class="flex items-center gap-2">
-                            <span class="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0">
-                                <i class="fa-solid fa-check"></i>
+                <!-- SECCIÓN: FIRMAS (OCULTAS TEMPORALMENTE PARA IMPLEMENTACIÓN A FUTURO) -->
+                <div class="hidden" style="display: none;">
+                    <!-- SECCIÓN: JEFE INMEDIATO -->
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-blue-100 text-brand-blue flex items-center justify-center text-xs font-bold">1</span>
+                                <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Jefe Inmediato</h5>
+                            </div>
+                            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                Solo usuarios con rol Jefe de Área
                             </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <p class="font-bold">Firma digital registrada disponible</p>
-                                <p class="text-[11px] text-emerald-700">Se vinculará automáticamente la firma oficial de este Jefe de Área.</p>
+                                <label class="block font-bold text-slate-700 mb-1">Seleccionar Jefe de Área</label>
+                                <select id="edit-jefe-select" name="firma_1_nombre"
+                                        onchange="actualizarCargoJefe('edit')"
+                                        class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
+                                    <option value="">-- Seleccionar Jefe de Área --</option>
+                                    @foreach($jefes as $jf)
+                                        <option value="{{ $jf->nombre_completo }}" 
+                                                data-cargo="{{ $jf->cargoOficial() }}"
+                                                data-area-id="{{ $jf->area_id ?? '' }}"
+                                                data-area-nombre="{{ $jf->area?->nombre ?? '' }}"
+                                                data-tiene-firma="{{ $jf->tieneFirmaRegistrada() ? '1' : '0' }}"
+                                                data-firma-url="{{ $jf->firmaUrl() ?? '' }}"
+                                                data-firma-ruta="{{ $jf->firma_digital ?? '' }}">
+                                            {{ $jf->nombre_completo }} ({{ $jf->area?->nombre ?? 'Sin Área Asignada' }}) {{ $jf->tieneFirmaRegistrada() ? '✓ [Firma Registrada]' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
+                                <input type="text" id="edit-jefe-cargo" name="firma_1_cargo"
+                                       class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
                             </div>
                         </div>
-                        <div class="h-10 w-28 bg-white rounded-xl border border-emerald-200 p-1 flex items-center justify-center shrink-0 shadow-2xs">
-                            <img id="edit-jefe-firma-thumb" src="" alt="Firma" class="max-h-8 max-w-full object-contain">
+
+                        <!-- Input oculto para reutilizar firma registrada del Jefe -->
+                        <input type="hidden" id="edit-firma-1-ruta-existente" name="firma_1_ruta_existente" value="">
+
+                        <!-- Badge informativo si el Jefe ya tiene firma registrada -->
+                        <div id="edit-jefe-firma-badge" class="hidden p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between shadow-2xs">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                                <div>
+                                    <p class="font-bold">Firma digital registrada disponible</p>
+                                    <p class="text-[11px] text-emerald-700">Se vinculará automáticamente la firma oficial de este Jefe de Área.</p>
+                                </div>
+                            </div>
+                            <div class="h-10 w-28 bg-white rounded-xl border border-emerald-200 p-1 flex items-center justify-center shrink-0 shadow-2xs">
+                                <img id="edit-jefe-firma-thumb" src="" alt="Firma" class="max-h-8 max-w-full object-contain">
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Aviso si el Jefe NO tiene firma registrada -->
-                    <div id="edit-jefe-sin-firma-badge" class="hidden p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
-                        <i class="fa-solid fa-circle-info text-amber-500 text-xs shrink-0"></i>
-                        <span>Este Jefe aún no tiene firma en su perfil. Puedes adjuntar un archivo o él la registrará en su próximo ingreso.</span>
-                    </div>
+                        <!-- Aviso si el Jefe NO tiene firma registrada -->
+                        <div id="edit-jefe-sin-firma-badge" class="hidden p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-amber-500 text-xs shrink-0"></i>
+                            <span>Este Jefe aún no tiene firma en su perfil. Puedes adjuntar un archivo o él la registrará en su próximo ingreso.</span>
+                        </div>
 
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Reemplazar Imagen de Firma (Opcional)</label>
-                        <input type="file" name="firma_1_archivo" accept="image/png,image/jpeg,image/webp"
-                               class="w-full text-[11px] text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300 cursor-pointer">
-                    </div>
-                </div>
-
-                <!-- SECCIÓN: GERENTE -->
-                <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
-                    <div class="flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-800 flex items-center justify-center text-xs font-bold">2</span>
-                        <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Gerente</h5>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Nombre Completo</label>
-                            <input type="text" id="edit-gerente-nombre" name="firma_2_nombre"
-                                   class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
-                        </div>
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
-                            <input type="text" id="edit-gerente-cargo" name="firma_2_cargo"
-                                   class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                            <label class="block font-bold text-slate-700 mb-1">Reemplazar Imagen de Firma (Opcional)</label>
+                            <input type="file" name="firma_1_archivo" accept="image/png,image/jpeg,image/webp"
+                                   class="w-full text-[11px] text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300 cursor-pointer">
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Reemplazar Imagen de Firma (Opcional)</label>
-                        <input type="file" name="firma_2_archivo" accept="image/png,image/jpeg,image/webp"
-                               class="w-full text-[11px] text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300 cursor-pointer">
+                    <!-- SECCIÓN: GERENTE -->
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-line space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-800 flex items-center justify-center text-xs font-bold">2</span>
+                            <h5 class="font-heading font-extrabold text-xs text-brand-dark uppercase tracking-wide">Firma del Gerente</h5>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Nombre Completo</label>
+                                <input type="text" id="edit-gerente-nombre" name="firma_2_nombre"
+                                       class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Cargo Oficial</label>
+                                <input type="text" id="edit-gerente-cargo" name="firma_2_cargo"
+                                       class="w-full px-3 py-2 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Reemplazar Imagen de Firma (Opcional)</label>
+                            <input type="file" name="firma_2_archivo" accept="image/png,image/jpeg,image/webp"
+                                   class="w-full text-[11px] text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300 cursor-pointer">
+                        </div>
                     </div>
                 </div>
 

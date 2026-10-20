@@ -119,11 +119,6 @@
                          class="h-16 sm:h-20 w-auto object-contain drop-shadow-sm">
                 </div>
 
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200/80 shadow-2xs">
-                    <i class="fa-solid fa-certificate text-amber-500 text-sm"></i>
-                    <span>Acreditación Institucional Oficial</span>
-                </div>
-
                 <h1 class="font-heading font-black text-2xl sm:text-4xl text-brand-dark tracking-tight uppercase leading-tight">
                     CERTIFICADO DE CAPACITACIÓN Y APROBACIÓN
                 </h1>
@@ -172,58 +167,58 @@
                 </div>
             </div>
 
-            <!-- FIRMAS DINÁMICAS (JEFE INMEDIATO & GERENCIA) -->
-            <div class="pt-8 border-t border-line/70 grid grid-cols-1 sm:grid-cols-2 gap-8 text-center text-xs relative z-10">
-                
-                <!-- Firma 1: Jefe Inmediato -->
-                <div class="space-y-2">
-                    <div class="h-16 flex items-end justify-center pb-1">
-                        @if($f1r)
-                            <img src="{{ asset('storage/' . $f1r) }}" alt="Firma {{ $f1n }}" class="max-h-14 max-w-[170px] object-contain mx-auto">
-                        @else
-                            <div class="text-center">
-                                <span class="font-serif italic text-lg sm:text-xl text-brand-dark font-extrabold tracking-widest block transform -rotate-3 select-none">
-                                    {{ Str::limit($f1n, 20) }}
-                                </span>
-                                <span class="text-[9px] font-mono text-slate-400 block -mt-1">Digital Sign: #PNY-JEFE-{{ substr(md5($f1n), 0, 5) }}</span>
-                            </div>
-                        @endif
+            <!-- FIRMAS DINÁMICAS (OCULTAS TEMPORALMENTE PARA IMPLEMENTACIÓN A FUTURO) -->
+            <div class="hidden" style="display: none;">
+                <div class="pt-8 border-t border-line/70 grid grid-cols-1 sm:grid-cols-2 gap-8 text-center text-xs relative z-10">
+                    <!-- Firma 1: Jefe Inmediato -->
+                    <div class="space-y-2">
+                        <div class="h-16 flex items-end justify-center pb-1">
+                            @if($f1r)
+                                <img src="{{ asset('storage/' . $f1r) }}" alt="Firma {{ $f1n }}" class="max-h-14 max-w-[170px] object-contain mx-auto">
+                            @else
+                                <div class="text-center">
+                                    <span class="font-serif italic text-lg sm:text-xl text-brand-dark font-extrabold tracking-widest block transform -rotate-3 select-none">
+                                        {{ Str::limit($f1n, 20) }}
+                                    </span>
+                                    <span class="text-[9px] font-mono text-slate-400 block -mt-1">Digital Sign: #PNY-JEFE-{{ substr(md5($f1n), 0, 5) }}</span>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
+                            <p class="font-heading font-extrabold text-sm text-brand-dark">{{ $f1n }}</p>
+                            <p class="text-[11px] text-muted font-medium">{{ $f1c }}</p>
+                            <span class="inline-block text-[10px] font-bold text-brand-blue uppercase mt-0.5 tracking-wider">Jefe Inmediato</span>
+                        </div>
                     </div>
-                    <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
-                        <p class="font-heading font-extrabold text-sm text-brand-dark">{{ $f1n }}</p>
-                        <p class="text-[11px] text-muted font-medium">{{ $f1c }}</p>
-                        <span class="inline-block text-[10px] font-bold text-brand-blue uppercase mt-0.5 tracking-wider">Jefe Inmediato</span>
+
+                    <!-- Firma 2: Gerente -->
+                    <div class="space-y-2">
+                        <div class="h-16 flex items-end justify-center pb-1">
+                            @if($f2r)
+                                <img src="{{ asset('storage/' . $f2r) }}" alt="Firma {{ $f2n }}" class="max-h-14 max-w-[170px] object-contain mx-auto">
+                            @else
+                                <div class="text-center">
+                                    <span class="font-serif italic text-lg sm:text-xl text-brand-blue font-extrabold tracking-widest block transform rotate-2 select-none">
+                                        {{ Str::limit($f2n, 20) }}
+                                    </span>
+                                    <span class="text-[9px] font-mono text-slate-400 block -mt-1">Digital Sign: #PNY-GER-{{ substr(md5($f2n), 0, 5) }}</span>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
+                            <p class="font-heading font-extrabold text-sm text-brand-dark">{{ $f2n }}</p>
+                            <p class="text-[11px] text-muted font-medium">{{ $f2c }}</p>
+                            <span class="inline-block text-[10px] font-bold text-cyan-700 uppercase mt-0.5 tracking-wider">Gerencia General</span>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Firma 2: Gerente -->
-                <div class="space-y-2">
-                    <div class="h-16 flex items-end justify-center pb-1">
-                        @if($f2r)
-                            <img src="{{ asset('storage/' . $f2r) }}" alt="Firma {{ $f2n }}" class="max-h-14 max-w-[170px] object-contain mx-auto">
-                        @else
-                            <div class="text-center">
-                                <span class="font-serif italic text-lg sm:text-xl text-brand-blue font-extrabold tracking-widest block transform rotate-2 select-none">
-                                    {{ Str::limit($f2n, 20) }}
-                                </span>
-                                <span class="text-[9px] font-mono text-slate-400 block -mt-1">Digital Sign: #PNY-GER-{{ substr(md5($f2n), 0, 5) }}</span>
-                            </div>
-                        @endif
-                    </div>
-                    <div class="w-56 mx-auto border-t-2 border-brand-dark/40 pt-1.5">
-                        <p class="font-heading font-extrabold text-sm text-brand-dark">{{ $f2n }}</p>
-                        <p class="text-[11px] text-muted font-medium">{{ $f2c }}</p>
-                        <span class="inline-block text-[10px] font-bold text-cyan-700 uppercase mt-0.5 tracking-wider">Gerencia General</span>
-                    </div>
-                </div>
-
             </div>
 
         </div>
 
         <!-- BANNER DE PIE DE PÁGINA CON OLAS -->
         <div class="relative bg-slate-900 text-white p-4 text-center text-[11px] text-slate-400 border-t border-slate-800">
-            <p>Documento de Acreditación Oficial emitido por el Sistema de Capacitación de {{ $org }} · Código Autenticidad: {{ $certificado->codigo }}</p>
+            <p>Documento Oficial emitido por el Sistema de Capacitación de {{ $org }} · Código Autenticidad: {{ $certificado->codigo }}</p>
         </div>
 
     </div>

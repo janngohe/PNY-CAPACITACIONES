@@ -27,6 +27,23 @@
                 <div id="method-container"></div>
 
                 <div>
+                    <label for="sede_id" class="block text-xs font-bold text-brand-dark mb-1">
+                        Sede PNY <span class="text-red-500">*</span>
+                    </label>
+                    <select id="sede_id" name="sede_id" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-line bg-slate-50/50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue @error('sede_id') border-red-400 bg-red-50/30 @enderror">
+                        <option value="">— Seleccionar Sede PNY (Obligatorio) —</option>
+                        @foreach ($sedes as $s)
+                            <option value="{{ $s->id }}" {{ old('sede_id') == $s->id ? 'selected' : '' }}>{{ $s->nombre }} · {{ $s->ciudad }}</option>
+                        @endforeach
+                    </select>
+                    @error('sede_id')
+                        <p class="text-[11px] text-red-600 font-semibold mt-1">{{ $message }}</p>
+                    @enderror
+                    <span class="text-[10px] text-muted block mt-1">Vincula obligatoriamente el área a una sede física para estructurar sedes y estadísticas.</span>
+                </div>
+
+                <div>
                     <label for="nombre" class="block text-xs font-bold text-brand-dark mb-1">Nombre del Área <span class="text-red-500">*</span></label>
                     <input type="text" id="nombre" name="nombre" required maxlength="150"
                            placeholder="Ej. Producción y Cosecha"
@@ -83,8 +100,13 @@
                                         <i class="fa-solid fa-sitemap"></i>
                                     </div>
                                     <div>
-                                        <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-2 flex-wrap">
                                             <h4 class="font-heading font-bold text-base text-brand-dark leading-tight">{{ $area->nombre }}</h4>
+                                            @if ($area->sede)
+                                                <span class="inline-flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-brand-blue border border-blue-200/80" title="Sede {{ $area->sede->ciudad }}">
+                                                    <i class="fa-solid fa-building text-[9px]"></i> {{ $area->sede->nombre }}
+                                                </span>
+                                            @endif
                                             <span class="shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $area->estado ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' }}">
                                                 {{ $area->estado ? 'Activa' : 'Inactiva' }}
                                             </span>
@@ -215,7 +237,7 @@
                             <!-- ACCIONES DE EDICIÓN Y ESTADO -->
                             <div class="flex items-center justify-between pt-2 border-t border-line/60">
                                 <button type="button"
-                                        onclick="event.stopPropagation(); editarArea({{ $area->id }}, '{{ addslashes($area->nombre) }}', '{{ addslashes($area->descripcion ?? '') }}')"
+                                        onclick="event.stopPropagation(); editarArea({{ $area->id }}, '{{ addslashes($area->nombre) }}', '{{ addslashes($area->descripcion ?? '') }}', '{{ $area->sede_id ?? '' }}')"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-light hover:bg-brand-blue hover:text-white text-brand-blue font-bold text-xs transition-colors cursor-pointer">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                     <span>Editar Datos del Área</span>
@@ -262,10 +284,11 @@
         }
     }
 
-    function editarArea(id, nombre, descripcion) {
+    function editarArea(id, nombre, descripcion, sedeId) {
         document.getElementById('form-area-title').innerText = 'Editar Área: ' + nombre;
         document.getElementById('nombre').value = nombre;
         document.getElementById('descripcion').value = descripcion;
+        document.getElementById('sede_id').value = sedeId || '';
         document.getElementById('btn-submit-area').innerText = 'Actualizar Área';
         document.getElementById('btn-cancel-area').classList.remove('hidden');
 
@@ -279,6 +302,7 @@
         document.getElementById('form-area-title').innerText = 'Crear Nueva Área';
         document.getElementById('nombre').value = '';
         document.getElementById('descripcion').value = '';
+        document.getElementById('sede_id').value = '';
         document.getElementById('btn-submit-area').innerText = 'Crear Área';
         document.getElementById('btn-cancel-area').classList.add('hidden');
 
