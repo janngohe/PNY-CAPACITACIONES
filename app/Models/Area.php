@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -13,7 +14,7 @@ class Area extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['nombre', 'descripcion', 'estado'];
+    protected $fillable = ['sede_id', 'nombre', 'descripcion', 'estado'];
 
     protected function casts(): array
     {
@@ -45,6 +46,11 @@ class Area extends Model
         }
 
         return mb_convert_case($limpio, MB_CASE_TITLE, 'UTF-8');
+    }
+
+    public function sede(): BelongsTo
+    {
+        return $this->belongsTo(Sede::class, 'sede_id');
     }
 
     public function usuarios(): HasMany

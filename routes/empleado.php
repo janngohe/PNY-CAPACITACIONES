@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Empleado\BeneficioController;
 use App\Http\Controllers\Empleado\DashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,4 +31,8 @@ Route::prefix('empleado')->name('empleado.')->middleware('auth')->group(function
     // Anexo de certificados externos (SENA, ICA, etc.)
     Route::get('/anexo-certificados', [DashboardController::class, 'anexoCertificados'])->name('anexo');
     Route::post('/anexo-certificados', [DashboardController::class, 'guardarAnexo'])->name('anexo.guardar');
+
+    // Catálogo de Beneficios y Puntos Acumulables
+    Route::get('/beneficios', [BeneficioController::class, 'index'])->name('beneficios');
+    Route::post('/beneficios/{beneficio}/canjear', [BeneficioController::class, 'canjear'])->name('beneficios.canjear');
 });

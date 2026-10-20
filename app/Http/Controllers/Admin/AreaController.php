@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Area;
+use App\Models\Sede;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,6 +14,7 @@ class AreaController extends Controller
     public function index()
     {
         $areas = Area::query()
+            ->with('sede:id,nombre,ciudad')
             ->withCount([
                 'usuarios as empleados_count' => fn ($q) => $q->where('rol', 'EMPLEADO')->where('estado', true),
                 'usuarios as jefes_count' => fn ($q) => $q->where('rol', 'JEFE_AREA')->where('estado', true),
@@ -25,14 +27,31 @@ class AreaController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return view('admin.areas.index', compact('areas'));
+        $sedes = Sede::where('estado', true)->orderBy('nombre')->get(['id', 'nombre', 'ciudad']);
+
+        return view('admin.areas.index', compact('areas', 'sedes'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $datos = $this->validar($request);
 
-        Area::create($datos + ['estado' => true]);
+        $area = Area::create($datos + ['estado' => true]);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            $area->load('sede:id,nombre,ciudad');
+            return response()->json([
+                'success' => true,
+                'mensaje' => "Área \"{$area->nombre}\" creada y vinculada a la sede {$area->sede?->nombre} correctamente.",
+                'area' => [
+                    'id' => $area->id,
+                    'nombre' => $area->nombre,
+                    'sede_id' => $area->sede_id,
+                    'sede_nombre' => $area->sede?->nombre ?? 'Sin sede',
+                    'sede_ciudad' => $area->sede?->ciudad ?? '',
+                ],
+            ]);
+        }
 
         return redirect()->route('admin.areas.index')->with('success', 'Área creada correctamente.');
     }
@@ -60,11 +79,21 @@ class AreaController extends Controller
         }
 
         return $request->validate([
-            'nombre' => ['required', 'string', 'max:150', Rule::unique('areas', 'nombre')->ignore($area?->id)],
+            'sede_id' => ['required', 'integer', 'exists:sedes,id'],
+            'nombre' => [
+                'required',
+                'string',
+                'max:150',
+                Rule::unique('areas', 'nombre')
+                    ->where('sede_id', $request->input('sede_id'))
+                    ->ignore($area?->id)
+            ],
             'descripcion' => ['nullable', 'string', 'max:255'],
         ], [
+            'sede_id.required' => 'Debes seleccionar la sede a la que pertenece el área.',
+            'sede_id.exists' => 'La sede seleccionada no es válida.',
             'nombre.required' => 'El nombre del área es obligatorio.',
-            'nombre.unique' => 'Ya existe un área con ese nombre.',
+            'nombre.unique' => 'Ya existe un área con ese nombre en la sede seleccionada.',
         ]);
     }
 }

@@ -20,6 +20,7 @@ class Capacitacion extends Model
         'porcentaje_aprobacion',
         'intentos_permitidos',
         'duracion_estimada',
+        'puntos',
         'incentivo',
         'fecha_disponibilidad',
         'fecha_limite',
@@ -32,10 +33,31 @@ class Capacitacion extends Model
     {
         return [
             'porcentaje_aprobacion' => 'decimal:2',
+            'puntos' => 'integer',
             'fecha_disponibilidad' => 'datetime',
             'fecha_limite' => 'datetime',
             'estado' => 'boolean',
         ];
+    }
+
+    /**
+     * Determina si la capacitación ha superado su fecha límite de cumplimiento.
+     */
+    public function estaVencida(): bool
+    {
+        return $this->fecha_limite !== null && $this->fecha_limite->isPast();
+    }
+
+    /**
+     * Determina si la capacitación está próxima a vencer (por defecto dentro de los próximos 30 días).
+     */
+    public function proximaAVencer(int $dias = 30): bool
+    {
+        if ($this->fecha_limite === null || $this->estaVencida()) {
+            return false;
+        }
+
+        return $this->fecha_limite->lte(now()->addDays($dias));
     }
 
     public function getUrlImagenAttribute(): string

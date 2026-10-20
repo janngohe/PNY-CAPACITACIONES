@@ -154,10 +154,20 @@
                             </div>
 
                             <div>
-                                <label for="incentivo" class="block text-xs font-bold text-brand-dark mb-1.5">
-                                    Incentivo o beneficio <span class="font-normal text-muted">(opcional)</span>
+                                <label for="puntos" class="block text-xs font-bold text-brand-dark mb-1.5 flex items-center justify-between">
+                                    <span class="flex items-center gap-1.5">
+                                        <i class="fa-solid fa-star text-amber-500 text-xs"></i>
+                                        <span>Puntos al completar</span>
+                                    </span>
+                                    <span class="text-[10px] text-muted font-normal">Acumulable</span>
                                 </label>
-                                <input id="incentivo" type="text" name="incentivo" value="{{ old('incentivo', $capacitacion?->incentivo) }}" maxlength="2000" placeholder="Ej: Certificado oficial + Bono" class="{{ $input }}">
+                                <div class="relative">
+                                    <input id="puntos" type="number" name="puntos" value="{{ old('puntos', $capacitacion?->puntos ?? 20) }}" min="0" max="10000" placeholder="Ej: 20" class="{{ $input }} pl-8 font-bold text-amber-800">
+                                    <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-amber-500 text-xs">
+                                        <i class="fa-solid fa-coins"></i>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="incentivo" value="{{ old('incentivo', $capacitacion?->incentivo) }}">
                             </div>
 
                             <div>
@@ -212,6 +222,98 @@
                                     @enderror
                                 </div>
                             </div>
+
+                            <!-- ================= ASIGNACIÓN DE ÁREAS Y SEDES (SOLO ADMIN) ================= -->
+                            @isset($areas)
+                                @php
+                                    $areasSel = collect(old('areas', $areasSeleccionadas ?? []))->map(fn ($v) => (int) $v)->all();
+                                @endphp
+                                <div class="sm:col-span-2 p-5 rounded-2xl bg-slate-50 border border-line/80 space-y-4" id="seccion-areas-sedes-paso1">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line/60 pb-3">
+                                        <div>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[10px] font-bold uppercase tracking-wider mb-1">
+                                                <i class="fa-solid fa-sitemap"></i> Alcance Institucional
+                                            </span>
+                                            <h3 class="font-heading font-extrabold text-sm sm:text-base text-brand-dark">
+                                                Áreas y Sedes que recibirán la Capacitación <span class="text-red-500">*</span>
+                                            </h3>
+                                            <p class="text-[11px] text-muted mt-0.5">
+                                                Selecciona las áreas y sedes destinatarias.{{ ($panel ?? 'jefe') === 'admin' ? ' También puedes crear una nueva área junto con su sede de inmediato.' : '' }}
+                                            </p>
+                                        </div>
+                                        
+                                        @if(($panel ?? 'jefe') === 'admin')
+                                        <button type="button" onclick="abrirModalCrearArea()"
+                                                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs shadow-2xs transition-all cursor-pointer shrink-0 self-start sm:self-auto">
+                                            <i class="fa-solid fa-plus text-xs"></i>
+                                            <span>Crear Nueva Área y Sede</span>
+                                        </button>
+                                        @endif
+                                    </div>
+
+                                    <!-- Filtro rápido por sede y selección masiva -->
+                                    <div class="flex flex-wrap items-center justify-between gap-2.5 bg-white p-2.5 rounded-xl border border-line/70 text-xs">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[11px] font-bold text-slate-500 uppercase">Filtrar por sede:</span>
+                                            <select id="filtro-sede-areas" onchange="filtrarAreasPorSede(this.value)"
+                                                    class="px-2.5 py-1 rounded-lg border border-line bg-slate-50 text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                                                <option value="todas">Todas las sedes</option>
+                                                @isset($sedes)
+                                                    @foreach($sedes as $s)
+                                                        <option value="{{ $s->id }}">{{ $s->nombre }} ({{ $s->ciudad }})</option>
+                                                    @endforeach
+                                                @endisset
+                                            </select>
+                                        </div>
+
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="marcarTodasAreas(true)" class="text-[11px] font-bold text-brand-blue hover:underline cursor-pointer">
+                                                Seleccionar todas
+                                            </button>
+                                            <span class="text-slate-300">|</span>
+                                            <button type="button" onclick="marcarTodasAreas(false)" class="text-[11px] font-bold text-slate-500 hover:underline cursor-pointer">
+                                                Deseleccionar
+                                            </button>
+                                            <span id="contador-areas-seleccionadas" class="px-2.5 py-0.5 rounded-full bg-brand-light text-brand-blue text-[11px] font-extrabold ml-1">
+                                                {{ count($areasSel) }} seleccionadas
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Grid de Áreas con insignia de su Sede PNY -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto pr-1" id="contenedor-cards-areas">
+                                        @forelse ($areas as $area)
+                                            <label class="tarjeta-area-item flex items-center justify-between p-3 rounded-2xl border border-line/80 bg-white hover:border-brand-blue/50 hover:bg-brand-light/30 cursor-pointer transition-all shadow-2xs"
+                                                   data-sede-id="{{ $area->sede_id ?? '' }}">
+                                                <div class="flex items-center gap-2.5 min-w-0">
+                                                    <input type="checkbox" name="areas[]" value="{{ $area->id }}" 
+                                                           {{ in_array($area->id, $areasSel, true) ? 'checked' : '' }}
+                                                           onchange="actualizarContadorAreas()"
+                                                           class="check-area-asignacion rounded text-brand-blue focus:ring-brand-blue w-4 h-4">
+                                                    <div class="min-w-0">
+                                                        <span class="font-bold text-xs text-brand-dark block truncate nombre-area-texto">{{ $area->nombre }}</span>
+                                                        <span class="inline-flex items-center gap-1 text-[10px] text-muted">
+                                                            <i class="fa-solid fa-location-dot text-[9px] text-slate-400"></i>
+                                                            <span class="ciudad-area-texto">{{ $area->sede ? $area->sede->ciudad : 'Sin ciudad' }}</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold shrink-0 badge-sede-texto {{ $area->sede ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-slate-100 text-slate-500' }}">
+                                                    <i class="fa-solid fa-building text-[9px] mr-1"></i>
+                                                    {{ $area->sede ? $area->sede->nombre : 'Sin Sede' }}
+                                                </span>
+                                            </label>
+                                        @empty
+                                            <div class="col-span-2 p-6 text-center text-xs text-muted bg-white rounded-2xl border border-line">
+                                                <i class="fa-solid fa-sitemap text-2xl text-slate-300 mb-1 block"></i>
+                                                No hay áreas registradas. Crea una nueva área junto con su sede usando el botón superior.
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                    @error('areas') <p class="text-xs font-semibold text-red-600">{{ $message }}</p> @enderror
+                                </div>
+                            @endisset
                         </div>
                     </div>
 
@@ -424,19 +526,21 @@
                     </div>
 
                     @isset($areas)
-                        @php $areasSel = collect(old('areas', $areasSeleccionadas ?? []))->map(fn ($v) => (int) $v)->all(); @endphp
-                        <div class="space-y-3 pt-2" id="bloque-areas">
-                            <h4 class="font-heading font-bold text-xs text-brand-dark uppercase tracking-wider">Áreas que podrán realizar esta capacitación</h4>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                @foreach ($areas as $area)
-                                    <label class="flex items-center gap-3 p-3 rounded-2xl border border-line bg-slate-50 hover:bg-brand-light/60 cursor-pointer transition-colors">
-                                        <input type="checkbox" name="areas[]" value="{{ $area->id }}" {{ in_array($area->id, $areasSel, true) ? 'checked' : '' }}
-                                               class="rounded text-brand-blue focus:ring-brand-blue">
-                                        <span class="text-xs font-bold text-brand-dark">{{ $area->nombre }}</span>
-                                    </label>
-                                @endforeach
+                        <div class="space-y-3 pt-2" id="bloque-areas-resumen-paso3">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-heading font-bold text-xs text-brand-dark uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="fa-solid fa-sitemap text-brand-blue"></i>
+                                    <span>Áreas y Sedes Asignadas</span>
+                                </h4>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="irAPaso(1)" class="text-xs font-bold text-brand-blue hover:underline cursor-pointer">
+                                        <i class="fa-solid fa-pen-to-square text-[10px]"></i> Modificar en Paso 1
+                                    </button>
+                                </div>
                             </div>
-                            @error('areas') <p class="text-[11px] font-semibold text-red-600">{{ $message }}</p> @enderror
+                            <div id="resumen-areas-confirmadas" class="flex flex-wrap gap-2 p-3 rounded-2xl bg-slate-50 border border-line/70 min-h-[48px] items-center">
+                                <!-- Se llena dinámicamente según lo seleccionado en Paso 1 -->
+                            </div>
                         </div>
                     @endisset
 
@@ -535,11 +639,11 @@
                                 </div>
                             </div>
                             <div class="bg-slate-50 p-2 rounded-xl border border-line/60 flex items-center gap-2">
-                                <span class="text-amber-600 text-sm"><i class="fa-solid fa-gift"></i></span>
+                                <span class="text-amber-500 text-sm"><i class="fa-solid fa-star"></i></span>
                                 <div>
-                                    <span class="block text-[10px] text-muted font-medium">Incentivo</span>
-                                    <span id="pv-incentivo" class="font-heading font-bold text-xs text-amber-700 truncate max-w-[90px]" title="{{ old('incentivo', $capacitacion?->incentivo) }}">
-                                        {{ old('incentivo', $capacitacion?->incentivo) ?: 'Certificado' }}
+                                    <span class="block text-[10px] text-muted font-medium">Puntos otorgados</span>
+                                    <span id="pv-puntos" class="font-heading font-extrabold text-xs text-amber-700 truncate max-w-[90px]">
+                                        +{{ old('puntos', $capacitacion?->puntos ?? 20) }} pts
                                     </span>
                                 </div>
                             </div>
@@ -598,6 +702,111 @@
 <template id="tpl-contenido">
     @include('jefe.capacitaciones._contenido', ['i' => '__M__', 'j' => '__C__', 'contenido' => ['id' => null, 'titulo' => '', 'tipo' => 'TEXTO', 'contenido' => '', 'ruta_archivo_actual' => null], 'input' => $input, 'tiposContenido' => $tiposContenido])
 </template>
+
+<!-- Modal Interactivo para Registrar Área y Sede en Vivo -->
+@isset($areas)
+<div id="modal-crear-area" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" onclick="cerrarModalCrearArea()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-line">
+            <div class="bg-gradient-to-r from-brand-dark to-brand-deep text-white px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-sitemap text-brand-sky"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-extrabold text-sm sm:text-base text-white">Crear Nueva Área y Sede</h3>
+                        <p class="text-[11px] text-slate-200">Se registrará y asignará automáticamente a esta capacitación.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="cerrarModalCrearArea()" class="text-white/70 hover:text-white w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <form id="form-ajax-crear-area" onsubmit="guardarNuevaAreaAjax(event)" class="p-6 space-y-4">
+                <div id="alerta-error-modal-area" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700"></div>
+
+                <div>
+                    <label for="modal_area_nombre" class="block text-xs font-bold text-brand-dark mb-1">
+                        Nombre del Área <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="modal_area_nombre" required maxlength="150"
+                           placeholder="Ej. Cosecha y Procesamiento Betania"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-line bg-slate-50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="modal_area_sede_id" class="block text-xs font-bold text-brand-dark">
+                            Sede PNY Perteneciente <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" onclick="toggleNuevaSedeRapida()" class="text-[11px] font-bold text-brand-blue hover:underline cursor-pointer">
+                            <i class="fa-solid fa-plus text-[10px]"></i> + Nueva Sede
+                        </button>
+                    </div>
+
+                    <select id="modal_area_sede_id" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-line bg-slate-50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
+                        <option value="">— Seleccionar Sede PNY —</option>
+                        @isset($sedes)
+                            @foreach ($sedes as $s)
+                                <option value="{{ $s->id }}">{{ $s->nombre }} · {{ $s->ciudad }}</option>
+                            @endforeach
+                        @endisset
+                    </select>
+                </div>
+
+                <!-- Bloque expandible para registrar nueva sede si no existe -->
+                <div id="bloque-nueva-sede-rapida" class="hidden p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-extrabold text-indigo-900 uppercase tracking-wider flex items-center gap-1">
+                            <i class="fa-solid fa-building"></i> Registrar Nueva Sede
+                        </span>
+                        <button type="button" onclick="toggleNuevaSedeRapida()" class="text-[10px] text-indigo-600 hover:underline cursor-pointer">Cancelar</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <input type="text" id="modal_nueva_sede_nombre" placeholder="Nombre de sede (ej: Sede Neiva)"
+                                   class="w-full px-3 py-2 rounded-xl border border-indigo-200 bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                        </div>
+                        <div>
+                            <input type="text" id="modal_nueva_sede_ciudad" placeholder="Ciudad (ej: Neiva)"
+                                   class="w-full px-3 py-2 rounded-xl border border-indigo-200 bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
+                        </div>
+                    </div>
+                    <button type="button" onclick="guardarNuevaSedeAjax()"
+                            class="w-full py-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-colors cursor-pointer">
+                        Guardar Sede y Seleccionar
+                    </button>
+                </div>
+
+                <div>
+                    <label for="modal_area_descripcion" class="block text-xs font-bold text-brand-dark mb-1">
+                        Descripción <span class="font-normal text-muted">(opcional)</span>
+                    </label>
+                    <textarea id="modal_area_descripcion" rows="2" maxlength="255"
+                              placeholder="Breve detalle de funciones o procesos de esta área..."
+                              class="w-full px-3.5 py-2 rounded-xl border border-line bg-slate-50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-line">
+                    <button type="button" onclick="cerrarModalCrearArea()"
+                            class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btn-submit-modal-area"
+                            class="px-5 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs shadow-xs transition-colors cursor-pointer">
+                        <i class="fa-solid fa-check mr-1"></i> Guardar y Asignar Área
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endisset
 @endsection
 
 @push('scripts')
@@ -645,6 +854,9 @@
             barra.style.width = '100%';
             texto.textContent = '¡Ya casi terminas! (100%)';
             porcentaje.textContent = 'Paso 3/3';
+            if (typeof window.actualizarResumenAreasPaso3 === 'function') {
+                window.actualizarResumenAreasPaso3();
+            }
         }
 
         const mainCol = document.querySelector('.lg\\:overflow-y-auto');
@@ -676,6 +888,279 @@
         }
     };
 
+    /* Gestión dinámica de Áreas y Sedes para Administrador */
+    window.actualizarContadorAreas = function() {
+        const checks = document.querySelectorAll('.check-area-asignacion:checked');
+        const badge = document.getElementById('contador-areas-seleccionadas');
+        if (badge) {
+            badge.textContent = checks.length + ' seleccionada' + (checks.length === 1 ? '' : 's');
+        }
+        if (typeof window.actualizarResumenAreasPaso3 === 'function') {
+            window.actualizarResumenAreasPaso3();
+        }
+    };
+
+    window.actualizarResumenAreasPaso3 = function() {
+        const contenedor = document.getElementById('resumen-areas-confirmadas');
+        if (!contenedor) return;
+
+        const checks = document.querySelectorAll('.check-area-asignacion:checked');
+        if (checks.length === 0) {
+            contenedor.innerHTML = `
+                <div class="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-2 rounded-xl text-xs w-full border border-amber-200">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                    <span>No has seleccionado ninguna área. Se recomienda asignar al menos una para que los colaboradores puedan acceder a la capacitación.</span>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        checks.forEach(cb => {
+            const tarjeta = cb.closest('.tarjeta-area-item');
+            const nombreArea = tarjeta ? tarjeta.querySelector('.nombre-area-texto')?.textContent.trim() : ('Área #' + cb.value);
+            const nombreSede = tarjeta ? tarjeta.querySelector('.badge-sede-texto')?.textContent.trim() : 'Sede PNY';
+
+            html += `
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-line text-xs font-semibold text-brand-dark shadow-2xs">
+                    <i class="fa-solid fa-check text-emerald-500 text-[11px]"></i>
+                    <span>${nombreArea}</span>
+                    <span class="px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-bold text-[10px] border border-indigo-100">
+                        <i class="fa-solid fa-building text-[9px] mr-0.5"></i>${nombreSede}
+                    </span>
+                </span>
+            `;
+        });
+        contenedor.innerHTML = html;
+    };
+
+    window.filtrarAreasPorSede = function(sedeId) {
+        const items = document.querySelectorAll('.tarjeta-area-item');
+        items.forEach(item => {
+            const itemSedeId = item.getAttribute('data-sede-id');
+            if (!sedeId || sedeId === 'todas' || itemSedeId === String(sedeId)) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+    };
+
+    window.marcarTodasAreas = function(marcar) {
+        const items = document.querySelectorAll('.tarjeta-area-item');
+        items.forEach(item => {
+            if (!item.classList.contains('hidden')) {
+                const cb = item.querySelector('.check-area-asignacion');
+                if (cb) cb.checked = marcar;
+            }
+        });
+        window.actualizarContadorAreas();
+    };
+
+    window.abrirModalCrearArea = function() {
+        const modal = document.getElementById('modal-crear-area');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        const inputNombre = document.getElementById('modal_area_nombre');
+        if (inputNombre) {
+            inputNombre.value = '';
+            setTimeout(() => inputNombre.focus(), 80);
+        }
+        const alerta = document.getElementById('alerta-error-modal-area');
+        if (alerta) alerta.classList.add('hidden');
+    };
+
+    window.cerrarModalCrearArea = function() {
+        const modal = document.getElementById('modal-crear-area');
+        if (modal) modal.classList.add('hidden');
+    };
+
+    window.toggleNuevaSedeRapida = function() {
+        const bloque = document.getElementById('bloque-nueva-sede-rapida');
+        if (!bloque) return;
+        bloque.classList.toggle('hidden');
+        if (!bloque.classList.contains('hidden')) {
+            const inputNombre = document.getElementById('modal_nueva_sede_nombre');
+            if (inputNombre) setTimeout(() => inputNombre.focus(), 80);
+        }
+    };
+
+    window.guardarNuevaSedeAjax = async function() {
+        const inputNombre = document.getElementById('modal_nueva_sede_nombre');
+        const inputCiudad = document.getElementById('modal_nueva_sede_ciudad');
+        const alerta = document.getElementById('alerta-error-modal-area');
+        
+        const nombre = inputNombre ? inputNombre.value.trim() : '';
+        const ciudad = inputCiudad ? inputCiudad.value.trim() : '';
+
+        if (!nombre) {
+            if (alerta) {
+                alerta.textContent = 'El nombre de la sede es obligatorio.';
+                alerta.classList.remove('hidden');
+            }
+            return;
+        }
+
+        try {
+            const res = await fetch("{{ route('admin.sedes.store') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ nombre, ciudad })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                // Añadir al select del modal
+                const selectModal = document.getElementById('modal_area_sede_id');
+                if (selectModal) {
+                    const opt = document.createElement('option');
+                    opt.value = data.sede.id;
+                    opt.textContent = `${data.sede.nombre} · ${data.sede.ciudad || 'Sin ciudad'}`;
+                    selectModal.appendChild(opt);
+                    selectModal.value = data.sede.id;
+                }
+
+                // Añadir al filtro principal de sedes
+                const selectFiltro = document.getElementById('filtro-sede-areas');
+                if (selectFiltro) {
+                    const opt = document.createElement('option');
+                    opt.value = data.sede.id;
+                    opt.textContent = `${data.sede.nombre} (${data.sede.ciudad || 'Sin ciudad'})`;
+                    selectFiltro.appendChild(opt);
+                }
+
+                if (inputNombre) inputNombre.value = '';
+                if (inputCiudad) inputCiudad.value = '';
+                const bloque = document.getElementById('bloque-nueva-sede-rapida');
+                if (bloque) bloque.classList.add('hidden');
+                if (alerta) alerta.classList.add('hidden');
+            } else {
+                let errorMsg = data.message || 'Error al crear la sede.';
+                if (data.errors) {
+                    errorMsg = Object.values(data.errors).flat().join(' ');
+                }
+                if (alerta) {
+                    alerta.textContent = errorMsg;
+                    alerta.classList.remove('hidden');
+                }
+            }
+        } catch (err) {
+            if (alerta) {
+                alerta.textContent = 'Error de conexión al guardar la sede.';
+                alerta.classList.remove('hidden');
+            }
+        }
+    };
+
+    window.guardarNuevaAreaAjax = async function(e) {
+        if (e) e.preventDefault();
+        const btn = document.getElementById('btn-submit-modal-area');
+        const alerta = document.getElementById('alerta-error-modal-area');
+        const inputNombre = document.getElementById('modal_area_nombre');
+        const selectSede = document.getElementById('modal_area_sede_id');
+        const inputDesc = document.getElementById('modal_area_descripcion');
+
+        const nombre = inputNombre ? inputNombre.value.trim() : '';
+        const sede_id = selectSede ? selectSede.value : '';
+        const descripcion = inputDesc ? inputDesc.value.trim() : '';
+
+        if (!nombre) {
+            if (alerta) {
+                alerta.textContent = 'El nombre del área es obligatorio.';
+                alerta.classList.remove('hidden');
+            }
+            return;
+        }
+        if (!sede_id) {
+            if (alerta) {
+                alerta.textContent = 'Debes seleccionar la sede a la que pertenece el área.';
+                alerta.classList.remove('hidden');
+            }
+            return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Guardando...';
+        }
+
+        try {
+            const res = await fetch("{{ route('admin.areas.store') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ nombre, sede_id, descripcion })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                const contenedorCards = document.getElementById('contenedor-cards-areas');
+                if (contenedorCards) {
+                    const vacioMsg = contenedorCards.querySelector('.col-span-2');
+                    if (vacioMsg) vacioMsg.remove();
+
+                    const label = document.createElement('label');
+                    label.className = 'tarjeta-area-item flex items-center justify-between p-3 rounded-2xl border border-emerald-300 bg-emerald-50/40 hover:border-brand-blue/50 hover:bg-brand-light/30 cursor-pointer transition-all shadow-2xs';
+                    label.setAttribute('data-sede-id', data.area.sede_id || '');
+                    label.innerHTML = `
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <input type="checkbox" name="areas[]" value="${data.area.id}" checked
+                                   onchange="actualizarContadorAreas()"
+                                   class="check-area-asignacion rounded text-brand-blue focus:ring-brand-blue w-4 h-4">
+                            <div class="min-w-0">
+                                <span class="font-bold text-xs text-brand-dark block truncate nombre-area-texto">${data.area.nombre}</span>
+                                <span class="inline-flex items-center gap-1 text-[10px] text-muted">
+                                    <i class="fa-solid fa-location-dot text-[9px] text-slate-400"></i>
+                                    <span class="ciudad-area-texto">${data.area.sede_ciudad || 'Sin ciudad'}</span>
+                                </span>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold shrink-0 badge-sede-texto bg-indigo-50 text-indigo-700 border border-indigo-100">
+                            <i class="fa-solid fa-building text-[9px] mr-1"></i>
+                            ${data.area.sede_nombre || 'Sin Sede'}
+                        </span>
+                    `;
+                    contenedorCards.prepend(label);
+                }
+
+                window.actualizarContadorAreas();
+                window.cerrarModalCrearArea();
+            } else {
+                let errorMsg = data.message || 'Error al guardar el área.';
+                if (data.errors) {
+                    errorMsg = Object.values(data.errors).flat().join(' ');
+                }
+                if (alerta) {
+                    alerta.textContent = errorMsg;
+                    alerta.classList.remove('hidden');
+                }
+            }
+        } catch (err) {
+            if (alerta) {
+                alerta.textContent = 'Error de conexión al guardar el área.';
+                alerta.classList.remove('hidden');
+            }
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Guardar y Asignar Área';
+            }
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof window.actualizarContadorAreas === 'function') {
+            window.actualizarContadorAreas();
+        }
+    });
+
     (function () {
         const lista = document.getElementById('lista-modulos');
         const tplModulo = document.getElementById('tpl-modulo').innerHTML;
@@ -686,7 +1171,7 @@
         const pvTitulo = document.getElementById('pv-titulo');
         const pvDesc = document.getElementById('pv-descripcion');
         const pvDuracion = document.getElementById('pv-duracion');
-        const pvIncentivo = document.getElementById('pv-incentivo');
+        const pvPuntos = document.getElementById('pv-puntos');
         const pvImg = document.getElementById('pv-imagen');
         const pvImgThumb = document.getElementById('img-preview-thumb');
         const pvModulosList = document.getElementById('pv-modulos-list');
@@ -704,14 +1189,13 @@
             const inputTitulo = document.getElementById('titulo').value.trim();
             const inputDesc = document.getElementById('descripcion').value.trim();
             const inputDuracion = document.getElementById('duracion_estimada').value;
-            const inputIncentivo = document.getElementById('incentivo').value.trim();
+            const inputPuntos = document.getElementById('puntos') ? document.getElementById('puntos').value.trim() : '20';
 
             pvTitulo.textContent = inputTitulo || 'Título de la capacitación...';
             pvDesc.textContent = inputDesc || 'Aquí se visualizará la descripción y objetivos de la capacitación para los empleados de tu área.';
             if (pvDuracion) pvDuracion.textContent = inputDuracion ? inputDuracion + ' hrs' : 'Por definir';
-            if (pvIncentivo) {
-                pvIncentivo.textContent = inputIncentivo || 'Certificado';
-                pvIncentivo.title = inputIncentivo || 'Certificado';
+            if (pvPuntos) {
+                pvPuntos.textContent = '+' + (inputPuntos || '0') + ' pts';
             }
 
             // Actualizar lista de módulos en live preview
@@ -755,7 +1239,7 @@
         });
 
         // Escuchadores de eventos para tiempo real
-        ['titulo', 'descripcion', 'duracion_estimada', 'incentivo'].forEach(id => {
+        ['titulo', 'descripcion', 'duracion_estimada', 'puntos'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.addEventListener('input', actualizarVistaPrevia);

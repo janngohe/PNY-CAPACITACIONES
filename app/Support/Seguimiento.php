@@ -44,11 +44,14 @@ class Seguimiento
         $areaIds = $capacitaciones->flatMap(fn ($c) => $c->areas->pluck('id'))->unique()->values();
 
         $empleados = Usuario::query()
-            ->with('area:id,nombre')
+            ->with(['area.sede:id,nombre,ciudad', 'sede:id,nombre,ciudad'])
             ->where('rol', 'EMPLEADO')
             ->where('estado', true)
             ->whereIn('area_id', $areaIds)
             ->when(! empty($filtros['area_id']), fn ($q) => $q->where('area_id', $filtros['area_id']))
+            ->when(! empty($filtros['sede_id']), fn ($q) => $q->where(fn ($w) => $w
+                ->where('sede_id', $filtros['sede_id'])
+                ->orWhereHas('area', fn ($a) => $a->where('sede_id', $filtros['sede_id']))))
             ->when(! empty($filtros['q']), function ($q) use ($filtros) {
                 $q->where(fn ($w) => $w
                     ->where('nombre_completo', 'like', '%' . $filtros['q'] . '%')
@@ -106,6 +109,8 @@ class Seguimiento
                     ?? ($porcentaje >= 100 ? 'MODULOS_COMPLETOS' : ($registros->isNotEmpty() ? 'EN_PROGRESO' : 'PENDIENTE'));
 
                 $filas->push((object) [
+                    'usuario_id' => $empleado->id,
+                    'capacitacion_id' => $cap->id,
                     'usuario' => $empleado,
                     'capacitacion' => $cap,
                     'total_modulos' => $total,

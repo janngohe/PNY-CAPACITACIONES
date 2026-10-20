@@ -106,7 +106,6 @@
     @endif
 
     <div class="body">
-        <span class="badge">Acreditación Institucional Oficial</span>
         <h1>Certificado de Capacitación y Aprobación</h1>
         <p class="lead">{{ $textoCert }}</p>
 
@@ -128,6 +127,8 @@
             <span class="pill pill-date">Rivera - Huila, {{ $fechaRealizada }}</span>
         </div>
 
+        {{-- OCULTO TEMPORALMENTE: Firmas para implementación futura --}}
+        @if(false)
         <table class="firmas">
             <tr>
                 <td>
@@ -150,9 +151,10 @@
                 </td>
             </tr>
         </table>
+        @endif
     </div>
 
-    <div class="footer">Documento de Acreditación Oficial emitido por el Sistema de Capacitación de {{ $org }}</div>
+    <div class="footer">Documento Oficial emitido por el Sistema de Capacitación de {{ $org }}</div>
 </div>
 </body>
 </html>

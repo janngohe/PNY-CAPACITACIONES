@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Jefe;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\Capacitacion;
 use App\Models\Certificado;
 use App\Models\Contenido;
 use App\Models\IntentoEvaluacion;
 use App\Models\Modulo;
 use App\Models\ProgresoModulo;
+use App\Models\Sede;
 use App\Models\Usuario;
 use App\Models\UsuarioCapacitacion;
 use Illuminate\Http\RedirectResponse;
@@ -111,11 +113,23 @@ class CapacitacionController extends Controller
         $usuario = $this->jefe();
         $usuario->loadMissing('area');
 
+        $areas = Area::with('sede:id,nombre,ciudad')
+            ->where('estado', true)
+            ->orderBy('nombre')
+            ->get();
+        $sedes = Sede::where('estado', true)->orderBy('nombre')->get(['id', 'nombre', 'ciudad']);
+        // Por defecto que esté seleccionada el área del mismo jefe
+        $areasSeleccionadas = $usuario->area_id ? [(int) $usuario->area_id] : [];
+
         return view('jefe.capacitaciones.form', [
             'usuario' => $usuario,
+            'panel' => 'jefe',
             'capacitacion' => null,
             'modulosForm' => $this->modulosParaFormulario(null),
             'tiposContenido' => self::TIPOS_CONTENIDO,
+            'areas' => $areas,
+            'sedes' => $sedes,
+            'areasSeleccionadas' => $areasSeleccionadas,
         ]);
     }
 
@@ -130,7 +144,18 @@ class CapacitacionController extends Controller
         $datos = $this->validar($request);
         $esBorrador = $request->input('accion') === 'borrador' || ! $request->boolean('estado_publicacion', true);
 
-        DB::transaction(function () use ($request, $datos, $usuario, $esBorrador) {
+        // Áreas asignadas: permite asignar a otras áreas, por defecto la del mismo jefe
+        $areasInput = $request->input('areas', []);
+        if (is_array($areasInput) && !empty($areasInput)) {
+            $areas = Area::whereIn('id', $areasInput)->pluck('id')->all();
+        } else {
+            $areas = [];
+        }
+        if (empty($areas) && $usuario->area_id) {
+            $areas = [(int) $usuario->area_id];
+        }
+
+        DB::transaction(function () use ($request, $datos, $usuario, $areas, $esBorrador) {
             $capacitacion = Capacitacion::create([
                 ...$this->atributosCapacitacion($datos, null),
                 'ruta_imagen' => $this->guardarImagen($request, null),
@@ -138,8 +163,8 @@ class CapacitacionController extends Controller
                 'estado' => ! $esBorrador,
             ]);
 
-            // La capacitación solo se habilita para el área del jefe que la publica
-            $capacitacion->areas()->sync([$usuario->area_id]);
+            // Sincronizar áreas seleccionadas
+            $capacitacion->areas()->sync($areas);
 
             $this->sincronizarModulos($capacitacion, $datos['modulos'], $request);
         });
@@ -150,7 +175,7 @@ class CapacitacionController extends Controller
         }
 
         return redirect()->route('jefe.capacitaciones.index')
-            ->with('success', 'Capacitación publicada correctamente. Ya está disponible para los empleados de tu área.');
+            ->with('success', 'Capacitación publicada correctamente. Ya está disponible para las áreas seleccionadas.');
     }
 
     public function show(Capacitacion $capacitacion)
@@ -221,11 +246,26 @@ class CapacitacionController extends Controller
         $this->autorizar($capacitacion, $usuario);
         $usuario->loadMissing('area');
 
+        $areas = Area::with('sede:id,nombre,ciudad')
+            ->where('estado', true)
+            ->orWhereIn('id', $capacitacion->areas()->pluck('areas.id'))
+            ->orderBy('nombre')
+            ->get();
+        $sedes = Sede::where('estado', true)->orderBy('nombre')->get(['id', 'nombre', 'ciudad']);
+        $areasSeleccionadas = $capacitacion->areas()->pluck('areas.id')->map(fn ($id) => (int) $id)->all();
+        if (empty($areasSeleccionadas) && $usuario->area_id) {
+            $areasSeleccionadas = [(int) $usuario->area_id];
+        }
+
         return view('jefe.capacitaciones.form', [
             'usuario' => $usuario,
+            'panel' => 'jefe',
             'capacitacion' => $capacitacion,
             'modulosForm' => $this->modulosParaFormulario($capacitacion),
             'tiposContenido' => self::TIPOS_CONTENIDO,
+            'areas' => $areas,
+            'sedes' => $sedes,
+            'areasSeleccionadas' => $areasSeleccionadas,
         ]);
     }
 
@@ -239,7 +279,15 @@ class CapacitacionController extends Controller
         $esBorrador = $accion === 'borrador';
         $esPublicar = $accion === 'publicar';
 
-        DB::transaction(function () use ($request, $datos, $capacitacion, $esBorrador, $esPublicar) {
+        // Áreas asignadas
+        $areasInput = $request->input('areas', []);
+        if (is_array($areasInput) && !empty($areasInput)) {
+            $areas = Area::whereIn('id', $areasInput)->pluck('id')->all();
+        } else {
+            $areas = $usuario->area_id ? [(int) $usuario->area_id] : [];
+        }
+
+        DB::transaction(function () use ($request, $datos, $capacitacion, $areas, $esBorrador, $esPublicar) {
             $atributos = [
                 ...$this->atributosCapacitacion($datos, $capacitacion),
                 'ruta_imagen' => $this->guardarImagen($request, $capacitacion->ruta_imagen),
@@ -252,6 +300,7 @@ class CapacitacionController extends Controller
             }
 
             $capacitacion->update($atributos);
+            $capacitacion->areas()->sync($areas);
 
             $this->sincronizarModulos($capacitacion, $datos['modulos'], $request);
         });
@@ -348,7 +397,8 @@ class CapacitacionController extends Controller
             'porcentaje_aprobacion' => $datos['porcentaje_aprobacion'] ?? $capacitacion?->porcentaje_aprobacion ?? 80.00,
             'intentos_permitidos' => $datos['intentos_permitidos'] ?? $capacitacion?->intentos_permitidos ?? 3,
             'duracion_estimada' => $datos['duracion_estimada'] ?? null,
-            'incentivo' => $datos['incentivo'] ?? null,
+            'puntos' => isset($datos['puntos']) ? (int) $datos['puntos'] : ($capacitacion?->puntos ?? 20),
+            'incentivo' => $datos['incentivo'] ?? $capacitacion?->incentivo ?? null,
             'fecha_disponibilidad' => ! empty($datos['fecha_disponibilidad']) ? Carbon::parse($datos['fecha_disponibilidad'])->startOfDay() : null,
             'fecha_limite' => $fechaLimite,
         ];
@@ -363,6 +413,7 @@ class CapacitacionController extends Controller
             'porcentaje_aprobacion' => ['nullable', 'numeric', 'between:1,100'],
             'intentos_permitidos' => ['nullable', 'integer', 'between:1,20'],
             'duracion_estimada' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'puntos' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'incentivo' => ['nullable', 'string', 'max:2000'],
             'tiene_fecha_fin' => ['nullable', 'in:si,no'],
             'fecha_disponibilidad' => ['nullable', 'date'],

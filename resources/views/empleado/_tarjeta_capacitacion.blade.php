@@ -23,9 +23,12 @@
                 
                 <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/85 via-brand-dark/30 to-transparent"></div>
 
-                <div class="absolute top-3.5 left-3.5">
+                <div class="absolute top-3.5 left-3.5 flex items-center gap-1.5 flex-wrap">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border backdrop-blur-md bg-white/20 text-white border-white/30">
                         <i class="fa-solid fa-award text-brand-sky text-xs"></i> Capacitación Oficial
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-400 text-amber-950 shadow-xs">
+                        <i class="fa-solid fa-star text-[10px]"></i> +{{ is_object($cap) ? ($cap->puntos ?? 20) : ($cap['puntos'] ?? 20) }} pts
                     </span>
                 </div>
 

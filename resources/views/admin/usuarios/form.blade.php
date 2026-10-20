@@ -2,7 +2,9 @@
 
 @php
     $editando = (bool) $usuarioEditado;
-    $input = 'w-full px-4 py-2.5 rounded-xl border border-line bg-white text-xs sm:text-[13px] font-sans text-brand-dark placeholder:text-slate-400 focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all';
+    $input = 'w-full px-4 py-2.5 rounded-xl border border-line bg-white text-xs sm:text-[13px] font-sans text-brand-dark placeholder:text-slate-400 focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed';
+    $sedeSeleccionada = old('sede_id', $usuarioEditado?->sede_id ?? $usuarioEditado?->area?->sede_id);
+    $areaSeleccionada = old('area_id', $usuarioEditado?->area_id);
 @endphp
 
 @section('title', $editando ? 'Editar Usuario' : 'Registrar Usuario')
@@ -15,7 +17,7 @@
         'insignia' => $editando ? 'Modificación de Usuario' : 'Nuevo Colaborador',
         'titulo' => $editando ? 'Editar: ' . $usuarioEditado->nombre_completo : 'Registrar Nuevo Usuario',
         'descripcion' => $editando
-            ? 'Actualiza los datos del usuario, su rol institucional o el área a la que pertenece.'
+            ? 'Actualiza los datos del usuario, su rol institucional, sede asignada o área a la que pertenece.'
             : 'La contraseña inicial del nuevo usuario será su mismo número de documento. Al iniciar sesión por primera vez, se le obligará a crear una nueva contraseña segura.',
         'icono' => $editando ? 'fa-user-pen' : 'fa-user-plus',
     ])
@@ -73,20 +75,48 @@
                     </select>
                 </div>
 
-                <!-- Área Asignada -->
+                <!-- Sede Asignada -->
+                <div>
+                    <label for="sede_id" class="block text-xs font-bold text-brand-dark mb-1.5">
+                        Sede Institucional <span id="req-sede" class="text-red-500">*</span>
+                    </label>
+                    <select id="sede_id" name="sede_id" class="{{ $input }}">
+                        <option value="">— Seleccionar Sede Institucional —</option>
+                        @foreach ($sedes as $sede)
+                            <option value="{{ $sede->id }}" {{ (string) $sedeSeleccionada === (string) $sede->id ? 'selected' : '' }}>
+                                {{ $sede->nombre }} · {{ $sede->ciudad }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-[11px] text-muted mt-1">Ubicación física o planta donde labora el colaborador.</p>
+                </div>
+
+                <!-- Área Asignada (según la Sede seleccionada) -->
                 <div id="contenedor-area">
                     <label for="area_id" class="block text-xs font-bold text-brand-dark mb-1.5">
                         Área Institucional <span id="req-area" class="text-red-500">*</span>
                     </label>
-                    <select id="area_id" name="area_id" class="{{ $input }}">
-                        <option value="">— Seleccionar Área —</option>
-                        @foreach ($areas as $area)
-                            <option value="{{ $area->id }}" {{ (string) old('area_id', $usuarioEditado?->area_id) === (string) $area->id ? 'selected' : '' }}>
-                                {{ $area->nombre }}
-                            </option>
-                        @endforeach
+                    <select id="area_id" name="area_id" class="{{ $input }}" {{ !$sedeSeleccionada ? 'disabled' : '' }}>
+                        @if (!$sedeSeleccionada)
+                            <option value="">— Primero selecciona una sede institucional —</option>
+                        @else
+                            <option value="">— Seleccionar Área —</option>
+                            @php
+                                $areasDeSede = $areas->filter(fn($a) => (string) $a->sede_id === (string) $sedeSeleccionada);
+                            @endphp
+                            @forelse ($areasDeSede as $area)
+                                <option value="{{ $area->id }}" {{ (string) $areaSeleccionada === (string) $area->id ? 'selected' : '' }}>
+                                    {{ $area->nombre }}
+                                </option>
+                            @empty
+                                <option value="">— No hay áreas registradas para esta sede —</option>
+                            @endforelse
+                        @endif
                     </select>
-                    <p class="text-[11px] text-muted mt-1">Define las capacitaciones que podrá ver si es empleado o publicar si es jefe.</p>
+                    <p class="text-[11px] text-muted mt-1">
+                        <i class="fa-solid fa-filter text-brand-blue/70 text-[10px] mr-0.5"></i>
+                        Solo se permiten áreas pertenecientes a la sede asignada.
+                    </p>
                 </div>
             </div>
 
@@ -116,16 +146,88 @@
 </div>
 
 <script>
-    function verificarRol(rol) {
-        const reqArea = document.getElementById('req-area');
-        if (rol === 'ADMINISTRADOR') {
-            reqArea.classList.add('hidden');
-        } else {
-            reqArea.classList.remove('hidden');
+    const todasLasAreas = @json($areas);
+    const selectSede = document.getElementById('sede_id');
+    const selectArea = document.getElementById('area_id');
+    const reqArea = document.getElementById('req-area');
+    const reqSede = document.getElementById('req-sede');
+    const selectRol = document.getElementById('rol');
+
+    function actualizarAreasPorSede(areaSeleccionadaId = null) {
+        if (!selectSede || !selectArea) return;
+
+        const sedeId = selectSede.value;
+        const valorPrevio = areaSeleccionadaId !== null ? String(areaSeleccionadaId) : selectArea.value;
+
+        selectArea.innerHTML = '';
+
+        if (!sedeId) {
+            selectArea.disabled = true;
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '— Primero selecciona una sede institucional —';
+            selectArea.appendChild(opt);
+            return;
+        }
+
+        const filtradas = todasLasAreas.filter(a => String(a.sede_id) === String(sedeId));
+
+        if (filtradas.length === 0) {
+            selectArea.disabled = true;
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '— No hay áreas registradas para esta sede —';
+            selectArea.appendChild(opt);
+            return;
+        }
+
+        selectArea.disabled = false;
+        const optDefault = document.createElement('option');
+        optDefault.value = '';
+        optDefault.textContent = '— Seleccionar Área —';
+        selectArea.appendChild(optDefault);
+
+        let encontrada = false;
+        filtradas.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a.id;
+            opt.textContent = a.nombre;
+            if (String(a.id) === valorPrevio) {
+                opt.selected = true;
+                encontrada = true;
+            }
+            selectArea.appendChild(opt);
+        });
+
+        if (!encontrada) {
+            selectArea.value = '';
         }
     }
+
+    function verificarRol(rol) {
+        if (rol === 'ADMINISTRADOR') {
+            if (reqArea) reqArea.classList.add('hidden');
+            if (reqSede) reqSede.classList.add('hidden');
+        } else {
+            if (reqArea) reqArea.classList.remove('hidden');
+            if (reqSede) reqSede.classList.remove('hidden');
+        }
+    }
+
+    if (selectSede) {
+        selectSede.addEventListener('change', () => {
+            actualizarAreasPorSede();
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        verificarRol(document.getElementById('rol').value);
+        if (selectRol) {
+            verificarRol(selectRol.value);
+        }
+        const areaInicial = @json($areaSeleccionada);
+        if (selectSede && selectSede.value) {
+            actualizarAreasPorSede(areaInicial);
+        }
     });
 </script>
 @endsection

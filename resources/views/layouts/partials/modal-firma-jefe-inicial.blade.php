@@ -1,14 +1,17 @@
 @php
     /** @var \App\Models\Usuario $usuario */
     $usuario = $usuario ?? auth()->user();
-    $debeRegistrarFirma = ($usuario && $usuario->rol === 'JEFE_AREA' && empty($usuario->firma_digital) && !$usuario->usuario_nuevo);
+    // OCULTO TEMPORALMENTE: Desactivado para implementación futura en administrador y jefe de área
+    $debeRegistrarFirma = false;
 @endphp
 
+@if(false)
 <!-- ========================================================
      MODAL DE REGISTRO / CONFIGURACIÓN DE FIRMA DIGITAL DEL JEFE
+     (CONSERVADO: Oculto para implementación futura)
      ======================================================== -->
 <div id="modal-configurar-firma-jefe" 
-     class="fixed inset-0 z-50 {{ $debeRegistrarFirma ? 'flex' : 'hidden' }} items-center justify-center p-3 sm:p-5"
+     class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-5"
      role="dialog" aria-modal="true">
     
     <!-- Backdrop con desenfoque elegante -->
@@ -329,3 +332,4 @@
         }
     });
 </script>
+@endif

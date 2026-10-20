@@ -13,6 +13,7 @@ use App\Models\Modulo;
 use App\Models\PlantillaCertificado;
 use App\Models\ProgresoModulo;
 use App\Models\Usuario;
+use App\Services\PuntosService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -201,6 +202,9 @@ class DashboardController extends Controller
             ]
         );
 
+        // Acreditación automática y segura de puntos acumulables
+        PuntosService::acreditarPuntosPorCapacitacion($usuario, $capacitacion);
+
         return redirect()->route('empleado.certificados')
             ->with('success', '¡Felicitaciones! Has finalizado exitosamente la capacitación "' . $capacitacion->titulo . '" y tu certificado ha sido emitido.');
     }
@@ -388,6 +392,9 @@ class DashboardController extends Controller
                     ]
                 );
 
+                // Acreditación automática y segura de puntos acumulables
+                PuntosService::acreditarPuntosPorCapacitacion($usuario, $capacitacion);
+
                 return redirect()->route('empleado.certificados')
                     ->with('success', '🎉 ¡Felicitaciones! Has finalizado exitosamente la capacitación "' . $capacitacion->titulo . '". Tu certificado digital ha sido emitido.');
             } else {
@@ -522,6 +529,9 @@ class DashboardController extends Controller
                     'fecha_emision' => now(),
                 ]
             );
+
+            // Acreditación automática y segura de puntos acumulables
+            PuntosService::acreditarPuntosPorCapacitacion($usuario, $capacitacion);
 
             return back()->with('success_evaluacion', '🎉 ¡Felicidades! Has aprobado la evaluación con ' . $porcentajeObtenido . '%. Tu certificado digital ha sido emitido y está listo para descargar.');
         } else {
