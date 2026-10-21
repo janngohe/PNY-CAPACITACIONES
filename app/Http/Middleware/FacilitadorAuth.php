@@ -34,8 +34,8 @@ class FacilitadorAuth
             }
         }
 
-        // Si no está autorizado, redirige al formulario de acceso por Cédula + PIN
+        // Si no está autorizado, redirige al formulario de acceso por Cédula + PIN en el login principal
         session()->forget('facilitador_usuario_id');
-        return redirect()->route('induccion.acceso')->with('error', 'Debes ingresar tu cédula y el PIN de facilitador para continuar.');
+        return redirect()->route('login', ['modo' => 'induccion'])->with('status', 'Ingresa tu número de cédula y el PIN de 4 dígitos para acceder al módulo de Inducciones.');
     }
 }

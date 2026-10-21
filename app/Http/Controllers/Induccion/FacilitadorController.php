@@ -20,27 +20,30 @@ use Illuminate\View\View;
 class FacilitadorController extends Controller
 {
     /**
-     * Muestra la pantalla de acceso rápido para Facilitadores (Cédula + PIN).
+     * Redirige al login principal en modo Inducción.
      */
-    public function showLogin(): View|RedirectResponse
+    public function showLogin(): RedirectResponse
     {
         if (session()->has('facilitador_usuario_id')) {
             return redirect()->route('induccion.index');
         }
 
-        return view('induccion.acceso');
+        return redirect()->route('login', ['modo' => 'induccion']);
     }
 
     /**
-     * Valida la Cédula y el PIN de 4 dígitos.
+     * Valida la Cédula y el PIN de 4 dígitos desde el formulario unificado.
      */
     public function login(Request $request): RedirectResponse
     {
+        $identificacion = $request->input('identification') ?? $request->input('identificacion');
+        $request->merge(['identification' => $identificacion]);
+
         $request->validate([
-            'identificacion' => ['required', 'string'],
+            'identification' => ['required', 'string'],
             'pin' => ['required', 'string', 'size:4'],
         ], [
-            'identificacion.required' => 'Ingresa tu número de documento.',
+            'identification.required' => 'Ingresa tu número de documento.',
             'pin.required' => 'Ingresa el código PIN de 4 dígitos.',
             'pin.size' => 'El PIN debe ser exactamente de 4 dígitos.',
         ]);
@@ -48,15 +51,19 @@ class FacilitadorController extends Controller
         $pinCorrecto = Configuracion::getPinInduccion();
 
         if (trim($request->pin) !== trim($pinCorrecto)) {
-            return back()->withInput()->with('error', 'El código PIN de 4 dígitos es incorrecto. Solicítalo al Administrador o a tu Jefe de Área.');
+            return redirect()->route('login', ['modo' => 'induccion'])
+                ->withInput()
+                ->withErrors(['password' => 'El código PIN de 4 dígitos es incorrecto. Solicítalo al Administrador o a tu Jefe de Área.']);
         }
 
-        $usuario = Usuario::where('identificacion', trim($request->identificacion))
+        $usuario = Usuario::where('identificacion', trim($identificacion))
             ->where('estado', true)
             ->first();
 
         if (!$usuario) {
-            return back()->withInput()->with('error', 'El documento ingresado no corresponde a un colaborador activo en la plataforma.');
+            return redirect()->route('login', ['modo' => 'induccion'])
+                ->withInput()
+                ->withErrors(['identification' => 'El documento ingresado no corresponde a un colaborador activo en la plataforma.']);
         }
 
         // Iniciar sesión del facilitador
@@ -67,12 +74,12 @@ class FacilitadorController extends Controller
     }
 
     /**
-     * Cierra la sesión del facilitador.
+     * Cierra la sesión del facilitador y vuelve al login principal.
      */
     public function logout(): RedirectResponse
     {
         session()->forget('facilitador_usuario_id');
-        return redirect()->route('induccion.acceso')->with('info', 'Has salido del módulo de inducciones.');
+        return redirect()->route('login')->with('status', 'Has salido del módulo de inducciones.');
     }
 
     /**

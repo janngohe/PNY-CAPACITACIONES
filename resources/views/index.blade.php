@@ -394,29 +394,42 @@
                      ============================================================ -->
                 <section class="lg:col-span-6 w-full max-w-md mx-auto lg:mx-0 flex flex-col justify-center relative z-10" aria-labelledby="login-heading">
                     
-                    <!-- ENCABEZADO LIMPIO (SIN LETREROS ROTATIVOS AUTOMÁTICOS) -->
+                    <!-- ENCABEZADO CON BOTÓN DE INGRESO INDUCCIÓN -->
                     <div class="mb-6">
-                        <!-- Badge estático de sección -->
-                        <div class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3 shadow-2xs border backdrop-blur-sm"
-                             style="background: var(--badge-bg); border-color: var(--badge-border); color: var(--badge-text);">
-                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z" />
-                            </svg>
-                            <span>Plataforma de Capacitaciones</span>
+                        <div class="flex items-center justify-between mb-3 gap-2">
+                            <!-- Badge de sección -->
+                            <div id="badge-contenedor" class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-2xs border backdrop-blur-sm"
+                                 style="background: var(--badge-bg); border-color: var(--badge-border); color: var(--badge-text);">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z" />
+                                </svg>
+                                <span id="badge-texto">Plataforma de Capacitaciones</span>
+                            </div>
+
+                            <!-- Botoncito Pequeño: Ingreso Inducción -->
+                            <button type="button"
+                                    id="btn-switch-induccion"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide transition-all cursor-pointer shadow-2xs border bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100"
+                                    title="Alternar entre inicio de sesión y acceso a inducciones">
+                                <svg class="w-3.5 h-3.5 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                                </svg>
+                                <span id="btn-switch-texto">Ingreso Inducción</span>
+                            </button>
                         </div>
 
-                        <!-- TÍTULO PRINCIPAL ESTÁTICO -->
+                        <!-- TÍTULO PRINCIPAL DINÁMICO -->
                         <h1 id="login-heading" class="font-heading font-extrabold text-3xl sm:text-4xl tracking-tight leading-[1.12] mb-2 select-none" style="color: var(--text-heading);">
                             Iniciar sesión
                         </h1>
 
-                        <!-- SUBTÍTULO LIMPIO ESTÁTICO (SIN LETREROS ROTATIVOS AUTOMÁTICOS) -->
-                        <p class="text-xs sm:text-sm leading-relaxed text-slate-500 font-medium">
+                        <!-- SUBTÍTULO DINÁMICO -->
+                        <p id="login-subtitulo" class="text-xs sm:text-sm leading-relaxed text-slate-500 font-medium">
                             Ingresa tu número de identificación para acceder al sistema.
                         </p>
                     </div>
 
-                    <!-- FORMULARIO DE INICIO DE SESIÓN (LÓGICA ORIGINAL PRESERVADA) -->
+                    <!-- FORMULARIO DE INICIO DE SESIÓN -->
                     <form class="flex flex-col gap-4.5" method="POST" action="{{ route('login.post') }}" id="form-login">
                         @csrf
 
@@ -480,18 +493,18 @@
                         </div>
 
                         <!-- ====================================================
-                             CAMPO 2: CONTRASEÑA (LIMPIO, SIN OLITAS AL TIPEAR)
+                             CAMPO 2: CONTRASEÑA O PIN DE INDUCCIÓN
                              ==================================================== -->
                         <div class="input-group-clean">
                             <label for="password" class="font-heading font-bold text-[13px] tracking-tight flex items-center justify-between" style="color: var(--text-heading);">
-                                <span>Contraseña</span>
-                                <span class="text-[11px] font-normal text-slate-400">Clave de acceso</span>
+                                <span id="label-campo-2">Contraseña</span>
+                                <span id="sublabel-campo-2" class="text-[11px] font-normal text-slate-400">Clave de acceso</span>
                             </label>
 
                             <div class="input-wrapper-clean">
                                 <div class="h-13 flex items-center pl-3.5 pr-1.5 relative">
                                     <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-cyan-600 transition-colors">
-                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <svg id="icono-campo-2" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                                         </svg>
                                     </div>
@@ -532,7 +545,7 @@
                             <button type="submit"
                                     id="login-submit"
                                     class="water-button h-13.5 w-full rounded-2xl text-white font-heading font-extrabold text-[15px] tracking-wide cursor-pointer flex items-center justify-center gap-2.5 group">
-                                <span class="relative z-10">Iniciar sesión</span>
+                                <span id="submit-texto" class="relative z-10">Iniciar sesión</span>
                                 <svg class="w-4.5 h-4.5 transition-transform duration-300 group-hover:translate-x-1 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                                 </svg>
@@ -812,6 +825,79 @@
                         iconEyeOff.classList.add('hidden');
                     }
                 });
+            }
+
+            /* ================================================================
+               5. TOGGLE DINÁMICO: LOGIN NORMAL VS INGRESO INDUCCIÓN
+               ================================================================ */
+            let modoInduccion = false;
+            const formLogin = document.getElementById('form-login');
+            const btnSwitch = document.getElementById('btn-switch-induccion');
+            const btnSwitchTexto = document.getElementById('btn-switch-texto');
+            const badgeTexto = document.getElementById('badge-texto');
+            const loginHeading = document.getElementById('login-heading');
+            const loginSubtitulo = document.getElementById('login-subtitulo');
+            const labelCampo2 = document.getElementById('label-campo-2');
+            const sublabelCampo2 = document.getElementById('sublabel-campo-2');
+            const iconoCampo2 = document.getElementById('icono-campo-2');
+            const submitTexto = document.getElementById('submit-texto');
+
+            function activarModoInduccion() {
+                modoInduccion = true;
+                formLogin.action = "{{ route('induccion.acceso.post') }}";
+                badgeTexto.textContent = "Portal de Inducciones";
+                loginHeading.textContent = "Acceso a Inducción";
+                loginSubtitulo.textContent = "Ingresa tu número de cédula y el código PIN de 4 dígitos de facilitador.";
+                labelCampo2.textContent = "PIN de Facilitador (4 dígitos)";
+                sublabelCampo2.textContent = "Código de Sala";
+                passInput.name = "pin";
+                passInput.placeholder = "•••• (4 dígitos)";
+                passInput.maxLength = 4;
+                passInput.pattern = "\\d{4}";
+                passInput.inputMode = "numeric";
+                passInput.value = "";
+                submitTexto.textContent = "Ingresar a Inducciones";
+                btnSwitchTexto.textContent = "← Login Normal";
+                btnSwitch.classList.replace('bg-sky-50', 'bg-amber-50');
+                btnSwitch.classList.replace('text-sky-700', 'text-amber-800');
+                btnSwitch.classList.replace('border-sky-200', 'border-amber-300');
+            }
+
+            function activarModoNormal() {
+                modoInduccion = false;
+                formLogin.action = "{{ route('login.post') }}";
+                badgeTexto.textContent = "Plataforma de Capacitaciones";
+                loginHeading.textContent = "Iniciar sesión";
+                loginSubtitulo.textContent = "Ingresa tu número de identificación para acceder al sistema.";
+                labelCampo2.textContent = "Contraseña";
+                sublabelCampo2.textContent = "Clave de acceso";
+                passInput.name = "password";
+                passInput.placeholder = "Ingresa tu contraseña";
+                passInput.removeAttribute('maxLength');
+                passInput.removeAttribute('pattern');
+                passInput.removeAttribute('inputMode');
+                passInput.value = "";
+                submitTexto.textContent = "Iniciar sesión";
+                btnSwitchTexto.textContent = "Ingreso Inducción";
+                btnSwitch.classList.replace('bg-amber-50', 'bg-sky-50');
+                btnSwitch.classList.replace('text-amber-800', 'text-sky-700');
+                btnSwitch.classList.replace('border-amber-300', 'border-sky-200');
+            }
+
+            if (btnSwitch) {
+                btnSwitch.addEventListener('click', () => {
+                    if (modoInduccion) {
+                        activarModoNormal();
+                    } else {
+                        activarModoInduccion();
+                    }
+                });
+            }
+
+            // Activar automáticamente modo inducción si viene por query param ?modo=induccion o si hay error de PIN
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('modo') === 'induccion' || @json(old('pin') !== null || $errors->has('pin'))) {
+                activarModoInduccion();
             }
 
         });
