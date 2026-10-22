@@ -18,37 +18,76 @@ use Illuminate\View\View;
 class InduccionAdminController extends Controller
 {
     /**
-     * Panel de administración de Inducciones y control de PIN de Facilitadores.
+     * Catálogo de Inducciones publicadas (CRUD).
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         $pinActual = Configuracion::getPinInduccion();
 
-        $inducciones = Induccion::with(['sedes', 'areas', 'creador'])
-            ->withCount('sesiones')
-            ->latest()
-            ->paginate(12, ['*'], 'inducciones_page');
+        $query = Induccion::with(['sedes', 'areas', 'creador'])
+            ->withCount(['sesiones', 'asistencias'])
+            ->latest();
 
-        $sesiones = SesionInduccion::with(['induccion', 'facilitador', 'sede'])
-            ->withCount('asistencias')
-            ->latest()
-            ->paginate(15, ['*'], 'sesiones_page');
+        if ($request->filled('buscar')) {
+            $buscar = trim($request->buscar);
+            $query->where(function ($q) use ($buscar) {
+                $q->where('titulo', 'like', "%{$buscar}%")
+                  ->orWhere('descripcion', 'like', "%{$buscar}%");
+            });
+        }
+
+        $inducciones = $query->paginate(12)->withQueryString();
 
         $totalInducciones = Induccion::count();
+        $induccionesActivas = Induccion::where('estado', true)->count();
         $totalSesiones = SesionInduccion::count();
         $totalAsistencias = AsistenciaInduccion::count();
-        $asistenciasExternos = AsistenciaInduccion::where('es_externo', true)->count();
-        $asistenciasInternos = $totalAsistencias - $asistenciasExternos;
 
         $estadisticas = [
             'total_inducciones' => $totalInducciones,
+            'inducciones_activas' => $induccionesActivas,
             'total_sesiones' => $totalSesiones,
             'total_asistencias' => $totalAsistencias,
-            'asistencias_internos' => $asistenciasInternos,
+        ];
+
+        return view('admin.inducciones.index', compact('pinActual', 'inducciones', 'estadisticas'));
+    }
+
+    /**
+     * Historial de sesiones de inducción con buscador en tiempo real.
+     */
+    public function sesiones(Request $request): View
+    {
+        $query = SesionInduccion::with(['induccion', 'facilitador', 'sede'])
+            ->withCount('asistencias')
+            ->latest();
+
+        if ($request->filled('estado')) {
+            $est = strtoupper(trim($request->estado));
+            if ($est === 'EN_CURSO') {
+                $query->where('estado', 'EN_CURSO');
+            } elseif ($est === 'FINALIZADA') {
+                $query->where('estado', '!=', 'EN_CURSO');
+            }
+        }
+
+        $sesiones = $query->paginate(40)->withQueryString();
+
+        $totalSesiones = SesionInduccion::count();
+        $sesionesEnCurso = SesionInduccion::where('estado', 'EN_CURSO')->count();
+        $sesionesFinalizadas = SesionInduccion::where('estado', '!=', 'EN_CURSO')->count();
+        $totalAsistencias = AsistenciaInduccion::count();
+        $asistenciasExternos = AsistenciaInduccion::where('es_externo', true)->count();
+
+        $metricas = [
+            'total_sesiones' => $totalSesiones,
+            'en_curso' => $sesionesEnCurso,
+            'finalizadas' => $sesionesFinalizadas,
+            'total_asistencias' => $totalAsistencias,
             'asistencias_externos' => $asistenciasExternos,
         ];
 
-        return view('admin.inducciones.index', compact('pinActual', 'inducciones', 'sesiones', 'estadisticas'));
+        return view('admin.inducciones.sesiones', compact('sesiones', 'metricas'));
     }
 
     /**
@@ -66,7 +105,6 @@ class InduccionAdminController extends Controller
     {
         $request->validate([
             'titulo' => ['required', 'string', 'max:255'],
-            'tipo' => ['nullable', 'string', 'max:100'],
             'descripcion' => ['nullable', 'string', 'max:3000'],
             'imagen_portada' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:10240'],
             'recursos' => ['nullable', 'array'],
@@ -143,7 +181,6 @@ class InduccionAdminController extends Controller
             'titulo' => trim($request->titulo),
             'descripcion' => $request->descripcion ? trim($request->descripcion) : null,
             'imagen_portada' => $rutaPortada,
-            'tipo' => $request->tipo ? trim($request->tipo) : 'GENERAL',
             'archivo_presentacion' => $primerArchivo,
             'video_url' => $primerVideo,
             'recursos' => $recursosProcesados,
@@ -160,7 +197,11 @@ class InduccionAdminController extends Controller
      */
     public function edit(Induccion $induccion): View
     {
-        return view('admin.inducciones.edit', compact('induccion'));
+        $totalSesiones = $induccion->sesiones()->count();
+        $totalAsistencias = AsistenciaInduccion::whereIn('sesion_id', $induccion->sesiones()->pluck('id'))->count();
+        $tieneRegistros = ($totalSesiones > 0 || $totalAsistencias > 0);
+
+        return view('admin.inducciones.edit', compact('induccion', 'tieneRegistros', 'totalSesiones', 'totalAsistencias'));
     }
 
     /**
@@ -170,7 +211,6 @@ class InduccionAdminController extends Controller
     {
         $request->validate([
             'titulo' => ['required', 'string', 'max:255'],
-            'tipo' => ['nullable', 'string', 'max:100'],
             'descripcion' => ['nullable', 'string', 'max:3000'],
             'imagen_portada' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:10240'],
             'recursos' => ['nullable', 'array'],
@@ -257,7 +297,6 @@ class InduccionAdminController extends Controller
             'titulo' => trim($request->titulo),
             'descripcion' => $request->descripcion ? trim($request->descripcion) : null,
             'imagen_portada' => $rutaPortada,
-            'tipo' => $request->tipo ? trim($request->tipo) : ($induccion->tipo ?? 'GENERAL'),
             'archivo_presentacion' => $primerArchivo,
             'video_url' => $primerVideo,
             'recursos' => $recursosProcesados,
@@ -269,10 +308,18 @@ class InduccionAdminController extends Controller
     }
 
     /**
-     * Elimina permanentemente una inducción y sus archivos asociados.
+     * Elimina permanentemente una inducción y sus archivos asociados (solo si no tiene registros).
      */
     public function destroy(Induccion $induccion): RedirectResponse
     {
+        $totalSesiones = $induccion->sesiones()->count();
+        $totalAsistencias = AsistenciaInduccion::whereIn('sesion_id', $induccion->sesiones()->pluck('id'))->count();
+
+        if ($totalSesiones > 0 || $totalAsistencias > 0) {
+            return redirect()->route('admin.inducciones.index')
+                ->with('error', "No es posible eliminar la inducción '{$induccion->titulo}' porque ya cuenta con registros históricos ({$totalSesiones} sesiones, {$totalAsistencias} asistencias). Solo puedes desactivarla para que no se proyecte en la sala.");
+        }
+
         $titulo = $induccion->titulo;
 
         // Eliminar archivos físicos
@@ -290,7 +337,7 @@ class InduccionAdminController extends Controller
         $induccion->delete();
 
         return redirect()->route('admin.inducciones.index')
-            ->with('success', "La inducción '{$titulo}' fue eliminada permanentemente del sistema.");
+            ->with('success', "La inducción '{$titulo}' fue eliminada exitosamente.");
     }
 
     /**

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Induccion extends Model
 {
@@ -15,7 +16,6 @@ class Induccion extends Model
         'titulo',
         'descripcion',
         'imagen_portada',
-        'tipo',
         'archivo_presentacion',
         'video_url',
         'contenido_diapositivas',
@@ -51,6 +51,11 @@ class Induccion extends Model
     public function sesiones(): HasMany
     {
         return $this->hasMany(SesionInduccion::class, 'induccion_id');
+    }
+
+    public function asistencias(): HasManyThrough
+    {
+        return $this->hasManyThrough(AsistenciaInduccion::class, SesionInduccion::class, 'induccion_id', 'sesion_id');
     }
 
     /**

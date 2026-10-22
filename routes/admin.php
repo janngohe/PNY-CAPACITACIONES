@@ -103,6 +103,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
 
     // Inducciones (CRUD completo y PIN de Facilitador)
     Route::get('/inducciones', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'index'])->name('inducciones.index');
+    Route::get('/inducciones/sesiones', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'sesiones'])->name('inducciones.sesiones');
     Route::get('/inducciones/crear', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'create'])->name('inducciones.create');
     Route::post('/inducciones', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'store'])->name('inducciones.store');
     Route::get('/inducciones/{induccion}/editar', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'edit'])->name('inducciones.edit');

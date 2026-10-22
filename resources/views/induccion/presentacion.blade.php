@@ -168,7 +168,7 @@
             <div class="min-w-0">
                 <div class="flex items-center gap-2">
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-brand-blue border border-blue-200">
-                        {{ $sesion->induccion->tipo ?? 'GENERAL' }}
+                        Inducción Presencial
                     </span>
                     <span class="text-xs font-mono text-slate-500">
                         Código: <strong class="text-brand-deep bg-blue-50/80 px-1.5 py-0.5 rounded border border-blue-200 select-all cursor-pointer font-bold" onclick="copiarCodigo()">{{ $sesion->codigo_sesion }}</strong>

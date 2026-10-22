@@ -90,7 +90,7 @@
                         <div>
                             <div class="flex items-center justify-between gap-2 mb-2">
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-100 text-cyan-800">
-                                    {{ $ind->tipo }}
+                                    Inducción
                                 </span>
                                 <div class="flex items-center gap-1 text-xs text-slate-400">
                                     @if($ind->video_url)

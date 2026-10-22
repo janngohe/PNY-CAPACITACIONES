@@ -19,10 +19,21 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+    <meta name="color-scheme" content="light">
+
     <!-- Tailwind CSS compilado por Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        :root {
+            color-scheme: light;
+        }
+        input, select, textarea {
+            color: #0f172a;
+        }
+        input::placeholder, textarea::placeholder {
+            color: #94a3b8;
+        }
         .sidebar-scrollbar {
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 transparent;
@@ -105,12 +116,25 @@
                 ],
             ],
             [
-                'tipo' => 'enlace',
-                'id' => 'nav-inducciones',
-                'ruta' => 'admin.inducciones.index',
-                'patrones' => ['admin.inducciones.*'],
+                'tipo' => 'desplegable',
+                'id' => 'submenu-inducciones',
                 'icono' => 'fa-chalkboard-user',
-                'etiqueta' => 'Inducciones (PIN)',
+                'etiqueta' => 'Inducciones',
+                'patrones' => ['admin.inducciones.*'],
+                'subitems' => [
+                    [
+                        'id' => 'nav-inducciones-publicadas',
+                        'ruta' => 'admin.inducciones.index',
+                        'patrones' => ['admin.inducciones.index', 'admin.inducciones.create', 'admin.inducciones.edit'],
+                        'etiqueta' => 'Inducciones publicadas',
+                    ],
+                    [
+                        'id' => 'nav-inducciones-sesiones',
+                        'ruta' => 'admin.inducciones.sesiones',
+                        'patrones' => ['admin.inducciones.sesiones', 'admin.inducciones.acta_pdf'],
+                        'etiqueta' => 'Historial sesiones',
+                    ],
+                ],
             ],
         ],
         'Seguimiento' => [
