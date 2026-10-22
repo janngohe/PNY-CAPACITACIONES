@@ -5,6 +5,7 @@ namespace App\Services;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
+use Symfony\Component\Process\Process;
 use Throwable;
 use ZipArchive;
 
@@ -20,7 +21,7 @@ class PptxRenderer
 {
     private const EMU_PX = 9525;
     private const NS_R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
-    private const CACHE_VERSION = 'v2';
+    private const CACHE_VERSION = 'v3';
 
     private ZipArchive $zip;
     private DOMXPath $xp;
@@ -79,6 +80,18 @@ class PptxRenderer
 
     private function build(string $path, string $outDir, string $cache): ?array
     {
+        // 1. Prioridad: Render nativo vía PowerPoint (fidelidad 100% en curvas, colores, fondos y tipografías)
+        try {
+            $native = $this->exportWithPowerPoint($path, $outDir);
+            if ($native && !empty($native['slides'])) {
+                @file_put_contents($cache, json_encode($native, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE));
+                return $native;
+            }
+        } catch (Throwable $e) {
+            report($e);
+        }
+
+        // 2. Fallback: Parseo manual de OpenXML si PowerPoint COM no está disponible
         $this->zip = new ZipArchive();
         if ($this->zip->open($path) !== true) {
             return null;
@@ -1166,5 +1179,122 @@ class PptxRenderer
         $style .= 'font-size:' . round($px, 2) . 'px;';
 
         return [$style, $px];
+    }
+
+    /**
+     * Exporta las diapositivas a imágenes PNG de alta definición (1920px) usando
+     * Microsoft PowerPoint a través de PowerShell/COM.
+     * Garantiza fidelidad visual idéntica: fuentes reales, formas curvas, esquemas de color y fondos maestros.
+     */
+    private function exportWithPowerPoint(string $path, string $outDir): ?array
+    {
+        if (PHP_OS_FAMILY !== 'Windows') {
+            return null;
+        }
+
+        $realPath = realpath($path);
+        if (!$realPath || !is_file($realPath)) {
+            return null;
+        }
+
+        $outDir = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $outDir);
+        if (!is_dir($outDir)) {
+            @mkdir($outDir, 0775, true);
+        }
+
+        $cleanPptx = str_replace("'", "''", $realPath);
+        $cleanOut = str_replace("'", "''", $outDir);
+
+        $psCode = <<<POWERSHELL
+\$ErrorActionPreference = 'Stop'
+\$pptxPath = '$cleanPptx'
+\$outDir = '$cleanOut'
+
+if (-not (Test-Path \$outDir)) {
+    New-Item -ItemType Directory -Path \$outDir -Force | Out-Null
+}
+
+\$ppt = New-Object -ComObject PowerPoint.Application
+try {
+    \$pres = \$ppt.Presentations.Open(\$pptxPath, -1, 0, 0)
+    \$w = [int]\$pres.PageSetup.SlideWidth
+    \$h = [int]\$pres.PageSetup.SlideHeight
+    \$count = \$pres.Slides.Count
+    \$targetW = 1920
+    \$targetH = [int](\$targetW * (\$h / \$w))
+
+    for (\$i = 1; \$i -le \$count; \$i++) {
+        \$slide = \$pres.Slides.Item(\$i)
+        \$dest = Join-Path \$outDir ("slide_" + \$i + ".png")
+        \$slide.Export(\$dest, "PNG", \$targetW, \$targetH)
+    }
+
+    \$pres.Close()
+    Write-Output "JSON_START"
+    ConvertTo-Json @{ width = \$targetW; height = \$targetH; count = \$count; success = \$true } -Compress
+} finally {
+    \$ppt.Quit()
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject(\$ppt) | Out-Null
+}
+POWERSHELL;
+
+        $encoded = base64_encode(mb_convert_encoding($psCode, 'UTF-16LE', 'UTF-8'));
+        $process = new Process([
+            'powershell.exe',
+            '-NoProfile',
+            '-NonInteractive',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-EncodedCommand',
+            $encoded,
+        ]);
+        $process->setTimeout(180);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            return null;
+        }
+
+        $stdout = $process->getOutput();
+        $lines = preg_split('/\r?\n/', $stdout);
+        $jsonLine = null;
+        $capture = false;
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === 'JSON_START') {
+                $capture = true;
+                continue;
+            }
+            if ($capture && !empty($line)) {
+                $jsonLine = $line;
+                break;
+            }
+        }
+
+        if (!$jsonLine) {
+            return null;
+        }
+
+        $meta = json_decode($jsonLine, true);
+        if (!$meta || empty($meta['success']) || empty($meta['count'])) {
+            return null;
+        }
+
+        $w = (int) $meta['width'];
+        $h = (int) $meta['height'];
+        $count = (int) $meta['count'];
+
+        $slides = [];
+        for ($i = 1; $i <= $count; $i++) {
+            $imgFile = $outDir . DIRECTORY_SEPARATOR . "slide_{$i}.png";
+            if (!is_file($imgFile)) {
+                return null;
+            }
+            $slides[] = '<div class="pptx-canvas" style="position:relative;width:' . $w . 'px;height:' . $h . 'px;overflow:hidden;background:#020617;display:flex;align-items:center;justify-content:center;">'
+                . '<img src="__BASE__/slide_' . $i . '.png" alt="Diapositiva ' . $i . '" draggable="false" style="width:100%;height:100%;object-fit:contain;display:block;user-select:none;pointer-events:none;">'
+                . '</div>';
+        }
+
+        return ['width' => $w, 'height' => $h, 'slides' => $slides];
     }
 }

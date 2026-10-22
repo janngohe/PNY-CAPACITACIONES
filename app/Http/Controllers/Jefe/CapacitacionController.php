@@ -23,7 +23,7 @@ use Illuminate\Validation\ValidationException;
 
 class CapacitacionController extends Controller
 {
-    protected const TIPOS_CONTENIDO = ['TEXTO', 'VIDEO', 'IMAGEN', 'PDF', 'ENLACE'];
+    protected const TIPOS_CONTENIDO = ['TEXTO', 'VIDEO', 'IMAGEN', 'PDF', 'ENLACE', 'PPTX'];
 
     /**
      * Vista por defecto del Jefe de Área: capacitaciones publicadas por él.
@@ -492,6 +492,19 @@ class CapacitacionController extends Controller
                     } elseif (empty($rutaActual)) {
                         $errores["modulos.$key.contenidos.$ckey.archivo"] = 'Adjunta el archivo del contenido "' . $tituloContenido . '".';
                     }
+                } elseif ($tipo === 'PPTX') {
+                    if ($archivoSubido) {
+                        $ext = strtolower($archivoSubido->getClientOriginalExtension());
+                        $validExts = ['pptx', 'ppt', 'ppsx', 'pps'];
+                        if (! in_array($ext, $validExts, true)) {
+                            $errores["modulos.$key.contenidos.$ckey.archivo"] = 'La presentación debe ser un archivo de PowerPoint (.pptx o .ppt).';
+                        }
+                        if ($archivoSubido->getSize() > 100 * 1024 * 1024) {
+                            $errores["modulos.$key.contenidos.$ckey.archivo"] = 'El archivo de presentación PowerPoint no puede superar los 100 MB.';
+                        }
+                    } elseif (empty($rutaActual)) {
+                        $errores["modulos.$key.contenidos.$ckey.archivo"] = 'Adjunta el archivo de presentación PowerPoint (.pptx) para "' . $tituloContenido . '".';
+                    }
                 } elseif (in_array($tipo, ['TEXTO', 'ENLACE'], true)) {
                     if (empty($textoContenido)) {
                         $errores["modulos.$key.contenidos.$ckey.contenido"] = 'Completa el ' . ($tipo === 'ENLACE' ? 'enlace' : 'texto') . ' del contenido "' . $tituloContenido . '".';
@@ -570,12 +583,20 @@ class CapacitacionController extends Controller
             $orden++;
             $contenido = isset($datos['id']) ? $existentes->get((int) $datos['id']) : null;
             $tipo = $datos['tipo'];
-            $esArchivo = in_array($tipo, ['IMAGEN', 'PDF', 'VIDEO'], true);
+            $esArchivo = in_array($tipo, ['IMAGEN', 'PDF', 'VIDEO', 'PPTX'], true);
 
             $ruta = $contenido?->ruta_archivo;
             if ($esArchivo && $request->hasFile("modulos.$moduloKey.contenidos.$ckey.archivo")) {
                 $this->borrarArchivoPublico($ruta);
                 $ruta = 'storage/' . $request->file("modulos.$moduloKey.contenidos.$ckey.archivo")->store('contenidos', 'public');
+
+                if ($tipo === 'PPTX') {
+                    try {
+                        \App\Services\PptxRenderer::render(preg_replace('#^storage/#', '', $ruta));
+                    } catch (\Throwable $e) {
+                        // Pre-render en caché; si falla se procesará al visualizar
+                    }
+                }
             } elseif (! $esArchivo) {
                 $this->borrarArchivoPublico($ruta);
                 $ruta = null;

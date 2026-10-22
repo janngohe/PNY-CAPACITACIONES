@@ -15,6 +15,29 @@
         -ms-overflow-style: none !important;
         scrollbar-width: none !important;
     }
+    .pptx-slide-wrapper {
+        position: relative;
+        transform-origin: 0 0;
+        box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.35);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+    .pptx-slide-wrapper .pptx-canvas {
+        transform-origin: 0 0;
+    }
+    .pptx-interactive-viewer:fullscreen {
+        width: 100vw !important;
+        height: 100vh !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        background: #020617 !important;
+    }
+    .pptx-interactive-viewer:fullscreen .pptx-stage {
+        flex: 1 1 0% !important;
+        max-height: none !important;
+    }
 </style>
 <div class="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
 
@@ -408,6 +431,8 @@
                                                         <i class="fa-solid fa-file-pdf text-red-600 shrink-0"></i> 
                                                     @elseif($cont->tipo === 'IMAGEN') 
                                                         <i class="fa-solid fa-image text-emerald-600 shrink-0"></i> 
+                                                    @elseif($cont->tipo === 'PPTX')
+                                                        <i class="fa-solid fa-file-powerpoint text-orange-500 shrink-0"></i>
                                                     @elseif($cont->tipo === 'ENLACE') 
                                                         <i class="fa-solid fa-link text-brand-blue shrink-0"></i> 
                                                     @else 
@@ -516,6 +541,163 @@
                                                 @endif
                                             @endif
 
+                                            @if($cont->tipo === 'PPTX')
+                                                @if(!$haIniciado)
+                                                    <div class="p-4 rounded-xl bg-slate-100/90 border border-slate-200 text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs my-1">
+                                                        <div class="flex items-center gap-3 min-w-0">
+                                                            <div class="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                                                                <i class="fa-solid fa-file-powerpoint text-sm"></i>
+                                                            </div>
+                                                            <div class="min-w-0">
+                                                                <p class="font-bold text-slate-800 text-xs">Presentación PowerPoint Protegida</p>
+                                                                <p class="text-[11px] text-slate-500">Debes unirte / iniciar la capacitación para visualizar las diapositivas de este tema.</p>
+                                                            </div>
+                                                        </div>
+                                                        <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shrink-0 self-start sm:self-auto">
+                                                            <i class="fa-solid fa-lock text-slate-400 text-[10px]"></i> Bloqueada
+                                                        </span>
+                                                    </div>
+                                                @elseif($cont->ruta_archivo)
+                                                    @php
+                                                        $rutaRelativaPptx = preg_replace('#^storage/#', '', $cont->ruta_archivo);
+                                                        $pptxData = \App\Services\PptxRenderer::render($rutaRelativaPptx);
+                                                        $slidesPptx = $pptxData['slides'] ?? [];
+                                                        $totalSlidesPptx = count($slidesPptx);
+                                                    @endphp
+
+                                                    @if($totalSlidesPptx > 0)
+                                                        <div class="pptx-interactive-viewer bg-slate-900 rounded-2xl border border-slate-800 text-white overflow-hidden shadow-lg my-2"
+                                                             id="pptx-viewer-{{ $cont->id }}"
+                                                             data-viewer-id="{{ $cont->id }}"
+                                                             data-total-slides="{{ $totalSlidesPptx }}"
+                                                             data-current-slide="0">
+
+                                                            <!-- Barra Superior del Visor -->
+                                                            <div class="flex flex-wrap items-center justify-between gap-2.5 px-4 py-3 bg-slate-950 border-b border-slate-800 text-xs">
+                                                                <div class="flex items-center gap-2.5 min-w-0">
+                                                                    <span class="w-7 h-7 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center text-xs shrink-0">
+                                                                        <i class="fa-solid fa-file-powerpoint"></i>
+                                                                    </span>
+                                                                    <div class="min-w-0">
+                                                                        <span class="font-bold text-white text-xs block truncate">{{ $cont->titulo }}</span>
+                                                                        <span class="text-[10px] text-slate-400">Presentación interactiva de diapositivas</span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="flex items-center gap-2 shrink-0">
+                                                                    <!-- Contador de Diapositiva -->
+                                                                    <div class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700/80 font-mono text-[11px] text-slate-300">
+                                                                        Diapositiva <span id="pptx-curr-{{ $cont->id }}" class="font-black text-cyan-400">1</span> / <span class="font-bold text-white">{{ $totalSlidesPptx }}</span>
+                                                                    </div>
+
+                                                                    <!-- Botón Pantalla Completa -->
+                                                                    <button type="button"
+                                                                            onclick="togglePantallaCompletaPptx('pptx-viewer-{{ $cont->id }}')"
+                                                                            class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
+                                                                            title="Pantalla completa">
+                                                                        <i class="fa-solid fa-expand text-xs"></i>
+                                                                    </button>
+
+                                                                    <!-- Botón Descargar PPTX -->
+                                                                    <a href="{{ asset($cont->ruta_archivo) }}"
+                                                                       download
+                                                                       class="p-1.5 rounded-lg bg-slate-800 hover:bg-orange-600 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                                                                       title="Descargar archivo PowerPoint (.pptx)">
+                                                                        <i class="fa-solid fa-download text-xs"></i>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Escenario de Diapositivas -->
+                                                            <div class="pptx-stage relative w-full overflow-hidden flex items-center justify-center p-3 sm:p-5 bg-slate-950 select-none min-h-[360px] sm:min-h-[460px]"
+                                                                 tabindex="0">
+
+                                                                @foreach($slidesPptx as $sIdx => $slideHtml)
+                                                                    <div class="pptx-slide-pane {{ $sIdx === 0 ? 'active-pptx-slide flex' : 'hidden' }} w-full h-full items-center justify-center transition-opacity duration-300"
+                                                                         data-slide-index="{{ $sIdx }}">
+                                                                        <div class="pptx-slide-wrapper shadow-2xl rounded-xl overflow-hidden bg-white"
+                                                                             data-width="{{ $pptxData['width'] ?? 1920 }}"
+                                                                             data-height="{{ $pptxData['height'] ?? 1080 }}">
+                                                                            {!! $slideHtml !!}
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+
+                                                                <!-- Botón Flotante Anterior -->
+                                                                <button type="button"
+                                                                        onclick="cambiarSlidePptx('pptx-viewer-{{ $cont->id }}', -1)"
+                                                                        class="pptx-btn-nav-prev absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/80 hover:bg-cyan-600 text-white border border-white/20 backdrop-blur-xs flex items-center justify-center shadow-lg transition-all cursor-pointer opacity-80 hover:opacity-100 disabled:opacity-20 disabled:pointer-events-none z-20"
+                                                                        title="Diapositiva anterior">
+                                                                    <i class="fa-solid fa-chevron-left text-sm"></i>
+                                                                </button>
+
+                                                                <!-- Botón Flotante Siguiente -->
+                                                                <button type="button"
+                                                                        onclick="cambiarSlidePptx('pptx-viewer-{{ $cont->id }}', 1)"
+                                                                        class="pptx-btn-nav-next absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/80 hover:bg-cyan-600 text-white border border-white/20 backdrop-blur-xs flex items-center justify-center shadow-lg transition-all cursor-pointer opacity-80 hover:opacity-100 disabled:opacity-20 disabled:pointer-events-none z-20"
+                                                                        title="Siguiente diapositiva">
+                                                                    <i class="fa-solid fa-chevron-right text-sm"></i>
+                                                                </button>
+                                                            </div>
+
+                                                            <!-- Barra Inferior de Navegación -->
+                                                            <div class="p-3 bg-slate-900 border-t border-slate-800 space-y-2">
+                                                                <div class="flex items-center justify-between gap-3">
+                                                                    <button type="button"
+                                                                            onclick="cambiarSlidePptx('pptx-viewer-{{ $cont->id }}', -1)"
+                                                                            class="pptx-btn-prev inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none">
+                                                                        <i class="fa-solid fa-arrow-left text-[11px]"></i>
+                                                                        <span>Anterior</span>
+                                                                    </button>
+
+                                                                    <!-- Selector de Diapositivas (Dots) -->
+                                                                    <div class="flex items-center gap-1 overflow-x-auto max-w-[50%] py-1 no-scrollbar pptx-dots-container">
+                                                                        @for($d = 0; $d < $totalSlidesPptx; $d++)
+                                                                            <button type="button"
+                                                                                    onclick="irASlidePptx('pptx-viewer-{{ $cont->id }}', {{ $d }})"
+                                                                                    class="pptx-dot rounded-full transition-all cursor-pointer {{ $d === 0 ? 'bg-cyan-400 w-5 h-2' : 'bg-slate-700 hover:bg-slate-500 w-2 h-2' }}"
+                                                                                    title="Ir a diapositiva {{ $d + 1 }}"></button>
+                                                                        @endfor
+                                                                    </div>
+
+                                                                    <button type="button"
+                                                                            onclick="cambiarSlidePptx('pptx-viewer-{{ $cont->id }}', 1)"
+                                                                            class="pptx-btn-next inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-30 disabled:pointer-events-none">
+                                                                        <span>Siguiente</span>
+                                                                        <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                                                                    </button>
+                                                                </div>
+
+                                                                <!-- Barra de Progreso de lectura -->
+                                                                <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                                                    <div id="pptx-bar-{{ $cont->id }}"
+                                                                         class="h-full bg-gradient-to-r from-cyan-500 to-brand-blue rounded-full transition-all duration-300"
+                                                                         style="width: {{ round((1 / $totalSlidesPptx) * 100) }}%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @else
+                                                        <div class="p-4 rounded-xl bg-orange-50 border border-orange-200 space-y-3 my-2 text-xs">
+                                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                                <span class="font-bold text-orange-950 flex items-center gap-2">
+                                                                    <i class="fa-solid fa-file-powerpoint text-orange-600 text-base"></i>
+                                                                    <span>Presentación PowerPoint adjunta: {{ basename($cont->ruta_archivo) }}</span>
+                                                                </span>
+                                                                <a href="{{ asset($cont->ruta_archivo) }}" download
+                                                                   class="px-3.5 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-xs self-start sm:self-auto">
+                                                                    <i class="fa-solid fa-download"></i> Descargar Presentación
+                                                                </a>
+                                                            </div>
+                                                            <div class="rounded-xl overflow-hidden border border-orange-200 bg-white">
+                                                                <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ urlencode(asset($cont->ruta_archivo)) }}"
+                                                                        class="w-full h-96 border-0"
+                                                                        title="Visor PowerPoint"></iframe>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                            @endif
+
                                             @if($cont->contenido && !filter_var(trim($cont->contenido), FILTER_VALIDATE_URL))
                                                 <div class="text-slate-700 text-xs sm:text-sm bg-white p-3.5 rounded-xl border border-line/60 whitespace-pre-line leading-relaxed break-words overflow-hidden">
                                                     {{ $cont->contenido }}
@@ -540,7 +722,7 @@
                                                 @endif
                                             @endif
 
-                                            @if($cont->ruta_archivo && $cont->tipo !== 'VIDEO')
+                                            @if($cont->ruta_archivo && !in_array($cont->tipo, ['VIDEO', 'PPTX'], true))
                                                 <div class="pt-1">
                                                     @if(!$haIniciado)
                                                         <div class="inline-flex max-w-full items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 text-xs font-medium">
@@ -1242,6 +1424,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (history.replaceState) {
             history.replaceState(null, null, '#modulo-' + moduloId);
         }
+
+        if (typeof window.ajustarEscalaPptxViewers === 'function') {
+            setTimeout(window.ajustarEscalaPptxViewers, 60);
+        }
     };
 
     window.scrollModulosStepperEmpleado = function (direction) {
@@ -1266,7 +1452,116 @@ document.addEventListener('DOMContentLoaded', function () {
             if (btnIcono) btnIcono.className = 'fa-solid fa-list-check text-slate-500 text-[11px]';
             seleccionarModuloRecorrido(moduloActivoActual, false);
         }
+
+        if (typeof window.ajustarEscalaPptxViewers === 'function') {
+            setTimeout(window.ajustarEscalaPptxViewers, 60);
+        }
     };
+
+    // ==========================================
+    // PRESENTADOR DE DIAPOSITIVAS POWERPOINT (PPTX)
+    // ==========================================
+    window.ajustarEscalaPptxViewers = function () {
+        document.querySelectorAll('.pptx-interactive-viewer').forEach(viewer => {
+            const stage = viewer.querySelector('.pptx-stage');
+            if (!stage || stage.offsetParent === null) return;
+            const stageW = Math.max(280, stage.clientWidth - 24);
+            const stageH = Math.max(220, stage.clientHeight - 24);
+
+            viewer.querySelectorAll('.pptx-slide-wrapper').forEach(wrapper => {
+                const origW = parseFloat(wrapper.dataset.width || 1920);
+                const origH = parseFloat(wrapper.dataset.height || 1080);
+                const scale = Math.min(stageW / origW, stageH / origH);
+
+                const canvas = wrapper.querySelector('.pptx-canvas');
+                if (canvas) {
+                    canvas.style.transform = `scale(${scale})`;
+                    canvas.style.transformOrigin = '0 0';
+                    wrapper.style.width = `${origW * scale}px`;
+                    wrapper.style.height = `${origH * scale}px`;
+                }
+            });
+        });
+    };
+
+    window.irASlidePptx = function (viewerId, targetIndex) {
+        const viewer = document.getElementById(viewerId);
+        if (!viewer) return;
+
+        const total = parseInt(viewer.dataset.totalSlides, 10) || 1;
+        const newIdx = Math.max(0, Math.min(targetIndex, total - 1));
+        viewer.dataset.currentSlide = newIdx;
+
+        viewer.querySelectorAll('.pptx-slide-pane').forEach((pane, idx) => {
+            if (idx === newIdx) {
+                pane.classList.remove('hidden');
+                pane.classList.add('active-pptx-slide', 'flex');
+            } else {
+                pane.classList.add('hidden');
+                pane.classList.remove('active-pptx-slide', 'flex');
+            }
+        });
+
+        const currNum = viewer.querySelector('#pptx-curr-' + viewer.dataset.viewerId);
+        if (currNum) currNum.textContent = (newIdx + 1);
+
+        const bar = viewer.querySelector('#pptx-bar-' + viewer.dataset.viewerId);
+        if (bar) bar.style.width = `${Math.round(((newIdx + 1) / total) * 100)}%`;
+
+        viewer.querySelectorAll('.pptx-dot').forEach((dot, idx) => {
+            if (idx === newIdx) {
+                dot.className = 'pptx-dot rounded-full transition-all cursor-pointer bg-cyan-400 w-5 h-2';
+            } else {
+                dot.className = 'pptx-dot rounded-full transition-all cursor-pointer bg-slate-700 hover:bg-slate-500 w-2 h-2';
+            }
+        });
+
+        viewer.querySelectorAll('.pptx-btn-prev, .pptx-btn-nav-prev').forEach(btn => {
+            btn.disabled = (newIdx === 0);
+        });
+        viewer.querySelectorAll('.pptx-btn-next, .pptx-btn-nav-next').forEach(btn => {
+            btn.disabled = (newIdx === total - 1);
+        });
+
+        window.ajustarEscalaPptxViewers();
+    };
+
+    window.cambiarSlidePptx = function (viewerId, delta) {
+        const viewer = document.getElementById(viewerId);
+        if (!viewer) return;
+        const current = parseInt(viewer.dataset.currentSlide || '0', 10);
+        window.irASlidePptx(viewerId, current + delta);
+    };
+
+    window.togglePantallaCompletaPptx = function (viewerId) {
+        const viewer = document.getElementById(viewerId);
+        if (!viewer) return;
+        if (!document.fullscreenElement) {
+            if (viewer.requestFullscreen) viewer.requestFullscreen();
+            else if (viewer.webkitRequestFullscreen) viewer.webkitRequestFullscreen();
+            else if (viewer.msRequestFullscreen) viewer.msRequestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    };
+
+    document.addEventListener('fullscreenchange', () => setTimeout(window.ajustarEscalaPptxViewers, 100));
+    window.addEventListener('resize', window.ajustarEscalaPptxViewers);
+    setTimeout(window.ajustarEscalaPptxViewers, 300);
+
+    document.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+        const targetViewer = document.fullscreenElement?.closest('.pptx-interactive-viewer') || document.querySelector('.modulo-recorrido-item:not(.hidden) .pptx-interactive-viewer');
+        if (targetViewer) {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                e.preventDefault();
+                window.cambiarSlidePptx(targetViewer.id, 1);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                window.cambiarSlidePptx(targetViewer.id, -1);
+            }
+        }
+    });
 
     // Auto-scroll y activación inicial inteligente
     const hash = window.location.hash;

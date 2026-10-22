@@ -20,6 +20,8 @@
                     <i class="fa-solid fa-image text-emerald-600"></i>
                 @elseif($tipoActual === 'PDF')
                     <i class="fa-solid fa-file-pdf text-red-600"></i>
+                @elseif($tipoActual === 'PPTX')
+                    <i class="fa-solid fa-file-powerpoint text-orange-500"></i>
                 @elseif($tipoActual === 'ENLACE')
                     <i class="fa-solid fa-arrow-up-right-from-square text-cyan-600"></i>
                 @else
@@ -33,7 +35,7 @@
                         {{ !empty($contenido['titulo']) ? $contenido['titulo'] : 'Nuevo recurso / contenido' }}
                     </span>
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-line/80 text-slate-600 shrink-0 hidden sm:inline" data-contenido-resumen-tipo>
-                        {{ ['TEXTO' => 'Texto explicativo', 'VIDEO' => 'Video', 'IMAGEN' => 'Imagen', 'PDF' => 'PDF', 'ENLACE' => 'Enlace'][$tipoActual] ?? 'Texto explicativo' }}
+                        {{ ['TEXTO' => 'Texto explicativo', 'VIDEO' => 'Video', 'IMAGEN' => 'Imagen', 'PDF' => 'PDF', 'PPTX' => 'PowerPoint', 'ENLACE' => 'Enlace'][$tipoActual] ?? 'Texto explicativo' }}
                     </span>
                 </div>
             </div>
@@ -56,7 +58,7 @@
             <div class="sm:col-span-2">
                 <label class="block text-[11px] font-bold text-brand-dark mb-1">Título del contenido <span class="text-red-500">*</span></label>
                 <input type="text" name="{{ $cid }}[titulo]" value="{{ $contenido['titulo'] ?? '' }}" required maxlength="255"
-                       placeholder="Ej: Video explicativo de bioseguridad"
+                       placeholder="Ej: Presentación de Bioseguridad en Estanques"
                        class="{{ $input }}" data-input-titulo-contenido>
                 @error("$errKey.titulo")<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
             </div>
@@ -65,7 +67,7 @@
                 <select name="{{ $cid }}[tipo]" data-tipo-select class="{{ $input }}">
                     @foreach ($tiposContenido as $tipo)
                         <option value="{{ $tipo }}" @selected($tipoActual === $tipo)>
-                            {{ ['TEXTO' => 'Texto explicativo', 'VIDEO' => 'Video (Archivo MP4 o URL)', 'IMAGEN' => 'Imagen', 'PDF' => 'Documento PDF', 'ENLACE' => 'Enlace externo'][$tipo] }}
+                            {{ ['TEXTO' => 'Texto explicativo', 'VIDEO' => 'Video (Archivo MP4 o URL)', 'IMAGEN' => 'Imagen', 'PDF' => 'Documento PDF', 'PPTX' => 'Presentación PowerPoint (.pptx, .ppt)', 'ENLACE' => 'Enlace externo'][$tipo] ?? $tipo }}
                         </option>
                     @endforeach
                 </select>
@@ -79,7 +81,8 @@
                     Cargar archivo de video <span class="font-normal text-muted">(MP4, MOV o WEBM)</span>
                 </label>
                 <input type="file" name="{{ $cid }}[archivo]" accept="video/mp4,video/quicktime,video/webm,video/x-m4v,.mp4,.mov,.webm" data-video-file
-                       class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:bg-brand-light file:text-brand-blue file:font-bold file:text-xs hover:file:bg-brand-blue hover:file:text-white file:transition-colors file:cursor-pointer">
+                       class="pny-file-input pny-file-brand block w-full text-xs text-slate-600"
+                       {{ $tipoActual === 'VIDEO' ? '' : 'disabled' }}>
 
                 <div data-video-feedback class="hidden text-[11px] font-semibold mt-1.5 p-2 rounded-lg"></div>
 
@@ -147,8 +150,44 @@
             @error("$errKey.contenido")<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
         </div>
 
+        <!-- SECCIÓN PARA POWERPOINT (PPTX) -->
+        <div data-grupo-pptx class="{{ $tipoActual === 'PPTX' ? '' : 'hidden' }} space-y-3 p-3.5 bg-orange-50/60 rounded-xl border border-orange-200">
+            <div>
+                <label class="block text-[11px] font-bold text-brand-dark mb-1">
+                    Cargar Presentación PowerPoint <span class="font-normal text-muted">(.pptx o .ppt · Máx. 100 MB)</span> <span class="text-red-500">*</span>
+                </label>
+                <input type="file" name="{{ $cid }}[archivo]" accept=".pptx,.ppt,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" data-pptx-file
+                       class="pny-file-input pny-file-pptx block w-full text-xs text-slate-700"
+                       {{ $tipoActual === 'PPTX' ? '' : 'disabled' }}>
+
+                <div data-pptx-feedback class="hidden text-[11px] font-semibold mt-2 p-2.5 rounded-xl"></div>
+
+                @if ($rutaActual && $tipoActual === 'PPTX')
+                    <div class="mt-2.5 p-2.5 bg-white rounded-xl border border-orange-200 flex items-center justify-between text-xs text-orange-950 font-bold shadow-2xs">
+                        <span class="truncate flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-powerpoint text-orange-600"></i>
+                            <span>Presentación actual: <strong>{{ basename($rutaActual) }}</strong></span>
+                        </span>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider text-orange-800 bg-orange-100 px-2 py-0.5 rounded-md">Cargada</span>
+                    </div>
+                    <p class="text-[10px] text-muted mt-1">Sube un nuevo archivo arriba si deseas reemplazar la presentación actual.</p>
+                @endif
+
+                <div class="mt-2.5 p-3 rounded-xl bg-white border border-orange-200/70 text-[11px] text-slate-700 space-y-1.5">
+                    <div class="flex items-center gap-2 font-bold text-orange-900">
+                        <i class="fa-solid fa-chalkboard-user text-orange-600 text-xs"></i>
+                        <span>Visor Interactivo para Empleados:</span>
+                    </div>
+                    <p class="text-[10px] text-slate-600 leading-relaxed">
+                        Las diapositivas se procesarán en el servidor con el mismo visor interactivo de las inducciones. El empleado podrá pasarlas una a una con botones de avance y retroceso, pantalla completa y teclado.
+                    </p>
+                </div>
+            </div>
+            @error("$errKey.archivo")<p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>@enderror
+        </div>
+
         <!-- SECCIÓN PARA TEXTO O ENLACE -->
-        <div data-grupo-texto class="{{ $tipoActual === 'VIDEO' ? 'hidden' : '' }}">
+        <div data-grupo-texto class="{{ in_array($tipoActual, ['VIDEO', 'PPTX'], true) ? 'hidden' : '' }}">
             <label class="block text-[11px] font-bold text-brand-dark mb-1" data-label-texto>Texto del contenido</label>
             <textarea name="{{ $cid }}[contenido]" rows="2" maxlength="20000"
                       placeholder="Escribe el contenido educativo o explicativo..."
@@ -159,9 +198,10 @@
         <!-- SECCIÓN PARA ARCHIVO (PDF / IMAGEN) -->
         <div data-grupo-archivo class="{{ in_array($tipoActual, ['IMAGEN', 'PDF'], true) ? '' : 'hidden' }}">
             <label class="block text-[11px] font-bold text-brand-dark mb-1">Archivo adjunto (PDF, JPG, PNG o WEBP · máx. 20 MB)</label>
-            <input type="file" name="{{ $cid }}[archivo]" accept=".pdf,.jpg,.jpeg,.png,.webp"
-                   class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:bg-brand-light file:text-brand-blue file:font-bold file:text-xs hover:file:bg-brand-blue hover:file:text-white file:transition-colors file:cursor-pointer">
-            @if ($rutaActual && $tipoActual !== 'VIDEO')
+            <input type="file" name="{{ $cid }}[archivo]" accept=".pdf,.jpg,.jpeg,.png,.webp" data-archivo-file
+                   class="pny-file-input pny-file-brand block w-full text-xs text-slate-600"
+                   {{ in_array($tipoActual, ['IMAGEN', 'PDF'], true) ? '' : 'disabled' }}>
+            @if ($rutaActual && !in_array($tipoActual, ['VIDEO', 'PPTX'], true))
                 <p class="mt-1.5 text-[11px] text-muted">
                     Archivo actual:
                     <a href="{{ asset($rutaActual) }}" target="_blank" rel="noopener" class="font-semibold text-brand-blue hover:underline">{{ basename($rutaActual) }}</a>

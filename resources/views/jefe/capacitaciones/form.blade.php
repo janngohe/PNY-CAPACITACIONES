@@ -24,6 +24,64 @@
         -ms-overflow-style: none !important;
         scrollbar-width: none !important;
     }
+
+    /* Estilos sólidos y elegantes para inputs de archivos (evita que el botón se ponga blanco sobre blanco al pasar el mouse o dar clic) */
+    .pny-file-input {
+        display: block;
+        width: 100%;
+        font-size: 0.75rem;
+        color: #334155;
+        cursor: pointer;
+    }
+    .pny-file-pptx::file-selector-button {
+        margin-right: 0.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #fed7aa;
+        background-color: #ffedd5;
+        color: #9a3412;
+        font-weight: 700;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .pny-file-pptx:hover::file-selector-button,
+    .pny-file-pptx::file-selector-button:hover {
+        background-color: #ea580c !important;
+        border-color: #ea580c !important;
+        color: #ffffff !important;
+    }
+    .pny-file-pptx:active::file-selector-button,
+    .pny-file-pptx::file-selector-button:active {
+        background-color: #c2410c !important;
+        border-color: #c2410c !important;
+        color: #ffffff !important;
+    }
+
+    .pny-file-brand::file-selector-button {
+        margin-right: 0.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #bfdbfe;
+        background-color: #e6f1fc;
+        color: #0056b3;
+        font-weight: 700;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .pny-file-brand:hover::file-selector-button,
+    .pny-file-brand::file-selector-button:hover {
+        background-color: #0056b3 !important;
+        border-color: #0056b3 !important;
+        color: #ffffff !important;
+    }
+    .pny-file-brand:active::file-selector-button,
+    .pny-file-brand::file-selector-button:active {
+        background-color: #003d80 !important;
+        border-color: #003d80 !important;
+        color: #ffffff !important;
+    }
 </style>
 <div class="max-w-7xl mx-auto space-y-6">
 
@@ -139,7 +197,7 @@
                                 </div>
                                 <div class="flex-1">
                                     <input id="imagen" type="file" name="imagen" accept=".jpg,.jpeg,.png,.webp"
-                                           class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:bg-brand-light file:text-brand-blue file:font-bold file:text-xs hover:file:bg-brand-blue hover:file:text-white file:transition-colors file:cursor-pointer">
+                                           class="pny-file-input pny-file-brand block w-full text-xs text-slate-600">
                                     <p class="text-[11px] text-muted mt-1">Se previsualizará de inmediato en la tarjeta lateral.</p>
                                 </div>
                             </div>
@@ -1183,6 +1241,7 @@
             ENLACE: 'URL del enlace externo',
             IMAGEN: 'Descripción de la imagen (opcional)',
             PDF: 'Descripción del documento (opcional)',
+            PPTX: 'Presentación PowerPoint (.pptx, .ppt)',
         };
 
         function actualizarVistaPrevia() {
@@ -1251,6 +1310,7 @@
             VIDEO: '<i class="fa-solid fa-circle-play text-red-500"></i>',
             IMAGEN: '<i class="fa-solid fa-image text-emerald-600"></i>',
             PDF: '<i class="fa-solid fa-file-pdf text-red-600"></i>',
+            PPTX: '<i class="fa-solid fa-file-powerpoint text-orange-500"></i>',
             ENLACE: '<i class="fa-solid fa-arrow-up-right-from-square text-cyan-600"></i>'
         };
 
@@ -1259,6 +1319,7 @@
             VIDEO: 'Video',
             IMAGEN: 'Imagen',
             PDF: 'PDF',
+            PPTX: 'PowerPoint',
             ENLACE: 'Enlace'
         };
 
@@ -1300,15 +1361,32 @@
         function aplicarTipo(item) {
             const tipo = item.querySelector('[data-tipo-select]').value;
             const esVideo = tipo === 'VIDEO';
+            const esPptx = tipo === 'PPTX';
             const esArchivo = tipo === 'IMAGEN' || tipo === 'PDF';
 
             const grupoVideo = item.querySelector('[data-grupo-video]');
+            const grupoPptx = item.querySelector('[data-grupo-pptx]');
             const grupoTexto = item.querySelector('[data-grupo-texto]');
             const grupoArchivo = item.querySelector('[data-grupo-archivo]');
 
-            if (grupoVideo) grupoVideo.classList.toggle('hidden', !esVideo);
-            if (grupoTexto) grupoTexto.classList.toggle('hidden', esVideo);
-            if (grupoArchivo) grupoArchivo.classList.toggle('hidden', !esArchivo);
+            if (grupoVideo) {
+                grupoVideo.classList.toggle('hidden', !esVideo);
+                const fileVideo = grupoVideo.querySelector('input[type="file"]');
+                if (fileVideo) fileVideo.disabled = !esVideo;
+            }
+            if (grupoPptx) {
+                grupoPptx.classList.toggle('hidden', !esPptx);
+                const filePptx = grupoPptx.querySelector('input[type="file"]');
+                if (filePptx) filePptx.disabled = !esPptx;
+            }
+            if (grupoTexto) {
+                grupoTexto.classList.toggle('hidden', esVideo || esPptx);
+            }
+            if (grupoArchivo) {
+                grupoArchivo.classList.toggle('hidden', !esArchivo);
+                const fileArchivo = grupoArchivo.querySelector('input[type="file"]');
+                if (fileArchivo) fileArchivo.disabled = !esArchivo;
+            }
 
             if (grupoTexto) {
                 const labelTexto = item.querySelector('[data-label-texto]');
@@ -1395,6 +1473,51 @@
             };
 
             videoElement.src = objectUrl;
+        }
+
+        function validarArchivoPptx(input) {
+            const file = input.files[0];
+            const feedback = input.closest('[data-grupo-pptx]')?.querySelector('[data-pptx-feedback]');
+            if (!file) {
+                if (feedback) {
+                    feedback.className = 'hidden';
+                    feedback.textContent = '';
+                }
+                return;
+            }
+
+            const ext = file.name.split('.').pop().toLowerCase();
+            const validExts = ['pptx', 'ppt', 'ppsx', 'pps'];
+            const pesoMb = (file.size / (1024 * 1024)).toFixed(1);
+
+            if (!validExts.includes(ext)) {
+                input.value = '';
+                if (feedback) {
+                    feedback.className = 'text-[11px] font-semibold mt-2 p-2.5 rounded-xl bg-red-100 text-red-800 border border-red-200 block';
+                    feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5 text-red-600"></i> Formato no válido (.${ext}). Selecciona una presentación en formato PowerPoint (<strong>.pptx</strong> o <strong>.ppt</strong>).`;
+                }
+                return;
+            }
+
+            if (file.size > 100 * 1024 * 1024) {
+                input.value = '';
+                if (feedback) {
+                    feedback.className = 'text-[11px] font-semibold mt-2 p-2.5 rounded-xl bg-red-100 text-red-800 border border-red-200 block';
+                    feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5 text-red-600"></i> El archivo supera el límite máximo permitido de 100 MB (${pesoMb} MB).`;
+                }
+                return;
+            }
+
+            if (feedback) {
+                feedback.className = 'text-[11px] font-semibold mt-2 p-2.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center justify-between gap-2 block';
+                feedback.innerHTML = `
+                    <span class="flex items-center gap-1.5 min-w-0">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-xs shrink-0"></i>
+                        <span class="truncate">Presentación lista: <strong>${file.name}</strong> (${pesoMb} MB)</span>
+                    </span>
+                    <span class="text-[10px] uppercase font-bold text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-emerald-200 shrink-0">Válida</span>
+                `;
+            }
         }
 
         let moduloActivoIndex = 0;
@@ -1764,6 +1887,8 @@
                 actualizarVistaPrevia();
             } else if (e.target.matches('[data-video-file]')) {
                 validarArchivoVideo(e.target);
+            } else if (e.target.matches('[data-pptx-file]')) {
+                validarArchivoPptx(e.target);
             }
         });
 
