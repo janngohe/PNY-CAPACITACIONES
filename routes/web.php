@@ -45,6 +45,7 @@ Route::prefix('induccion')->name('induccion.')->middleware('facilitador')->group
     Route::post('/{induccion}/iniciar', [FacilitadorController::class, 'iniciarSesion'])->name('iniciar');
     Route::get('/sesion/{codigo}/presentacion', [FacilitadorController::class, 'presentacion'])->name('presentacion');
     Route::get('/sesion/{codigo}/asistencias-stream', [FacilitadorController::class, 'asistenciasStream'])->name('asistencias.stream');
+    Route::get('/sesion/{codigo}/detalles', [FacilitadorController::class, 'detallesSesion'])->name('sesion.detalles');
     Route::post('/sesion/{codigo}/finalizar', [FacilitadorController::class, 'finalizarSesion'])->name('finalizar');
     Route::get('/sesion/{codigo}/acta-pdf', [FacilitadorController::class, 'descargarActaPdf'])->name('acta.pdf');
 });

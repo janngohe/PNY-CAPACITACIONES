@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Induccion;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\AsistenciaInduccion;
+use App\Models\Sede;
 use App\Models\SesionInduccion;
 use App\Models\Usuario;
 use Illuminate\Http\JsonResponse;
@@ -36,11 +38,19 @@ class AsistenciaController extends Controller
             }
         }
 
-        return view('induccion.asistencia', compact('sesion', 'codigo', 'errorMensaje'));
+        // Cargar sedes activas con sus áreas activas para el formulario de Personal Nuevo
+        $sedes = Sede::with(['areas' => function ($query) {
+            $query->where('estado', true)->orderBy('nombre');
+        }])
+        ->where('estado', true)
+        ->orderBy('nombre')
+        ->get();
+
+        return view('induccion.asistencia', compact('sesion', 'codigo', 'errorMensaje', 'sedes'));
     }
 
     /**
-     * Busca la cédula en tiempo real para autocompletar si es empleado o desplegar campos para externo.
+     * Busca la cédula en tiempo real para autocompletar si es empleado o desplegar campos para externo / personal nuevo.
      */
     public function buscarIdentificacion(Request $request): JsonResponse
     {
@@ -75,6 +85,22 @@ class AsistenciaController extends Controller
             ->first();
 
         if ($usuario) {
+            // Verificar si la sesión tiene áreas convocadas específicas
+            $areasConvocadas = $sesion->areas_convocadas ?? [];
+            if (is_array($areasConvocadas) && count($areasConvocadas) > 0) {
+                $areasConvocadasIds = array_map('intval', $areasConvocadas);
+                $usuarioAreaId = (int) $usuario->area_id;
+
+                if (!in_array($usuarioAreaId, $areasConvocadasIds, true)) {
+                    $nombresConvocadas = Area::whereIn('id', $areasConvocadasIds)->pluck('nombre')->join(', ');
+                    return response()->json([
+                        'bloqueado' => true,
+                        'motivo' => 'area_no_convocada',
+                        'mensaje' => "Tu área ('" . ($usuario->area?->nombre ?? 'Sin área asignada') . "') no está convocada para esta inducción. Esta sesión está dirigida a: {$nombresConvocadas}.",
+                    ]);
+                }
+            }
+
             return response()->json([
                 'found' => true,
                 'es_externo' => false,
@@ -86,10 +112,11 @@ class AsistenciaController extends Controller
             ]);
         }
 
-        // Si no existe, es persona externa (contratista, pasante, visitante)
+        // Si no está registrado en nómina:
+        // Se permite registrar como Personal Nuevo o como Persona Externa (si la sesión lo permite)
         return response()->json([
             'found' => false,
-            'es_externo' => true,
+            'permitir_externos' => (bool) $sesion->permitir_externos,
             'identificacion' => $identificacion,
         ]);
     }
@@ -110,20 +137,7 @@ class AsistenciaController extends Controller
             ], 422);
         }
 
-        $request->validate([
-            'identificacion' => ['required', 'string', 'max:30'],
-            'nombre_completo' => ['required', 'string', 'max:150'],
-            'firma_digital' => ['required', 'string'], // Base64 data URI del canvas
-            'es_externo' => ['nullable'],
-            'empresa_externa' => ['nullable', 'string', 'max:150'],
-            'telefono' => ['nullable', 'string', 'max:30'],
-        ], [
-            'identificacion.required' => 'El número de identificación es obligatorio.',
-            'nombre_completo.required' => 'El nombre completo es obligatorio.',
-            'firma_digital.required' => 'Debes dibujar tu firma en el recuadro para confirmar la asistencia.',
-        ]);
-
-        $identificacion = trim($request->identificacion);
+        $identificacion = trim((string) $request->identificacion);
 
         // Prevenir duplicados
         $yaExiste = AsistenciaInduccion::where('sesion_id', $sesion->id)
@@ -135,6 +149,100 @@ class AsistenciaController extends Controller
                 'success' => false,
                 'message' => 'Ya existe un registro de asistencia con este número de documento en esta sesión.',
             ], 422);
+        }
+
+        // Validar si es usuario interno registrado en nómina
+        $usuario = Usuario::with(['area', 'sede'])
+            ->where('identificacion', $identificacion)
+            ->where('estado', true)
+            ->first();
+
+        $tipoRegistro = $request->input('tipo_registro', 'nuevo');
+
+        if ($usuario) {
+            // Empleado reconocido en nómina
+            $areasConvocadas = $sesion->areas_convocadas ?? [];
+            if (is_array($areasConvocadas) && count($areasConvocadas) > 0) {
+                $areasConvocadasIds = array_map('intval', $areasConvocadas);
+                if (!in_array((int) $usuario->area_id, $areasConvocadasIds, true)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Tu área de trabajo no está convocada para esta sesión de inducción.',
+                    ], 422);
+                }
+            }
+
+            $request->validate([
+                'identificacion' => ['required', 'string', 'max:30'],
+                'firma_digital' => ['required', 'string'],
+            ], [
+                'identificacion.required' => 'El número de identificación es obligatorio.',
+                'firma_digital.required' => 'Debes dibujar tu firma en el recuadro.',
+            ]);
+
+            $nombreFinal = $usuario->nombre_completo;
+            $cargoFinal = $usuario->cargoOficial();
+            $areaFinal = $usuario->area?->nombre ?? 'General';
+            $sedeFinal = $usuario->sedeActual()?->nombre ?? ($sesion->sede?->nombre ?? 'Sede Principal');
+            $esExternoFinal = false;
+            $empresaFinal = 'C.I. Piscícola New York';
+
+        } elseif ($tipoRegistro === 'externo') {
+            // Persona Externa (solo nombre completo, entidad y número de cédula)
+            if (!$sesion->permitir_externos) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Esta sesión no admite registro de personal externo o contratistas.',
+                ], 422);
+            }
+
+            $request->validate([
+                'identificacion' => ['required', 'string', 'max:30'],
+                'nombre_completo' => ['required', 'string', 'max:150'],
+                'entidad' => ['required', 'string', 'max:150'],
+                'firma_digital' => ['required', 'string'],
+            ], [
+                'identificacion.required' => 'El número de identificación es obligatorio.',
+                'nombre_completo.required' => 'El nombre completo es obligatorio.',
+                'entidad.required' => 'Debes indicar la entidad o empresa a la que perteneces.',
+                'firma_digital.required' => 'Debes dibujar tu firma en el recuadro para confirmar la asistencia.',
+            ]);
+
+            $entidad = trim((string) ($request->input('entidad') ?: $request->input('empresa_externa')));
+            $nombreFinal = trim((string) $request->nombre_completo);
+            $cargoFinal = 'Persona Externa / Contratista';
+            $areaFinal = $entidad ?: 'Externa';
+            $sedeFinal = $sesion->sede?->nombre ?? 'Sede Principal';
+            $esExternoFinal = true;
+            $empresaFinal = $entidad ?: 'Independiente / Visitante';
+
+        } else {
+            // Personal Externo (nombre completo, número de cédula, sede y área para la que va)
+            $request->validate([
+                'identificacion' => ['required', 'string', 'max:30'],
+                'nombre_completo' => ['required', 'string', 'max:150'],
+                'sede_id' => ['required', 'exists:sedes,id'],
+                'area_id' => ['required', 'exists:areas,id'],
+                'firma_digital' => ['required', 'string'],
+            ], [
+                'identificacion.required' => 'El número de identificación es obligatorio.',
+                'nombre_completo.required' => 'El nombre completo es obligatorio.',
+                'sede_id.required' => 'Debes seleccionar la sede a la que ingresas.',
+                'sede_id.exists' => 'La sede seleccionada no es válida.',
+                'area_id.required' => 'Debes seleccionar el área para la que vas.',
+                'area_id.exists' => 'El área seleccionada no es válida.',
+                'firma_digital.required' => 'Debes dibujar tu firma en el recuadro para confirmar la asistencia.',
+            ]);
+
+            $sedeModel = Sede::find($request->sede_id);
+            $areaModel = Area::find($request->area_id);
+
+            $nombreFinal = trim((string) $request->nombre_completo);
+            $cargoFinal = 'Personal Externo';
+            $areaFinal = $areaModel?->nombre ?? 'General';
+            $sedeFinal = $sedeModel?->nombre ?? ($sesion->sede?->nombre ?? 'Sede Principal');
+            $esExternoFinal = true;
+            $empresaFinal = 'Personal Externo';
         }
 
         // Procesar y guardar la firma digital en PNG
@@ -158,25 +266,17 @@ class AsistenciaController extends Controller
             $rutaFirma = $firmaData;
         }
 
-        $esExterno = filter_var($request->input('es_externo', false), FILTER_VALIDATE_BOOLEAN);
-
-        // Si es interno, recuperar sus datos institucionales para mayor precisión
-        $usuario = Usuario::with(['area', 'sede'])
-            ->where('identificacion', $identificacion)
-            ->where('estado', true)
-            ->first();
-
         $asistencia = AsistenciaInduccion::create([
             'sesion_id' => $sesion->id,
             'usuario_id' => $usuario?->id,
             'identificacion' => $identificacion,
-            'nombre_completo' => $usuario ? $usuario->nombre_completo : trim($request->nombre_completo),
-            'cargo' => $usuario ? $usuario->cargoOficial() : 'Externo / Contratista',
-            'area' => $usuario ? ($usuario->area?->nombre ?? 'General') : ($request->empresa_externa ? trim($request->empresa_externa) : 'Externo'),
-            'sede' => $usuario ? ($usuario->sedeActual()?->nombre ?? 'Sede Principal') : $sesion->sede->nombre,
-            'es_externo' => $usuario ? false : true,
-            'empresa_externa' => $usuario ? 'C.I. Piscícola New York' : ($request->empresa_externa ? trim($request->empresa_externa) : 'Independiente / Visitante'),
-            'telefono' => $request->telefono ? trim($request->telefono) : null,
+            'nombre_completo' => $nombreFinal,
+            'cargo' => $cargoFinal,
+            'area' => $areaFinal,
+            'sede' => $sedeFinal,
+            'es_externo' => $esExternoFinal,
+            'empresa_externa' => $empresaFinal,
+            'telefono' => null, // Teléfono eliminado según requerimiento
             'firma_digital' => $rutaFirma,
             'fecha_registro' => now(),
             'ip_origen' => $request->ip(),

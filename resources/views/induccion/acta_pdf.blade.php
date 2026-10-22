@@ -227,7 +227,6 @@
             <td class="ficha-label">Tema / Inducción:</td>
             <td class="ficha-val" colspan="3">
                 <strong>{{ $sesion->induccion->titulo }}</strong>
-                <span style="font-size: 8px; color: #0284c7; font-weight: bold;">({{ $sesion->induccion->tipo }})</span>
             </td>
         </tr>
         <tr>
@@ -335,7 +334,7 @@
 
     <!-- Nota al pie -->
     <div class="footer-note">
-        Este documento constituye constancia legal y evidencia de asistencia con firma táctil digital capturada en plataforma institucional.
+        Este documento constituye constancia y evidencia de asistencia con firma táctil digital capturada en el módulo de inducción.
         Generado automáticamente por el Sistema de Capacitaciones el {{ date('d/m/Y \a \l\a\s h:i A') }}.
     </div>
 

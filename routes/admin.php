@@ -101,8 +101,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
         ->whereIn('formato', ['csv', 'pdf'])
         ->name('reportes.descargar');
 
-    // Inducciones y Gestión de PIN de Facilitador
+    // Inducciones (CRUD completo y PIN de Facilitador)
     Route::get('/inducciones', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'index'])->name('inducciones.index');
+    Route::get('/inducciones/crear', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'create'])->name('inducciones.create');
+    Route::post('/inducciones', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'store'])->name('inducciones.store');
+    Route::get('/inducciones/{induccion}/editar', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'edit'])->name('inducciones.edit');
+    Route::put('/inducciones/{induccion}', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'update'])->name('inducciones.update');
+    Route::delete('/inducciones/{induccion}', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'destroy'])->name('inducciones.destroy');
+    Route::patch('/inducciones/{induccion}/toggle-estado', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'toggleEstado'])->name('inducciones.toggle_estado');
     Route::post('/inducciones/regenerar-pin', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'regenerarPin'])->name('inducciones.regenerar_pin');
     Route::get('/inducciones/sesiones/{sesion}/acta-pdf', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'descargarActaPdf'])->name('inducciones.acta_pdf');
 });

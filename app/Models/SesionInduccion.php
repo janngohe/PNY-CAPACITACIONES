@@ -20,6 +20,7 @@ class SesionInduccion extends Model
         'fecha_inicio',
         'fecha_cierre',
         'areas_convocadas',
+        'permitir_externos',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class SesionInduccion extends Model
             'fecha_inicio' => 'datetime',
             'fecha_cierre' => 'datetime',
             'areas_convocadas' => 'array',
+            'permitir_externos' => 'boolean',
         ];
     }
 
@@ -59,6 +61,31 @@ class SesionInduccion extends Model
     public function getUrlAsistenciaAttribute(): string
     {
         return route('induccion.asistencia.form', ['codigo' => $this->codigo_sesion]);
+    }
+
+    /**
+     * Retorna los nombres de las áreas convocadas como cadena separada por comas.
+     */
+    public function getAreasConvocadasNombresAttribute(): string
+    {
+        if (empty($this->areas_convocadas) || !is_array($this->areas_convocadas)) {
+            return 'Todas las áreas convocadas';
+        }
+
+        $nombres = Area::whereIn('id', $this->areas_convocadas)->pluck('nombre')->toArray();
+        return !empty($nombres) ? implode(', ', $nombres) : 'Todas las áreas convocadas';
+    }
+
+    /**
+     * Retorna los nombres de las áreas convocadas como arreglo.
+     */
+    public function getAreasConvocadasNombresArrayAttribute(): array
+    {
+        if (empty($this->areas_convocadas) || !is_array($this->areas_convocadas)) {
+            return [];
+        }
+
+        return Area::whereIn('id', $this->areas_convocadas)->pluck('nombre')->toArray();
     }
 
     /**
