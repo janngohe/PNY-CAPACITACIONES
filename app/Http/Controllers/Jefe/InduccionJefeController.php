@@ -19,13 +19,8 @@ class InduccionJefeController extends Controller
         $jefe = auth()->user();
         $pinActual = Configuracion::getPinInduccion();
 
-        // Inducciones que aplican al área del jefe o generales
-        $inducciones = Induccion::with(['sedes', 'areas'])
-            ->where('estado', true)
-            ->where(function ($q) use ($jefe) {
-                $q->whereDoesntHave('areas')
-                  ->orWhereHas('areas', fn($a) => $a->where('areas.id', $jefe->area_id));
-            })
+        // Inducciones activas institucionales disponibles para proyectar
+        $inducciones = Induccion::where('estado', true)
             ->latest()
             ->get();
 

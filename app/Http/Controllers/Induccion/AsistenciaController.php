@@ -66,7 +66,30 @@ class AsistenciaController extends Controller
             return response()->json(['error' => 'Sesión no encontrada o no válida.'], 404);
         }
 
-        // Verificar si ya registró asistencia en esta sesión
+        // Buscar usuario en la base de datos interna de PNY
+        $usuario = Usuario::with(['area', 'sede'])
+            ->where('identificacion', $identificacion)
+            ->where('estado', true)
+            ->first();
+
+        // 1. Validar que el facilitador que dicta la sesión no pueda marcar asistencia
+        $sesion->loadMissing('facilitador');
+        $esFacilitador = false;
+        if ($sesion->facilitador_id && $usuario && (int)$usuario->id === (int)$sesion->facilitador_id) {
+            $esFacilitador = true;
+        } elseif ($sesion->facilitador && trim((string)$sesion->facilitador->identificacion) === $identificacion) {
+            $esFacilitador = true;
+        }
+
+        if ($esFacilitador) {
+            return response()->json([
+                'bloqueado' => true,
+                'motivo' => 'es_facilitador',
+                'mensaje' => 'Eres el facilitador que está impartiendo esta sesión de inducción. El facilitador no debe registrar asistencia como participante.',
+            ]);
+        }
+
+        // 2. Verificar si ya registró asistencia en esta sesión
         $yaRegistrado = AsistenciaInduccion::where('sesion_id', $sesion->id)
             ->where('identificacion', $identificacion)
             ->exists();
@@ -77,12 +100,6 @@ class AsistenciaController extends Controller
                 'mensaje' => 'Ya registraste tu asistencia para esta sesión de inducción.',
             ]);
         }
-
-        // Buscar usuario en la base de datos interna de PNY
-        $usuario = Usuario::with(['area', 'sede'])
-            ->where('identificacion', $identificacion)
-            ->where('estado', true)
-            ->first();
 
         if ($usuario) {
             // Verificar si la sesión tiene áreas convocadas específicas
@@ -139,7 +156,29 @@ class AsistenciaController extends Controller
 
         $identificacion = trim((string) $request->identificacion);
 
-        // Prevenir duplicados
+        // Validar si es usuario interno registrado en nómina
+        $usuario = Usuario::with(['area', 'sede'])
+            ->where('identificacion', $identificacion)
+            ->where('estado', true)
+            ->first();
+
+        // 1. Validar que el facilitador que dicta la sesión no pueda marcar asistencia
+        $sesion->loadMissing('facilitador');
+        $esFacilitador = false;
+        if ($sesion->facilitador_id && $usuario && (int)$usuario->id === (int)$sesion->facilitador_id) {
+            $esFacilitador = true;
+        } elseif ($sesion->facilitador && trim((string)$sesion->facilitador->identificacion) === $identificacion) {
+            $esFacilitador = true;
+        }
+
+        if ($esFacilitador) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Eres el facilitador responsable de impartir esta sesión de inducción. No puedes registrar asistencia como participante.',
+            ], 422);
+        }
+
+        // 2. Prevenir duplicados
         $yaExiste = AsistenciaInduccion::where('sesion_id', $sesion->id)
             ->where('identificacion', $identificacion)
             ->exists();
@@ -150,12 +189,6 @@ class AsistenciaController extends Controller
                 'message' => 'Ya existe un registro de asistencia con este número de documento en esta sesión.',
             ], 422);
         }
-
-        // Validar si es usuario interno registrado en nómina
-        $usuario = Usuario::with(['area', 'sede'])
-            ->where('identificacion', $identificacion)
-            ->where('estado', true)
-            ->first();
 
         $tipoRegistro = $request->input('tipo_registro', 'nuevo');
 

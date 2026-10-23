@@ -92,8 +92,6 @@ class Induccion extends Model
                 } elseif ($tipo === 'pptx') {
                     if ($url && (str_contains($url, 'embed') || str_contains($url, 'live.com') || str_contains($url, 'google.com'))) {
                         $embedUrl = $url;
-                    } elseif ($archivoUrl) {
-                        $embedUrl = static::convertirUrlPptxEmbed($archivoUrl);
                     }
                 } elseif ($tipo === 'pdf' && $archivoUrl) {
                     $embedUrl = $archivoUrl . '#toolbar=1&navpanes=0';
@@ -140,7 +138,7 @@ class Induccion extends Model
                     'url' => null,
                     'archivo' => $this->archivo_presentacion,
                     'archivo_url' => $archivoUrl,
-                    'embed_url' => $esPptx ? static::convertirUrlPptxEmbed($archivoUrl) : ($archivoUrl . '#toolbar=1&navpanes=0'),
+                    'embed_url' => $esPptx ? null : ($archivoUrl . '#toolbar=1&navpanes=0'),
                 ];
             }
         }
@@ -175,11 +173,19 @@ class Induccion extends Model
     }
 
     /**
-     * Convierte la URL de un PowerPoint a un visor iFrame en línea (Microsoft Office / Google Docs).
+     * Convierte la URL de un PowerPoint a un visor iFrame en línea solo si es una URL pública accesible.
      */
-    public static function convertirUrlPptxEmbed(string $url): string
+    public static function convertirUrlPptxEmbed(?string $url): ?string
     {
-        // Microsoft Office Online Viewer es el visor oficial de PowerPoint en iframe
+        if (empty($url)) {
+            return null;
+        }
+
+        // Si es localhost o IP privada, Microsoft Office Online falla
+        if (str_contains($url, 'localhost') || str_contains($url, '127.0.0.1') || str_contains($url, '192.168.') || str_contains($url, '10.')) {
+            return null;
+        }
+
         return 'https://view.officeapps.live.com/op/embed.aspx?src=' . urlencode($url);
     }
 

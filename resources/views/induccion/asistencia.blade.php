@@ -163,37 +163,24 @@
                         </div>
                     </div>
 
-                    <!-- Caso B: Persona no encontrada en Nómina (Selector: Personal Nuevo vs Persona Externa) -->
-                    <div id="panelNoEncontrado" class="hidden space-y-3.5 p-4.5 rounded-2xl bg-slate-50 border border-slate-200 animate-fade-in">
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                                <i class="fa-solid fa-user-tag text-brand-blue"></i> Tipo de Participante
+                    <!-- Caso B: Persona no encontrada en Nómina (Registro de Personal Externo) -->
+                    <div id="panelNoEncontrado" class="hidden space-y-3.5 p-4 rounded-2xl bg-slate-50 border border-slate-200 animate-fade-in">
+                        <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 h-8 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center text-xs border border-blue-200 shadow-2xs">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </span>
+                                <div>
+                                    <span class="text-xs font-bold text-slate-800 block">Personal Externo</span>
+                                    <span class="text-[10px] text-slate-500">Completa tus datos para registrar la asistencia</span>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                No registrado en nómina
                             </span>
-                            <span id="badgePermisoExterno" class="text-[10px] text-slate-400 font-medium"></span>
-                        </div>
-                        <p class="text-[11px] text-slate-500 leading-snug">
-                            No estás en el censo registrado de nómina. Selecciona tu condición:
-                        </p>
-
-                        <!-- Selector Segmentado Moderno: Personal Externo (por defecto) vs Contratista / Entidad -->
-                        <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/80 rounded-2xl">
-                            <button type="button"
-                                    id="btnTipoNuevo"
-                                    onclick="seleccionarTipoRegistro('nuevo')"
-                                    class="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs bg-white text-brand-blue cursor-pointer">
-                                <i class="fa-solid fa-user-plus text-[12px]"></i>
-                                <span>Personal Externo</span>
-                            </button>
-                            <button type="button"
-                                    id="btnTipoExterno"
-                                    onclick="seleccionarTipoRegistro('externo')"
-                                    class="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
-                                <i class="fa-solid fa-building text-[12px]"></i>
-                                <span>Contratista / Entidad</span>
-                            </button>
                         </div>
 
-                        <!-- Campo Común: Nombre Completo -->
+                        <!-- Campo: Nombre Completo -->
                         <div>
                             <label for="nombre_completo" class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
                                 Nombre Completo <span class="text-rose-500">*</span>
@@ -206,59 +193,40 @@
                                    class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-xs font-medium focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20">
                         </div>
 
-                        <!-- Sección: PERSONAL NUEVO (Sede primero, luego áreas de esa sede) -->
-                        <div id="seccionPersonalNuevo" class="space-y-3 pt-1 border-t border-slate-200/60">
-                            <!-- 1. Sede (Aparece primero) -->
-                            <div>
-                                <label for="selectSede" class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
-                                    <i class="fa-solid fa-location-dot text-brand-blue mr-1"></i> Sede a la que ingresa <span class="text-rose-500">*</span>
-                                </label>
-                                <select name="sede_id"
-                                        id="selectSede"
-                                        onchange="alCambiarSede()"
-                                        class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-xs font-medium focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 cursor-pointer">
-                                    <option value="">-- Selecciona primero la sede --</option>
-                                    @if(isset($sedes))
-                                        @foreach($sedes as $s)
-                                            <option value="{{ $s->id }}">{{ $s->nombre }} @if($s->ciudad)({{ $s->ciudad }})@endif</option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </div>
-
-                            <!-- 2. Área para la que va (Filtrada dinámicamente según la sede elegida) -->
-                            <div>
-                                <label for="selectArea" class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
-                                    <i class="fa-solid fa-briefcase text-brand-blue mr-1"></i> Área para la que va <span class="text-rose-500">*</span>
-                                </label>
-                                <select name="area_id"
-                                        id="selectArea"
-                                        disabled
-                                        class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-slate-900 text-xs font-medium focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer">
-                                    <option value="">-- Primero selecciona una sede --</option>
-                                </select>
-                                <p id="areaAyudaText" class="text-[10px] text-slate-400 mt-1">
-                                    Las áreas disponibles se cargarán al seleccionar la sede.
-                                </p>
-                            </div>
+                        <!-- Sede a la que ingresa -->
+                        <div>
+                            <label for="selectSede" class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                <i class="fa-solid fa-location-dot text-brand-blue mr-1"></i> Sede a la que ingresa <span class="text-rose-500">*</span>
+                            </label>
+                            <select name="sede_id"
+                                    id="selectSede"
+                                    onchange="alCambiarSede()"
+                                    class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-xs font-medium focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 cursor-pointer">
+                                <option value="">-- Selecciona primero la sede --</option>
+                                @if(isset($sedes))
+                                    @foreach($sedes as $s)
+                                        <option value="{{ $s->id }}">{{ $s->nombre }} @if($s->ciudad)({{ $s->ciudad }})@endif</option>
+                                    @endforeach
+                                @endif
+                            </select>
                         </div>
 
-                        <!-- Sección: PERSONA EXTERNA (Solo Entidad / Empresa) -->
-                        <div id="seccionPersonaExterna" class="hidden space-y-3 pt-1 border-t border-slate-200/60">
-                            <div>
-                                <label for="entidad_externa" class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
-                                    <i class="fa-solid fa-building text-amber-600 mr-1"></i> Entidad / Empresa <span class="text-rose-500">*</span>
-                                </label>
-                                <input type="text"
-                                       name="entidad"
-                                       id="entidad_externa"
-                                       placeholder="Ej: SENA, Contratista SAS, Proveedor..."
-                                       class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-xs font-medium focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20">
-                                <p class="text-[10px] text-slate-400 mt-1">
-                                    Indica la institución, empresa contratista o entidad a la que perteneces.
-                                </p>
-                            </div>
+                        <!-- Área para la que va -->
+                        <div>
+                            <label for="selectArea" class="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                <i class="fa-solid fa-briefcase text-brand-blue mr-1"></i> Área para la que va <span class="text-rose-500">*</span>
+                            </label>
+                            <select name="area_id"
+                                    id="selectArea"
+                                    disabled
+                                    class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-slate-900 text-xs font-medium focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer">
+                                <option value="">-- Primero selecciona una sede --</option>
+                            </select>
+                            <p id="areaAyudaText" class="text-[10px] text-slate-400 mt-1">
+                                Las áreas disponibles se cargarán al seleccionar la sede.
+                            </p>
                         </div>
+                    </div>
 
                     </div>
 
@@ -346,44 +314,15 @@
             }
         }
 
-        // Selector entre Personal Nuevo y Persona Externa
-        function seleccionarTipoRegistro(tipo) {
-            const btnNuevo = document.getElementById('btnTipoNuevo');
-            const btnExt = document.getElementById('btnTipoExterno');
-            const secNuevo = document.getElementById('seccionPersonalNuevo');
-            const secExt = document.getElementById('seccionPersonaExterna');
+        // Registro exclusivo como Personal Externo para quienes no están en nómina
+        function prepararRegistroPersonalExterno() {
             const tipoInput = document.getElementById('tipo_registro_input');
             const esExtInput = document.getElementById('es_externo_input');
+            if (tipoInput) tipoInput.value = 'nuevo';
+            if (esExtInput) esExtInput.value = '1';
 
-            if (!btnNuevo || !btnExt) return;
-
-            if (tipo === 'nuevo') {
-                tipoInput.value = 'nuevo';
-                esExtInput.value = '0';
-
-                btnNuevo.className = 'py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs bg-white text-brand-blue cursor-pointer';
-                btnExt.className = 'py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
-
-                secNuevo?.classList.remove('hidden');
-                secExt?.classList.add('hidden');
-
-                if (document.getElementById('selectSede')) document.getElementById('selectSede').required = true;
-                if (document.getElementById('selectArea')) document.getElementById('selectArea').required = true;
-                if (document.getElementById('entidad_externa')) document.getElementById('entidad_externa').required = false;
-            } else {
-                tipoInput.value = 'externo';
-                esExtInput.value = '1';
-
-                btnExt.className = 'py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs bg-white text-amber-700 cursor-pointer';
-                btnNuevo.className = 'py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
-
-                secNuevo?.classList.add('hidden');
-                secExt?.classList.remove('hidden');
-
-                if (document.getElementById('selectSede')) document.getElementById('selectSede').required = false;
-                if (document.getElementById('selectArea')) document.getElementById('selectArea').required = false;
-                if (document.getElementById('entidad_externa')) document.getElementById('entidad_externa').required = true;
-            }
+            if (document.getElementById('selectSede')) document.getElementById('selectSede').required = true;
+            if (document.getElementById('selectArea')) document.getElementById('selectArea').required = true;
         }
 
         // Carga dinámica de Áreas al seleccionar una Sede
@@ -617,33 +556,12 @@
                     }
                     if (document.getElementById('selectSede')) document.getElementById('selectSede').required = false;
                     if (document.getElementById('selectArea')) document.getElementById('selectArea').required = false;
-                    if (document.getElementById('entidad_externa')) document.getElementById('entidad_externa').required = false;
                 } else {
-                    // No está registrado en nómina -> Mostrar selector de Personal Nuevo o Persona Externa
+                    // No está registrado en nómina -> Registro exclusivo de Personal Externo
                     panelEmp.classList.add('hidden');
                     panelNoEnc?.classList.remove('hidden');
 
-                    const btnExt = document.getElementById('btnTipoExterno');
-                    const badgePermiso = document.getElementById('badgePermisoExterno');
-
-                    if (!data.permitir_externos) {
-                        if (btnExt) {
-                            btnExt.disabled = true;
-                            btnExt.classList.add('opacity-40', 'cursor-not-allowed');
-                            btnExt.title = 'Esta sesión no admite personas externas';
-                        }
-                        if (badgePermiso) badgePermiso.textContent = '(Externos no habilitados)';
-                        seleccionarTipoRegistro('nuevo');
-                    } else {
-                        if (btnExt) {
-                            btnExt.disabled = false;
-                            btnExt.classList.remove('opacity-40', 'cursor-not-allowed');
-                            btnExt.title = '';
-                        }
-                        if (badgePermiso) badgePermiso.textContent = '';
-                        const tipoActual = tipoInput.value === 'externo' ? 'externo' : 'nuevo';
-                        seleccionarTipoRegistro(tipoActual);
-                    }
+                    prepararRegistroPersonalExterno();
 
                     if (document.getElementById('nombre_completo')) {
                         document.getElementById('nombre_completo').required = true;
@@ -689,20 +607,6 @@
                 if (!area) {
                     alert("Por favor selecciona el área para la que vas.");
                     document.getElementById('selectArea')?.focus();
-                    return;
-                }
-            } else if (tipoRegistro === 'externo') {
-                const nombre = document.getElementById('nombre_completo')?.value.trim();
-                const entidad = document.getElementById('entidad_externa')?.value.trim();
-
-                if (!nombre) {
-                    alert("Por favor ingresa tu nombre completo.");
-                    document.getElementById('nombre_completo')?.focus();
-                    return;
-                }
-                if (!entidad) {
-                    alert("Por favor indica la entidad o empresa a la que perteneces.");
-                    document.getElementById('entidad_externa')?.focus();
                     return;
                 }
             }

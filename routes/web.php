@@ -48,7 +48,10 @@ Route::prefix('induccion')->name('induccion.')->middleware('facilitador')->group
     Route::get('/sesion/{codigo}/detalles', [FacilitadorController::class, 'detallesSesion'])->name('sesion.detalles');
     Route::post('/sesion/{codigo}/finalizar', [FacilitadorController::class, 'finalizarSesion'])->name('finalizar');
     Route::get('/sesion/{codigo}/acta-pdf', [FacilitadorController::class, 'descargarActaPdf'])->name('acta.pdf');
+    Route::get('/{induccion}/slides-json', [FacilitadorController::class, 'slidesJson'])->name('slides.json');
+    Route::get('/{induccion}/visor-diapositivas', [FacilitadorController::class, 'visorDiapositivas'])->name('visor_diapositivas');
 });
+
 
 // Registro Móvil de Asistencia mediante Código QR o Código Manual
 Route::get('/asistencia/{codigo?}', [AsistenciaController::class, 'formulario'])->name('induccion.asistencia.form');

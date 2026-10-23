@@ -456,24 +456,6 @@
                 <p id="vis-descripcion" class="text-xs text-slate-600 leading-relaxed whitespace-pre-line"></p>
             </div>
 
-            <!-- Sedes y Áreas Asignadas -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-2xs space-y-1.5">
-                    <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                        <i class="fa-solid fa-location-dot text-rose-500"></i>
-                        <span>Sedes Autorizadas / Sugeridas</span>
-                    </span>
-                    <div id="vis-sedes" class="flex flex-wrap gap-1 pt-1"></div>
-                </div>
-
-                <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-2xs space-y-1.5">
-                    <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                        <i class="fa-solid fa-sitemap text-blue-500"></i>
-                        <span>Áreas Citadas / Convocadas</span>
-                    </span>
-                    <div id="vis-areas" class="flex flex-wrap gap-1 pt-1"></div>
-                </div>
-            </div>
 
             <!-- Lista de Recursos Multimedia y Materiales -->
             <div class="space-y-3">
@@ -572,9 +554,9 @@
                     <input type="checkbox" name="permitir_externos" value="1" checked
                            class="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 border-amber-300 mt-0.5">
                     <div>
-                        <span class="font-bold block">Permitir registro de personal externo / contratistas</span>
+                        <span class="font-bold block">Permitir registro de personal externo</span>
                         <span class="text-[11px] text-amber-800 leading-tight block mt-0.5">
-                            Si se habilita, personas no registradas en nómina podrán llenar sus datos básicos y firmar como contratistas o visitantes.
+                            Si se habilita, personas no registradas en nómina podrán llenar sus datos básicos y firmar como personal externo.
                         </span>
                     </div>
                 </label>
@@ -755,6 +737,8 @@
     </div>
 </div>
 
+@include('induccion._modal_visor_pptx')
+
 @push('scripts')
 <script>
     const catalogoInducciones = {!! json_encode($detalleInducciones) !!};
@@ -781,27 +765,6 @@
         if (ind.tiene_imagen) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-emerald-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-image mr-1"></i> Infografías</span>`;
         if (!ind.tiene_pptx && !ind.tiene_video && !ind.tiene_pdf && !ind.tiene_imagen) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-200 text-[10px] font-bold">Presencial</span>`;
 
-        // Sedes
-        const sedesCont = document.getElementById('vis-sedes');
-        sedesCont.innerHTML = '';
-        if (ind.sedes && ind.sedes.length > 0) {
-            ind.sedes.forEach(s => {
-                sedesCont.innerHTML += `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[10px] font-bold border border-rose-100"><i class="fa-solid fa-location-dot text-[8px]"></i>${s}</span>`;
-            });
-        } else {
-            sedesCont.innerHTML = `<span class="text-[11px] text-slate-400 italic">Aplica a todas las sedes institucionales</span>`;
-        }
-
-        // Áreas
-        const areasCont = document.getElementById('vis-areas');
-        areasCont.innerHTML = '';
-        if (ind.areas && ind.areas.length > 0) {
-            ind.areas.forEach(a => {
-                areasCont.innerHTML += `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-brand-blue text-[10px] font-bold border border-blue-100"><i class="fa-solid fa-diagram-project text-[8px]"></i>${a}</span>`;
-            });
-        } else {
-            areasCont.innerHTML = `<span class="text-[11px] text-slate-400 italic">Aplica a todas las áreas convocadas</span>`;
-        }
 
         // Recursos
         const recursosCont = document.getElementById('vis-contenedor-recursos');
@@ -839,9 +802,15 @@
                 } else if (r.tipo === 'pptx') {
                     iconHtml = '<i class="fa-solid fa-file-powerpoint text-orange-600 text-lg"></i>';
                     tipoBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-orange-100 text-orange-700">Diapositivas PPTX</span>';
-                    actionHtml = r.archivo_url ? `<a href="${r.archivo_url}" download class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-orange-700 text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-download"></i><span>Descargar PPTX</span></a>` : '';
-                    if (r.embed_url && (r.embed_url.includes('google') || r.embed_url.includes('live.com'))) {
-                        actionHtml += `<a href="${r.embed_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-desktop"></i><span>Ver Diapositivas</span></a>`;
+                    actionHtml = '';
+                    if (r.archivo || ind.tiene_pptx) {
+                        actionHtml += `<button type="button" onclick="abrirVisorPptxModal(${ind.id}, '${encodeURIComponent(r.archivo || '')}', '${encodeURIComponent(r.titulo || ind.titulo)}')" class="px-3.5 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 active:scale-95 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"><i class="fa-solid fa-play"></i><span>Ver Diapositivas</span></button>`;
+                    }
+                    if (r.archivo_url) {
+                        actionHtml += `<a href="${r.archivo_url}" download class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-orange-700 text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-download"></i><span>Descargar PPTX</span></a>`;
+                    }
+                    if (r.embed_url && (r.embed_url.includes('google') || r.embed_url.includes('docs.google'))) {
+                        actionHtml += `<a href="${r.embed_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-arrow-up-right-from-square"></i><span>Google Slides</span></a>`;
                     }
                 } else if (r.tipo === 'pdf') {
                     iconHtml = '<i class="fa-solid fa-file-pdf text-rose-600 text-lg"></i>';
@@ -1104,6 +1073,7 @@
             cerrarModalIniciar();
             cerrarModalFirma();
             cerrarModalDetalles();
+            cerrarVisorPptxModal();
         }
     });
 </script>

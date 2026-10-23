@@ -8,6 +8,7 @@ use App\Models\Configuracion;
 use App\Models\Induccion;
 use App\Models\SesionInduccion;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PptxRenderer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class InduccionAdminController extends Controller
     {
         $pinActual = Configuracion::getPinInduccion();
 
-        $query = Induccion::with(['sedes', 'areas', 'creador'])
+        $query = Induccion::with(['creador'])
             ->withCount(['sesiones', 'asistencias'])
             ->latest();
 
@@ -53,8 +54,6 @@ class InduccionAdminController extends Controller
                 'fecha_creacion' => $ind->created_at ? $ind->created_at->format('d/m/Y') : '—',
                 'sesiones_count' => $ind->sesiones_count ?? 0,
                 'asistencias_count' => $ind->asistencias_count ?? 0,
-                'sedes' => $ind->sedes->pluck('nombre')->all(),
-                'areas' => $ind->areas->pluck('nombre')->all(),
                 'recursos' => $ind->lista_recursos,
                 'contenido_diapositivas' => $ind->contenido_diapositivas,
                 'tiene_pptx' => collect($ind->lista_recursos)->contains('tipo', 'pptx'),
@@ -435,4 +434,70 @@ class InduccionAdminController extends Controller
 
         return $pdf->download($nombreArchivo);
     }
+
+    /**
+     * Retorna las diapositivas convertidas a HTML/SVG en formato JSON para el visor interactivo (Admin).
+     */
+    public function slidesJson(Request $request, Induccion $induccion): JsonResponse
+    {
+        $archivo = $request->query('archivo');
+
+        if (empty($archivo)) {
+            $pptxRec = collect($induccion->lista_recursos)->firstWhere('tipo', 'pptx');
+            $archivo = $pptxRec['archivo'] ?? $induccion->archivo_presentacion;
+        }
+
+        if (empty($archivo)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró archivo de diapositivas PowerPoint para esta inducción.',
+                'slides' => [],
+            ], 404);
+        }
+
+        $archivoRelativo = preg_replace('#^storage/#', '', $archivo);
+        $pptxData = PptxRenderer::render($archivoRelativo);
+
+        if (!$pptxData || empty($pptxData['slides'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudieron renderizar las diapositivas de la presentación.',
+                'slides' => [],
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'titulo' => $induccion->titulo,
+            'archivo' => $archivoRelativo,
+            'archivo_url' => asset('storage/' . $archivoRelativo),
+            'width' => $pptxData['width'] ?? 1920,
+            'height' => $pptxData['height'] ?? 1080,
+            'total' => count($pptxData['slides']),
+            'slides' => $pptxData['slides'],
+        ]);
+    }
+
+    /**
+     * Vista de pantalla completa dedicada para visualizar diapositivas de la inducción (Admin).
+     */
+    public function visorDiapositivas(Request $request, Induccion $induccion): View|RedirectResponse
+    {
+        $archivo = $request->query('archivo');
+
+        if (empty($archivo)) {
+            $pptxRec = collect($induccion->lista_recursos)->firstWhere('tipo', 'pptx');
+            $archivo = $pptxRec['archivo'] ?? $induccion->archivo_presentacion;
+        }
+
+        if (empty($archivo)) {
+            return redirect()->back()->with('error', 'Esta inducción no contiene diapositivas PowerPoint para visualizar.');
+        }
+
+        $archivoRelativo = preg_replace('#^storage/#', '', $archivo);
+        $pptxData = PptxRenderer::render($archivoRelativo);
+
+        return view('induccion.visor_diapositivas', compact('induccion', 'archivoRelativo', 'pptxData'));
+    }
 }
+

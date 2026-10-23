@@ -70,7 +70,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-brand-blue"></i> Inducciones Disponibles para tu Área
+                    <i class="fa-solid fa-layer-group text-brand-blue"></i> Inducciones Institucionales Disponibles
                 </h3>
                 <p class="text-xs text-slate-500">Charlas y presentaciones oficiales disponibles para proyectar con código QR</p>
             </div>
@@ -81,7 +81,7 @@
 
         @if($inducciones->isEmpty())
             <div class="p-8 text-center text-xs text-slate-400">
-                No hay inducciones específicas configuradas para tu área en este momento.
+                No hay inducciones disponibles en este momento.
             </div>
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -107,7 +107,7 @@
 
                         <div class="pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
                             <span class="text-[11px] text-slate-400">
-                                {{ $ind->sedes->isNotEmpty() ? $ind->sedes->pluck('nombre')->join(', ') : 'Todas las sedes' }}
+                                Disponible para todas las sedes
                             </span>
                             <a href="{{ route('induccion.index') }}"
                                target="_blank"

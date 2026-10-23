@@ -261,7 +261,7 @@
             </div>
 
             <!-- Escenario de la Diapositiva (Stage) -->
-            <div id="slideStage" class="flex-1 w-full h-full relative flex items-center justify-center p-3 sm:p-6 overflow-hidden">
+            <div id="slideStage" class="flex-1 w-full h-full relative flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
 
                 <!-- Diapositivas Renderizadas -->
                 @foreach($slides as $index => $slide)
@@ -273,42 +273,44 @@
 
                         {{-- CASO 1: PORTADA INSTITUCIONAL --}}
                         @if($slide['tipo'] === 'portada')
-                            <div class="w-full max-w-4xl bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-xl relative overflow-hidden text-center flex flex-col items-center justify-center">
-                                <div class="flex items-center gap-2 mb-4 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
-                                    <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-7 w-auto object-contain">
+                            <div class="w-full max-w-4xl bg-white border border-slate-200 rounded-3xl p-5 sm:p-8 md:p-10 shadow-xl relative text-center flex flex-col items-center justify-center max-h-[86vh] overflow-y-auto my-auto custom-scrollbar">
+                                <div class="flex items-center gap-2 mb-3 bg-slate-50 px-4 py-1.5 rounded-xl border border-slate-200 shrink-0">
+                                    <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-6 sm:h-7 w-auto object-contain">
                                     <span class="text-xs font-bold tracking-wider text-brand-dark uppercase">C.I. Piscícola New York S.A.</span>
                                 </div>
 
-                                <span class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-brand-blue border border-blue-200 mb-3 inline-flex items-center gap-1.5">
+                                <span class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-brand-blue border border-blue-200 mb-2.5 inline-flex items-center gap-1.5 shrink-0">
                                     <i class="fa-solid fa-chalkboard-user"></i> Sesión de Inducción
                                 </span>
 
-                                <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mb-3 font-heading max-w-2xl leading-tight">
+                                <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-3 font-heading max-w-3xl leading-tight shrink-0">
                                     {{ $sesion->induccion->titulo }}
                                 </h2>
 
                                 @if($sesion->induccion->descripcion)
-                                    <p class="text-xs sm:text-sm text-slate-600 max-w-xl mb-6 leading-relaxed line-clamp-3">
-                                        {{ $sesion->induccion->descripcion }}
-                                    </p>
+                                    <div class="w-full max-w-2xl my-2 shrink-0">
+                                        <div class="text-xs sm:text-sm text-slate-700 leading-relaxed max-h-48 sm:max-h-60 overflow-y-auto px-4 py-3 bg-slate-50/90 rounded-2xl border border-slate-200 text-left sm:text-center whitespace-pre-line shadow-2xs custom-scrollbar">
+                                            {{ $sesion->induccion->descripcion }}
+                                        </div>
+                                    </div>
                                 @endif
 
-                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full max-w-xl mb-6 text-left text-xs">
-                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full max-w-2xl mb-5 text-left text-xs shrink-0">
+                                    <div class="bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200">
                                         <div class="text-[10px] text-slate-500 font-bold uppercase">Facilitador</div>
                                         <div class="font-bold text-slate-900 mt-0.5 truncate">{{ $sesion->facilitador->nombre_completo ?? 'Facilitador' }}</div>
                                     </div>
-                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                    <div class="bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200">
                                         <div class="text-[10px] text-slate-500 font-bold uppercase">Sede</div>
                                         <div class="font-bold text-slate-900 mt-0.5 truncate">{{ $sesion->sede->nombre ?? 'Principal' }}</div>
                                     </div>
-                                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
+                                    <div class="bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
                                         <div class="text-[10px] text-slate-500 font-bold uppercase">Código Sesión</div>
                                         <div class="font-mono font-black text-brand-blue text-sm mt-0.5">{{ $sesion->codigo_sesion }}</div>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-3 shrink-0">
                                     <button type="button" onclick="slideSiguiente()"
                                             class="px-8 py-3 rounded-2xl bg-brand-blue hover:bg-brand-deep text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer">
                                         <span>Comenzar Explicación</span>
