@@ -26,17 +26,53 @@
     .pptx-slide-wrapper .pptx-canvas {
         transform-origin: 0 0;
     }
-    .pptx-interactive-viewer:fullscreen {
+    body.pptx-body-fullscreen {
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+    .pptx-interactive-viewer:fullscreen,
+    .pptx-interactive-viewer:-webkit-full-screen,
+    .pptx-interactive-viewer.is-fullscreen-fallback {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
         width: 100vw !important;
         height: 100vh !important;
+        height: 100dvh !important;
+        max-width: none !important;
+        max-height: none !important;
         border-radius: 0 !important;
+        margin: 0 !important;
         display: flex !important;
         flex-direction: column !important;
         background: #020617 !important;
+        z-index: 999999 !important;
     }
-    .pptx-interactive-viewer:fullscreen .pptx-stage {
+    .pptx-interactive-viewer:fullscreen .pptx-stage,
+    .pptx-interactive-viewer:-webkit-full-screen .pptx-stage,
+    .pptx-interactive-viewer.is-fullscreen-fallback .pptx-stage {
         flex: 1 1 0% !important;
+        height: 100% !important;
         max-height: none !important;
+        min-height: 0 !important;
+        padding: 6px !important;
+    }
+    .pptx-interactive-viewer:fullscreen .pptx-btn-float-fs,
+    .pptx-interactive-viewer:-webkit-full-screen .pptx-btn-float-fs,
+    .pptx-interactive-viewer.is-fullscreen-fallback .pptx-btn-float-fs {
+        display: none !important;
+    }
+    .pptx-interactive-viewer:fullscreen .pptx-btn-exit-fs,
+    .pptx-interactive-viewer:-webkit-full-screen .pptx-btn-exit-fs,
+    .pptx-interactive-viewer.is-fullscreen-fallback .pptx-btn-exit-fs {
+        display: inline-flex !important;
+    }
+    .pptx-dots-container {
+        -webkit-overflow-scrolling: touch;
     }
 </style>
 <div class="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
@@ -586,22 +622,23 @@
 
                                                                 <div class="flex items-center gap-2 shrink-0">
                                                                     <!-- Contador de Diapositiva -->
-                                                                    <div class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700/80 font-mono text-[11px] text-slate-300">
-                                                                        Diapositiva <span id="pptx-curr-{{ $cont->id }}" class="font-black text-cyan-400">1</span> / <span class="font-bold text-white">{{ $totalSlidesPptx }}</span>
+                                                                    <div class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700/80 font-mono text-[11px] text-slate-300">
+                                                                        <span class="hidden sm:inline">Diapositiva </span><span id="pptx-curr-{{ $cont->id }}" class="font-black text-cyan-400">1</span> / <span class="font-bold text-white">{{ $totalSlidesPptx }}</span>
                                                                     </div>
 
-                                                                    <!-- Botón Pantalla Completa -->
+                                                                    <!-- Botón Agrandar / Pantalla Completa (Header) -->
                                                                     <button type="button"
                                                                             onclick="togglePantallaCompletaPptx('pptx-viewer-{{ $cont->id }}')"
-                                                                            class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
-                                                                            title="Pantalla completa">
-                                                                        <i class="fa-solid fa-expand text-xs"></i>
+                                                                            class="pptx-btn-toggle-fs inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-xl bg-cyan-500/20 hover:bg-cyan-600 active:scale-95 text-cyan-300 hover:text-white border border-cyan-500/40 hover:border-cyan-400 transition-all cursor-pointer font-bold text-xs shadow-sm"
+                                                                            title="Agrandar diapositiva / Pantalla completa">
+                                                                        <i class="fa-solid fa-expand text-sm sm:text-xs"></i>
+                                                                        <span class="text-[11px] font-bold">Agrandar</span>
                                                                     </button>
 
                                                                     <!-- Botón Descargar PPTX -->
                                                                     <a href="{{ asset($cont->ruta_archivo) }}"
                                                                        download
-                                                                       class="p-1.5 rounded-lg bg-slate-800 hover:bg-orange-600 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                                                                       class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-slate-800 hover:bg-orange-600 active:scale-95 text-slate-300 hover:text-white border border-slate-700 transition-all shadow-sm"
                                                                        title="Descargar archivo PowerPoint (.pptx)">
                                                                         <i class="fa-solid fa-download text-xs"></i>
                                                                     </a>
@@ -611,6 +648,24 @@
                                                             <!-- Escenario de Diapositivas -->
                                                             <div class="pptx-stage relative w-full overflow-hidden flex items-center justify-center p-3 sm:p-5 bg-slate-950 select-none min-h-[360px] sm:min-h-[460px]"
                                                                  tabindex="0">
+
+                                                                <!-- Botón Flotante para Agrandar en Móvil y Pantalla Táctil -->
+                                                                <button type="button"
+                                                                        onclick="togglePantallaCompletaPptx('pptx-viewer-{{ $cont->id }}')"
+                                                                        class="pptx-btn-float-fs absolute top-3 right-3 z-30 inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-slate-900/90 hover:bg-cyan-600 active:scale-95 text-white border border-cyan-500/40 backdrop-blur-md shadow-xl transition-all cursor-pointer text-xs font-bold"
+                                                                        title="Agrandar diapositiva a pantalla completa">
+                                                                    <i class="fa-solid fa-expand text-cyan-400 text-sm"></i>
+                                                                    <span class="text-[11px]">Agrandar</span>
+                                                                </button>
+
+                                                                <!-- Botón Flotante para Salir de Pantalla Completa -->
+                                                                <button type="button"
+                                                                        onclick="togglePantallaCompletaPptx('pptx-viewer-{{ $cont->id }}')"
+                                                                        class="pptx-btn-exit-fs hidden absolute top-3 right-3 z-40 items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-600/90 hover:bg-red-700 active:scale-95 text-white border border-red-400/50 backdrop-blur-md shadow-2xl transition-all cursor-pointer text-xs font-bold"
+                                                                        title="Reducir / Salir de pantalla completa">
+                                                                    <i class="fa-solid fa-compress text-sm"></i>
+                                                                    <span class="text-[11px]">Reducir</span>
+                                                                </button>
 
                                                                 @foreach($slidesPptx as $sIdx => $slideHtml)
                                                                     <div class="pptx-slide-pane {{ $sIdx === 0 ? 'active-pptx-slide flex' : 'hidden' }} w-full h-full items-center justify-center transition-opacity duration-300"
@@ -642,28 +697,28 @@
 
                                                             <!-- Barra Inferior de Navegación -->
                                                             <div class="p-3 bg-slate-900 border-t border-slate-800 space-y-2">
-                                                                <div class="flex items-center justify-between gap-3">
+                                                                <div class="flex items-center justify-between gap-2 sm:gap-3">
                                                                     <button type="button"
                                                                             onclick="cambiarSlidePptx('pptx-viewer-{{ $cont->id }}', -1)"
-                                                                            class="pptx-btn-prev inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none">
+                                                                            class="pptx-btn-prev inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[38px] rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white text-xs font-bold border border-slate-700 transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0">
                                                                         <i class="fa-solid fa-arrow-left text-[11px]"></i>
-                                                                        <span>Anterior</span>
+                                                                        <span class="hidden sm:inline">Anterior</span>
                                                                     </button>
 
                                                                     <!-- Selector de Diapositivas (Dots) -->
-                                                                    <div class="flex items-center gap-1 overflow-x-auto max-w-[50%] py-1 no-scrollbar pptx-dots-container">
+                                                                    <div class="flex items-center gap-1.5 overflow-x-auto max-w-[50%] sm:max-w-[60%] py-2 no-scrollbar pptx-dots-container">
                                                                         @for($d = 0; $d < $totalSlidesPptx; $d++)
                                                                             <button type="button"
                                                                                     onclick="irASlidePptx('pptx-viewer-{{ $cont->id }}', {{ $d }})"
-                                                                                    class="pptx-dot rounded-full transition-all cursor-pointer {{ $d === 0 ? 'bg-cyan-400 w-5 h-2' : 'bg-slate-700 hover:bg-slate-500 w-2 h-2' }}"
+                                                                                    class="pptx-dot rounded-full transition-all cursor-pointer shrink-0 {{ $d === 0 ? 'bg-cyan-400 w-5 h-2.5' : 'bg-slate-700 hover:bg-slate-500 w-2.5 h-2.5' }}"
                                                                                     title="Ir a diapositiva {{ $d + 1 }}"></button>
                                                                         @endfor
                                                                     </div>
 
                                                                     <button type="button"
                                                                             onclick="cambiarSlidePptx('pptx-viewer-{{ $cont->id }}', 1)"
-                                                                            class="pptx-btn-next inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-30 disabled:pointer-events-none">
-                                                                        <span>Siguiente</span>
+                                                                            class="pptx-btn-next inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[38px] rounded-xl bg-cyan-700 hover:bg-cyan-600 active:scale-95 text-white text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0">
+                                                                        <span class="hidden sm:inline">Siguiente</span>
                                                                         <i class="fa-solid fa-arrow-right text-[11px]"></i>
                                                                     </button>
                                                                 </div>
@@ -1465,8 +1520,13 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.pptx-interactive-viewer').forEach(viewer => {
             const stage = viewer.querySelector('.pptx-stage');
             if (!stage || stage.offsetParent === null) return;
-            const stageW = Math.max(280, stage.clientWidth - 24);
-            const stageH = Math.max(220, stage.clientHeight - 24);
+
+            const isFs = viewer.classList.contains('is-fullscreen-fallback') || !!(document.fullscreenElement || document.webkitFullscreenElement);
+            const padX = isFs ? 12 : 16;
+            const padY = isFs ? 12 : 20;
+
+            const stageW = Math.max(120, stage.clientWidth - padX);
+            const stageH = Math.max(120, stage.clientHeight - padY);
 
             viewer.querySelectorAll('.pptx-slide-wrapper').forEach(wrapper => {
                 const origW = parseFloat(wrapper.dataset.width || 1920);
@@ -1510,9 +1570,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         viewer.querySelectorAll('.pptx-dot').forEach((dot, idx) => {
             if (idx === newIdx) {
-                dot.className = 'pptx-dot rounded-full transition-all cursor-pointer bg-cyan-400 w-5 h-2';
+                dot.className = 'pptx-dot rounded-full transition-all cursor-pointer bg-cyan-400 w-5 h-2.5';
             } else {
-                dot.className = 'pptx-dot rounded-full transition-all cursor-pointer bg-slate-700 hover:bg-slate-500 w-2 h-2';
+                dot.className = 'pptx-dot rounded-full transition-all cursor-pointer bg-slate-700 hover:bg-slate-500 w-2.5 h-2.5';
             }
         });
 
@@ -1533,25 +1593,135 @@ document.addEventListener('DOMContentLoaded', function () {
         window.irASlidePptx(viewerId, current + delta);
     };
 
+    function actualizarIconosPantallaCompleta(viewer, activo) {
+        viewer.querySelectorAll('.pptx-btn-toggle-fs').forEach(btn => {
+            const icon = btn.querySelector('i');
+            const span = btn.querySelector('span');
+            if (activo) {
+                if (icon) icon.className = 'fa-solid fa-compress text-sm sm:text-xs text-red-400';
+                if (span) span.textContent = 'Reducir';
+                btn.title = 'Salir de pantalla completa';
+            } else {
+                if (icon) icon.className = 'fa-solid fa-expand text-sm sm:text-xs';
+                if (span) span.textContent = 'Agrandar';
+                btn.title = 'Agrandar diapositiva / Pantalla completa';
+            }
+        });
+    }
+
+    function activarFallbackFullscreen(viewer) {
+        viewer.classList.add('is-fullscreen-fallback');
+        document.body.classList.add('pptx-body-fullscreen');
+        actualizarIconosPantallaCompleta(viewer, true);
+        setTimeout(window.ajustarEscalaPptxViewers, 50);
+        setTimeout(window.ajustarEscalaPptxViewers, 250);
+    }
+
+    function desactivarFallbackFullscreen(viewer) {
+        viewer.classList.remove('is-fullscreen-fallback');
+        document.body.classList.remove('pptx-body-fullscreen');
+        actualizarIconosPantallaCompleta(viewer, false);
+        setTimeout(window.ajustarEscalaPptxViewers, 50);
+        setTimeout(window.ajustarEscalaPptxViewers, 250);
+    }
+
     window.togglePantallaCompletaPptx = function (viewerId) {
         const viewer = document.getElementById(viewerId);
         if (!viewer) return;
-        if (!document.fullscreenElement) {
-            if (viewer.requestFullscreen) viewer.requestFullscreen();
-            else if (viewer.webkitRequestFullscreen) viewer.webkitRequestFullscreen();
-            else if (viewer.msRequestFullscreen) viewer.msRequestFullscreen();
-        } else {
-            if (document.exitFullscreen) document.exitFullscreen();
+
+        const isNativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+        const isFallbackFs = viewer.classList.contains('is-fullscreen-fallback');
+
+        // Salir si ya está en pantalla completa
+        if (isNativeFs) {
+            if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            return;
+        }
+
+        if (isFallbackFs) {
+            desactivarFallbackFullscreen(viewer);
+            return;
+        }
+
+        // Detección móvil / iOS (en iOS Safari o pantallas táctiles pequeñas, fallback da mejor resultado y no falla)
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const reqFs = viewer.requestFullscreen || viewer.webkitRequestFullscreen || viewer.msRequestFullscreen;
+
+        if (isIOS || !reqFs) {
+            activarFallbackFullscreen(viewer);
+            return;
+        }
+
+        try {
+            const p = reqFs.call(viewer);
+            if (p && p.catch) {
+                p.catch(() => {
+                    activarFallbackFullscreen(viewer);
+                });
+            }
+        } catch (e) {
+            activarFallbackFullscreen(viewer);
         }
     };
 
-    document.addEventListener('fullscreenchange', () => setTimeout(window.ajustarEscalaPptxViewers, 100));
-    window.addEventListener('resize', window.ajustarEscalaPptxViewers);
+    ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(ev => {
+        document.addEventListener(ev, () => {
+            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            document.querySelectorAll('.pptx-interactive-viewer').forEach(v => {
+                actualizarIconosPantallaCompleta(v, isFs);
+            });
+            setTimeout(window.ajustarEscalaPptxViewers, 80);
+            setTimeout(window.ajustarEscalaPptxViewers, 300);
+        });
+    });
+
+    window.addEventListener('resize', () => {
+        window.ajustarEscalaPptxViewers();
+    });
+
+    window.addEventListener('orientationchange', () => {
+        setTimeout(window.ajustarEscalaPptxViewers, 100);
+        setTimeout(window.ajustarEscalaPptxViewers, 400);
+    });
+
     setTimeout(window.ajustarEscalaPptxViewers, 300);
+
+    // Gestos táctiles de deslizamiento (Swipe) para teléfonos móviles
+    document.querySelectorAll('.pptx-stage').forEach(stage => {
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        stage.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        stage.addEventListener('touchend', (e) => {
+            if (e.changedTouches.length === 1) {
+                const diffX = e.changedTouches[0].clientX - touchStartX;
+                const diffY = e.changedTouches[0].clientY - touchStartY;
+                if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
+                    const viewer = stage.closest('.pptx-interactive-viewer');
+                    if (viewer) {
+                        if (diffX < 0) {
+                            window.cambiarSlidePptx(viewer.id, 1);
+                        } else {
+                            window.cambiarSlidePptx(viewer.id, -1);
+                        }
+                    }
+                }
+            }
+        }, { passive: true });
+    });
 
     document.addEventListener('keydown', (e) => {
         if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
-        const targetViewer = document.fullscreenElement?.closest('.pptx-interactive-viewer') || document.querySelector('.modulo-recorrido-item:not(.hidden) .pptx-interactive-viewer');
+        const targetViewer = document.querySelector('.pptx-interactive-viewer.is-fullscreen-fallback')
+            || document.fullscreenElement?.closest('.pptx-interactive-viewer')
+            || document.querySelector('.modulo-recorrido-item:not(.hidden) .pptx-interactive-viewer');
         if (targetViewer) {
             if (e.key === 'ArrowRight' || e.key === 'Space') {
                 e.preventDefault();
@@ -1559,6 +1729,8 @@ document.addEventListener('DOMContentLoaded', function () {
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 window.cambiarSlidePptx(targetViewer.id, -1);
+            } else if (e.key === 'Escape' && targetViewer.classList.contains('is-fullscreen-fallback')) {
+                desactivarFallbackFullscreen(targetViewer);
             }
         }
     });
