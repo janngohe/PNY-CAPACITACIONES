@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\Beneficio;
 use App\Models\CanjeBeneficio;
 use App\Models\MovimientoPuntos;
+use App\Models\Sede;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,7 +19,8 @@ class BeneficioController extends Controller
         $q = trim((string) $request->query('q', ''));
         $estado = $request->query('estado', 'todos');
 
-        $query = Beneficio::withCount('canjes');
+        $query = Beneficio::withCount('canjes')
+            ->with(['canjes.usuario.area.sede', 'canjes.usuario.sede']);
 
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
@@ -34,13 +37,47 @@ class BeneficioController extends Controller
 
         $beneficios = $query->orderBy('puntos_requeridos')->get();
 
-        $canjesRecientes = CanjeBeneficio::with(['usuario', 'beneficio'])
-            ->orderByDesc('id')
-            ->limit(10)
-            ->get();
+        $todosCanjes = CanjeBeneficio::with([
+            'usuario.area.sede',
+            'usuario.sede',
+            'beneficio'
+        ])
+        ->orderByDesc('fecha_canje')
+        ->orderByDesc('id')
+        ->get();
+
+        $sedes = Sede::orderBy('nombre')->get();
+        $areas = Area::with('sede')->orderBy('nombre')->get();
+
+        $canjesPorBeneficio = $beneficios->mapWithKeys(function ($b) {
+            return [$b->id => [
+                'id' => $b->id,
+                'nombre' => $b->nombre,
+                'puntos' => $b->puntos_requeridos,
+                'icono' => $b->icono ?: 'fa-gift',
+                'canjes' => $b->canjes->map(function ($c) {
+                    $u = $c->usuario;
+                    return [
+                        'id' => $c->id,
+                        'codigo' => $c->codigo_canje,
+                        'empleado' => $u ? $u->nombre_completo : 'Colaborador no encontrado',
+                        'documento' => $u ? $u->identificacion : '—',
+                        'cargo' => $u ? $u->cargoOficial() : '—',
+                        'sede' => $u && $u->sedeActual() ? $u->sedeActual()->nombre : 'Sin sede asignada',
+                        'area' => $u && $u->area ? $u->area->nombre : 'Sin área asignada',
+                        'puntos' => $c->puntos_utilizados,
+                        'fecha' => $c->fecha_canje ? $c->fecha_canje->format('d/m/Y H:i') : ($c->created_at ? $c->created_at->format('d/m/Y H:i') : '—'),
+                        'estado' => $c->estado ?? 'CANJEADO',
+                    ];
+                })->values(),
+            ]];
+        });
 
         $totalCanjes = CanjeBeneficio::count();
         $puntosCanjeados = abs((int) MovimientoPuntos::where('tipo', 'CANJE')->sum('puntos'));
+        if ($puntosCanjeados === 0 && $totalCanjes > 0) {
+            $puntosCanjeados = (int) CanjeBeneficio::sum('puntos_utilizados');
+        }
 
         $estadisticas = [
             'total' => Beneficio::count(),
@@ -48,29 +85,40 @@ class BeneficioController extends Controller
             'inactivos' => Beneficio::where('estado', false)->count(),
             'total_canjes' => $totalCanjes,
             'puntos_canjeados' => $puntosCanjeados,
+            'colaboradores_canje' => CanjeBeneficio::distinct('usuario_id')->count('usuario_id'),
         ];
 
-        return view('admin.beneficios.index', compact('beneficios', 'canjesRecientes', 'estadisticas', 'totalCanjes', 'puntosCanjeados', 'q', 'estado'));
+        return view('admin.beneficios.index', compact(
+            'beneficios',
+            'todosCanjes',
+            'canjesPorBeneficio',
+            'sedes',
+            'areas',
+            'estadisticas',
+            'totalCanjes',
+            'puntosCanjeados',
+            'q',
+            'estado'
+        ));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $datos = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
-            'descripcion' => ['required', 'string', 'max:3000'],
+            'descripcion' => ['nullable', 'string', 'max:3000'],
             'puntos_requeridos' => ['required', 'integer', 'min:1', 'max:100000'],
             'icono' => ['nullable', 'string', 'max:100'],
             'estado' => ['nullable'],
         ], [
             'nombre.required' => 'El nombre del beneficio es obligatorio.',
-            'descripcion.required' => 'La descripción del beneficio es obligatoria.',
             'puntos_requeridos.required' => 'Debes especificar la cantidad de puntos necesarios.',
             'puntos_requeridos.min' => 'La cantidad de puntos debe ser al menos 1.',
         ]);
 
         Beneficio::create([
             'nombre' => trim($datos['nombre']),
-            'descripcion' => trim($datos['descripcion']),
+            'descripcion' => !empty($datos['descripcion']) ? trim($datos['descripcion']) : null,
             'puntos_requeridos' => (int) $datos['puntos_requeridos'],
             'icono' => !empty($datos['icono']) ? trim($datos['icono']) : 'fa-gift',
             'estado' => $request->boolean('estado', true),
@@ -84,20 +132,19 @@ class BeneficioController extends Controller
     {
         $datos = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
-            'descripcion' => ['required', 'string', 'max:3000'],
+            'descripcion' => ['nullable', 'string', 'max:3000'],
             'puntos_requeridos' => ['required', 'integer', 'min:1', 'max:100000'],
             'icono' => ['nullable', 'string', 'max:100'],
             'estado' => ['nullable'],
         ], [
             'nombre.required' => 'El nombre del beneficio es obligatorio.',
-            'descripcion.required' => 'La descripción del beneficio es obligatoria.',
             'puntos_requeridos.required' => 'Debes especificar la cantidad de puntos necesarios.',
             'puntos_requeridos.min' => 'La cantidad de puntos debe ser al menos 1.',
         ]);
 
         $beneficio->update([
             'nombre' => trim($datos['nombre']),
-            'descripcion' => trim($datos['descripcion']),
+            'descripcion' => !empty($datos['descripcion']) ? trim($datos['descripcion']) : null,
             'puntos_requeridos' => (int) $datos['puntos_requeridos'],
             'icono' => !empty($datos['icono']) ? trim($datos['icono']) : 'fa-gift',
             'estado' => $request->boolean('estado', true),

@@ -129,7 +129,9 @@
                             <!-- Título y descripción -->
                             <div>
                                 <h3 class="font-heading font-extrabold text-base text-brand-dark leading-snug">{{ $b->nombre }}</h3>
-                                <p class="text-xs text-muted mt-1 leading-relaxed line-clamp-3">{{ $b->descripcion }}</p>
+                                @if($b->descripcion)
+                                    <p class="text-xs text-muted mt-1 leading-relaxed line-clamp-3">{{ $b->descripcion }}</p>
+                                @endif
                             </div>
 
                             <!-- Requisito de puntos -->

@@ -97,6 +97,26 @@ class FacilitadorController extends Controller
             ->latest()
             ->get();
 
+        $detalleInducciones = $inducciones->mapWithKeys(function ($ind) {
+            return [$ind->id => [
+                'id' => $ind->id,
+                'titulo' => $ind->titulo,
+                'descripcion' => $ind->descripcion,
+                'imagen_portada_url' => $ind->imagen_portada_url,
+                'creador' => $ind->creador?->nombre_completo ?? 'Administración',
+                'fecha_creacion' => $ind->created_at ? $ind->created_at->format('d/m/Y') : '—',
+                'sesiones_count' => $ind->sesiones_count ?? 0,
+                'sedes' => $ind->sedes->pluck('nombre')->all(),
+                'areas' => $ind->areas->pluck('nombre')->all(),
+                'recursos' => $ind->lista_recursos,
+                'contenido_diapositivas' => $ind->contenido_diapositivas,
+                'tiene_pptx' => collect($ind->lista_recursos)->contains('tipo', 'pptx'),
+                'tiene_video' => collect($ind->lista_recursos)->contains('tipo', 'video'),
+                'tiene_pdf' => collect($ind->lista_recursos)->contains('tipo', 'pdf'),
+                'tiene_imagen' => collect($ind->lista_recursos)->contains('tipo', 'imagen'),
+            ]];
+        });
+
         $sesionesRecientes = SesionInduccion::with(['induccion', 'facilitador', 'sede'])
             ->withCount('asistencias')
             ->when($facilitadorId, fn($q) => $q->where('facilitador_id', $facilitadorId))
@@ -107,7 +127,7 @@ class FacilitadorController extends Controller
         $sedes = Sede::where('estado', true)->orderBy('nombre')->get();
         $areas = Area::where('estado', true)->orderBy('nombre')->get();
 
-        return view('induccion.index', compact('facilitador', 'inducciones', 'sesionesRecientes', 'sedes', 'areas'));
+        return view('induccion.index', compact('facilitador', 'inducciones', 'detalleInducciones', 'sesionesRecientes', 'sedes', 'areas'));
     }
 
     /**

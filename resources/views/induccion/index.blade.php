@@ -70,14 +70,20 @@
                     @endphp
                     <div class="bg-white rounded-3xl border border-slate-200 hover:border-brand-blue/60 overflow-hidden flex flex-col justify-between transition-all duration-200 shadow-xs hover:shadow-md group">
                         <div>
-                            <!-- Imagen de Portada -->
-                            <div class="h-40 w-full bg-slate-100 relative overflow-hidden flex items-center justify-center">
-                                <img src="{{ $ind->imagen_portada_url }}" alt="{{ $ind->titulo }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                            <!-- Imagen de Portada con clic para explorar -->
+                            <div onclick="abrirModalVisualizar({{ $ind->id }})" class="h-40 w-full bg-slate-100 relative overflow-hidden flex items-center justify-center cursor-pointer group/cover">
+                                <img src="{{ $ind->imagen_portada_url }}" alt="{{ $ind->titulo }}" class="w-full h-full object-cover group-hover/cover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent"></div>
 
                                 <div class="absolute top-3 left-3">
                                     <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/95 text-brand-dark backdrop-blur-xs shadow-xs border border-white/40">
                                         <i class="fa-solid fa-graduation-cap text-brand-blue mr-1"></i> Inducción
+                                    </span>
+                                </div>
+
+                                <div class="absolute top-3 right-3 opacity-0 group-hover/cover:opacity-100 transition-opacity">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-blue/90 text-white backdrop-blur-xs shadow-xs flex items-center gap-1">
+                                        <i class="fa-solid fa-eye text-[9px]"></i> Explorar
                                     </span>
                                 </div>
 
@@ -113,7 +119,7 @@
 
                             <!-- Contenido de la Tarjeta -->
                             <div class="p-5">
-                                <h3 class="text-base font-bold text-slate-900 group-hover:text-brand-blue transition-colors mb-2 leading-snug line-clamp-2 font-serif">
+                                <h3 onclick="abrirModalVisualizar({{ $ind->id }})" class="text-base font-bold text-slate-900 hover:text-brand-blue transition-colors mb-2 leading-snug line-clamp-2 font-serif cursor-pointer" title="Clic para ver elementos y contenidos">
                                     {{ $ind->titulo }}
                                 </h3>
 
@@ -121,21 +127,34 @@
                                     {{ $ind->descripcion ?? 'Inducción para colaboradores, nuevos ingresos y contratistas.' }}
                                 </p>
 
-                                <!-- Sedes y Áreas asignadas al iniciar -->
-                                <div class="pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center gap-2">
-                                    <i class="fa-solid fa-location-dot text-brand-blue shrink-0"></i>
-                                    <span class="truncate">Sede y áreas se definen al proyectar</span>
+                                <!-- Sedes y Áreas asignadas -->
+                                <div class="pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between gap-2">
+                                    <span class="flex items-center gap-1.5 truncate">
+                                        <i class="fa-solid fa-location-dot text-brand-blue shrink-0"></i>
+                                        <span class="truncate">{{ $ind->sedes->pluck('nombre')->first() ?? 'Sedes institucionales' }}</span>
+                                    </span>
+                                    <span class="text-[10px] text-slate-400 font-semibold shrink-0">
+                                        {{ count($recursos) }} elemento(s)
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Botón para Iniciar Inducción -->
-                        <div class="p-5 pt-0">
+                        <!-- Botones de Acción: Ver Contenido e Iniciar Inducción -->
+                        <div class="p-5 pt-0 grid grid-cols-2 gap-2">
+                            <button type="button"
+                                    onclick="abrirModalVisualizar({{ $ind->id }})"
+                                    class="py-2.5 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-brand-blue font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200 shadow-2xs"
+                                    title="Ver qué elementos y contenidos tiene esta inducción">
+                                <i class="fa-solid fa-eye text-brand-blue"></i>
+                                <span>Ver Contenido</span>
+                            </button>
+
                             <button type="button"
                                     onclick="abrirModalIniciar({{ $ind->id }}, '{{ addslashes($ind->titulo) }}')"
-                                    class="w-full py-2.5 px-4 rounded-2xl bg-slate-50 hover:bg-brand-blue text-slate-700 hover:text-white font-bold text-xs tracking-wider uppercase transition-all duration-200 border border-slate-200 hover:border-transparent flex items-center justify-center gap-2 cursor-pointer shadow-2xs group-hover:bg-brand-blue group-hover:text-white">
-                                <i class="fa-solid fa-play text-brand-blue group-hover:text-white transition-colors"></i>
-                                <span>Iniciar Inducción</span>
+                                    class="py-2.5 px-3 rounded-2xl bg-brand-blue hover:bg-brand-dark text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-md">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Iniciar</span>
                             </button>
                         </div>
                     </div>
@@ -378,6 +397,114 @@
         @endif
     </div>
 
+</div>
+
+<!-- Modal para Visualizar Contenidos y Elementos de la Inducción -->
+<div id="modalVisualizarInduccion" onclick="if (event.target === this) cerrarModalVisualizar();" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-3xl max-w-3xl w-full shadow-2xl relative animate-fade-in max-h-[92vh] flex flex-col overflow-hidden">
+        
+        <!-- Header -->
+        <div class="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center text-lg font-bold shrink-0">
+                    <i class="fa-solid fa-eye"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-brand-blue tracking-wider">Explorador de Contenidos</span>
+                    <h3 id="vis-titulo" class="text-base sm:text-lg font-bold text-slate-900 leading-snug font-serif"></h3>
+                </div>
+            </div>
+            <button type="button" onclick="cerrarModalVisualizar()" class="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="overflow-y-auto flex-1 p-5 sm:p-6 space-y-5">
+            <!-- Portada y Banner descriptivo -->
+            <div class="relative rounded-2xl overflow-hidden h-44 bg-slate-900 shadow-xs border border-slate-200">
+                <img id="vis-portada" src="" alt="" class="w-full h-full object-cover opacity-60">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-4 flex flex-col justify-end">
+                    <div id="vis-badges-recursos" class="flex flex-wrap items-center gap-1.5 mb-2">
+                        <!-- Badges dinámicos de recursos -->
+                    </div>
+                    <div class="text-xs text-slate-300 flex flex-wrap items-center gap-3">
+                        <span id="vis-creador" class="flex items-center gap-1">
+                            <i class="fa-solid fa-user-tie text-brand-blue"></i>
+                            <span></span>
+                        </span>
+                        <span>&bull;</span>
+                        <span id="vis-fecha" class="flex items-center gap-1">
+                            <i class="fa-solid fa-calendar-day text-slate-400"></i>
+                            <span></span>
+                        </span>
+                        <span>&bull;</span>
+                        <span id="vis-sesiones" class="flex items-center gap-1 text-emerald-300 font-semibold">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descripción y Objetivos -->
+            <div class="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/80 space-y-2">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-brand-blue"></i>
+                    <span>Descripción y Objetivos de la Inducción</span>
+                </h4>
+                <p id="vis-descripcion" class="text-xs text-slate-600 leading-relaxed whitespace-pre-line"></p>
+            </div>
+
+            <!-- Sedes y Áreas Asignadas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-2xs space-y-1.5">
+                    <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot text-rose-500"></i>
+                        <span>Sedes Autorizadas / Sugeridas</span>
+                    </span>
+                    <div id="vis-sedes" class="flex flex-wrap gap-1 pt-1"></div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-2xs space-y-1.5">
+                    <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-sitemap text-blue-500"></i>
+                        <span>Áreas Citadas / Convocadas</span>
+                    </span>
+                    <div id="vis-areas" class="flex flex-wrap gap-1 pt-1"></div>
+                </div>
+            </div>
+
+            <!-- Lista de Recursos Multimedia y Materiales -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-brand-blue"></i>
+                        <span>Elementos y Materiales de Apoyo (<span id="vis-contador-recursos">0</span>)</span>
+                    </h4>
+                    <span class="text-[11px] text-slate-400">Videos, diapositivas y guías de esta inducción</span>
+                </div>
+
+                <div id="vis-contenedor-recursos" class="space-y-3">
+                    <!-- Tarjetas dinámicas de recursos -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between shrink-0">
+            <button type="button" onclick="cerrarModalVisualizar()"
+                    class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition cursor-pointer">
+                Cerrar
+            </button>
+
+            <button type="button" id="btn-iniciar-desde-visualizador"
+                    class="px-6 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-dark text-white text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-play text-xs"></i>
+                <span>Iniciar Esta Inducción</span>
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Modal para Configurar e Iniciar Inducción en Vivo -->
@@ -630,6 +757,153 @@
 
 @push('scripts')
 <script>
+    const catalogoInducciones = {!! json_encode($detalleInducciones) !!};
+    let visualizandoInduccionId = null;
+
+    function abrirModalVisualizar(induccionId) {
+        const ind = catalogoInducciones[induccionId];
+        if (!ind) return;
+
+        visualizandoInduccionId = induccionId;
+        document.getElementById('vis-titulo').textContent = ind.titulo;
+        document.getElementById('vis-portada').src = ind.imagen_portada_url;
+        document.getElementById('vis-creador').querySelector('span').textContent = 'Por: ' + ind.creador;
+        document.getElementById('vis-fecha').querySelector('span').textContent = ind.fecha_creacion;
+        document.getElementById('vis-sesiones').querySelector('span').textContent = ind.sesiones_count + ' sesiones dictadas';
+        document.getElementById('vis-descripcion').textContent = ind.descripcion || 'Sin descripción detallada registrada para esta inducción.';
+
+        // Badges en banner
+        const badgesCont = document.getElementById('vis-badges-recursos');
+        badgesCont.innerHTML = '';
+        if (ind.tiene_pptx) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-orange-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-file-powerpoint mr-1"></i> Presentación PPTX</span>`;
+        if (ind.tiene_video) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-rose-600/90 text-white text-[10px] font-bold"><i class="fa-brands fa-youtube mr-1"></i> Video Explicativo</span>`;
+        if (ind.tiene_pdf) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-file-pdf mr-1"></i> Documentos PDF</span>`;
+        if (ind.tiene_imagen) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-emerald-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-image mr-1"></i> Infografías</span>`;
+        if (!ind.tiene_pptx && !ind.tiene_video && !ind.tiene_pdf && !ind.tiene_imagen) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-200 text-[10px] font-bold">Presencial</span>`;
+
+        // Sedes
+        const sedesCont = document.getElementById('vis-sedes');
+        sedesCont.innerHTML = '';
+        if (ind.sedes && ind.sedes.length > 0) {
+            ind.sedes.forEach(s => {
+                sedesCont.innerHTML += `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[10px] font-bold border border-rose-100"><i class="fa-solid fa-location-dot text-[8px]"></i>${s}</span>`;
+            });
+        } else {
+            sedesCont.innerHTML = `<span class="text-[11px] text-slate-400 italic">Aplica a todas las sedes institucionales</span>`;
+        }
+
+        // Áreas
+        const areasCont = document.getElementById('vis-areas');
+        areasCont.innerHTML = '';
+        if (ind.areas && ind.areas.length > 0) {
+            ind.areas.forEach(a => {
+                areasCont.innerHTML += `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-brand-blue text-[10px] font-bold border border-blue-100"><i class="fa-solid fa-diagram-project text-[8px]"></i>${a}</span>`;
+            });
+        } else {
+            areasCont.innerHTML = `<span class="text-[11px] text-slate-400 italic">Aplica a todas las áreas convocadas</span>`;
+        }
+
+        // Recursos
+        const recursosCont = document.getElementById('vis-contenedor-recursos');
+        const contadorRecursos = document.getElementById('vis-contador-recursos');
+        recursosCont.innerHTML = '';
+
+        const recs = ind.recursos || [];
+        contadorRecursos.textContent = recs.length;
+
+        if (recs.length === 0) {
+            recursosCont.innerHTML = `
+                <div class="p-6 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-xs text-slate-500">
+                    <i class="fa-solid fa-chalkboard text-slate-300 text-2xl mb-2 block"></i>
+                    Esta inducción está configurada para impartirse de manera presencial con el facilitador en sala.
+                </div>
+            `;
+        } else {
+            recs.forEach((r, idx) => {
+                let iconHtml = '';
+                let tipoBadge = '';
+                let actionHtml = '';
+                let mediaPreviewHtml = '';
+
+                if (r.tipo === 'video') {
+                    iconHtml = '<i class="fa-brands fa-youtube text-red-600 text-lg"></i>';
+                    tipoBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-red-100 text-red-700">Video</span>';
+                    if (r.embed_url) {
+                        mediaPreviewHtml = `
+                            <div class="mt-3 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 bg-black shadow-inner">
+                                <iframe src="${r.embed_url}" class="w-full h-full" allowfullscreen loading="lazy"></iframe>
+                            </div>
+                        `;
+                    }
+                    actionHtml = r.url ? `<a href="${r.url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 text-xs font-bold transition flex items-center gap-1.5"><i class="fa-brands fa-youtube"></i><span>Abrir en YouTube</span></a>` : '';
+                } else if (r.tipo === 'pptx') {
+                    iconHtml = '<i class="fa-solid fa-file-powerpoint text-orange-600 text-lg"></i>';
+                    tipoBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-orange-100 text-orange-700">Diapositivas PPTX</span>';
+                    actionHtml = r.archivo_url ? `<a href="${r.archivo_url}" download class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-orange-700 text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-download"></i><span>Descargar PPTX</span></a>` : '';
+                    if (r.embed_url && (r.embed_url.includes('google') || r.embed_url.includes('live.com'))) {
+                        actionHtml += `<a href="${r.embed_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-desktop"></i><span>Ver Diapositivas</span></a>`;
+                    }
+                } else if (r.tipo === 'pdf') {
+                    iconHtml = '<i class="fa-solid fa-file-pdf text-rose-600 text-lg"></i>';
+                    tipoBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-rose-100 text-rose-700">Documento PDF</span>';
+                    actionHtml = r.archivo_url ? `<a href="${r.archivo_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-arrow-up-right-from-square"></i><span>Abrir / Descargar PDF</span></a>` : '';
+                } else if (r.tipo === 'imagen') {
+                    iconHtml = '<i class="fa-solid fa-image text-emerald-600 text-lg"></i>';
+                    tipoBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-100 text-emerald-700">Infografía / Imagen</span>';
+                    if (r.archivo_url) {
+                        mediaPreviewHtml = `
+                            <div class="mt-3 rounded-xl overflow-hidden border border-slate-200 max-h-60 bg-slate-100 flex items-center justify-center">
+                                <img src="${r.archivo_url}" alt="${r.titulo}" class="max-h-60 w-auto object-contain">
+                            </div>
+                        `;
+                        actionHtml = `<a href="${r.archivo_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass-plus"></i><span>Ver a tamaño completo</span></a>`;
+                    }
+                }
+
+                recursosCont.innerHTML += `
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
+                                    ${iconHtml}
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h5 class="text-xs font-bold text-slate-900">${r.titulo}</h5>
+                                        ${tipoBadge}
+                                    </div>
+                                    <span class="text-[10px] text-slate-400">Elemento multimedia #${idx + 1}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                ${actionHtml}
+                            </div>
+                        </div>
+                        ${mediaPreviewHtml}
+                    </div>
+                `;
+            });
+        }
+
+        // Botón iniciar desde visualizador
+        const btnIniciar = document.getElementById('btn-iniciar-desde-visualizador');
+        btnIniciar.onclick = function() {
+            cerrarModalVisualizar();
+            abrirModalIniciar(ind.id, ind.titulo);
+        };
+
+        document.getElementById('modalVisualizarInduccion').classList.remove('hidden');
+    }
+
+    function cerrarModalVisualizar() {
+        // Detener reproducciones de video al cerrar
+        const iframes = document.querySelectorAll('#modalVisualizarInduccion iframe');
+        iframes.forEach(f => f.src = f.src);
+
+        document.getElementById('modalVisualizarInduccion').classList.add('hidden');
+        visualizandoInduccionId = null;
+    }
+
     function abrirModalIniciar(induccionId, titulo) {
         document.getElementById('modalInduccionTitulo').textContent = titulo;
         document.getElementById('formIniciarSesion').action = `/induccion/${induccionId}/iniciar`;
@@ -826,6 +1100,7 @@
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
+            cerrarModalVisualizar();
             cerrarModalIniciar();
             cerrarModalFirma();
             cerrarModalDetalles();

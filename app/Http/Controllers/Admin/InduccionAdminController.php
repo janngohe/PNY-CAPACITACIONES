@@ -43,6 +43,27 @@ class InduccionAdminController extends Controller
         $totalSesiones = SesionInduccion::count();
         $totalAsistencias = AsistenciaInduccion::count();
 
+        $detalleInducciones = $inducciones->getCollection()->mapWithKeys(function ($ind) {
+            return [$ind->id => [
+                'id' => $ind->id,
+                'titulo' => $ind->titulo,
+                'descripcion' => $ind->descripcion,
+                'imagen_portada_url' => $ind->imagen_portada_url,
+                'creador' => $ind->creador?->nombre_completo ?? 'Administración',
+                'fecha_creacion' => $ind->created_at ? $ind->created_at->format('d/m/Y') : '—',
+                'sesiones_count' => $ind->sesiones_count ?? 0,
+                'asistencias_count' => $ind->asistencias_count ?? 0,
+                'sedes' => $ind->sedes->pluck('nombre')->all(),
+                'areas' => $ind->areas->pluck('nombre')->all(),
+                'recursos' => $ind->lista_recursos,
+                'contenido_diapositivas' => $ind->contenido_diapositivas,
+                'tiene_pptx' => collect($ind->lista_recursos)->contains('tipo', 'pptx'),
+                'tiene_video' => collect($ind->lista_recursos)->contains('tipo', 'video'),
+                'tiene_pdf' => collect($ind->lista_recursos)->contains('tipo', 'pdf'),
+                'tiene_imagen' => collect($ind->lista_recursos)->contains('tipo', 'imagen'),
+            ]];
+        });
+
         $estadisticas = [
             'total_inducciones' => $totalInducciones,
             'inducciones_activas' => $induccionesActivas,
@@ -50,7 +71,7 @@ class InduccionAdminController extends Controller
             'total_asistencias' => $totalAsistencias,
         ];
 
-        return view('admin.inducciones.index', compact('pinActual', 'inducciones', 'estadisticas'));
+        return view('admin.inducciones.index', compact('pinActual', 'inducciones', 'detalleInducciones', 'estadisticas'));
     }
 
     /**
