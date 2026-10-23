@@ -3,7 +3,7 @@
 @section('title', 'Crear Nueva Inducción')
 
 @php
-    $imagenActual = asset('images/Logo.png');
+    $imagenActual = asset('images/Img-login.jpg');
 @endphp
 
 @section('content')
@@ -120,7 +120,7 @@
                     </div>
 
                     <!-- Botonera de Acción Rápida para Agregar Recursos -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                         <button type="button" onclick="agregarRecurso('pptx')"
                                 class="p-3 rounded-2xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 font-bold text-xs flex flex-col items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:scale-102">
                             <i class="fa-solid fa-file-powerpoint text-xl text-orange-600"></i>
@@ -143,6 +143,12 @@
                                 class="p-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-xs flex flex-col items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:scale-102">
                             <i class="fa-solid fa-image text-xl text-emerald-600"></i>
                             <span>+ Imagen / Esquema</span>
+                        </button>
+
+                        <button type="button" onclick="agregarRecurso('texto')"
+                                class="p-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-800 font-bold text-xs flex flex-col items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:scale-102">
+                            <i class="fa-solid fa-file-lines text-xl text-indigo-600"></i>
+                            <span>+ Texto / Guía</span>
                         </button>
                     </div>
 
@@ -309,6 +315,13 @@
                 accept: 'image/jpeg,image/png,image/jpg,image/webp',
                 shortLabel: 'Imagen',
                 isFile: true
+            },
+            texto: {
+                label: 'Contenido Informativo / Texto Explicativo',
+                badgeClass: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+                iconClass: 'fa-solid fa-file-lines text-indigo-600',
+                shortLabel: 'Texto',
+                isText: true
             }
         };
 
@@ -431,8 +444,20 @@
                                    class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue">
                         </div>
 
-                        <!-- Campo de Archivo o URL según el Tipo -->
-                        ${config.isFile ? `
+                        <!-- Campo según el Tipo -->
+                        ${config.isText ? `
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                                    Contenido de la Diapositiva de Texto <span class="text-rose-600">*</span>
+                                </label>
+                                <textarea name="recursos[${index}][texto]"
+                                          rows="4"
+                                          placeholder="Escribe aquí los lineamientos, temario, instrucciones o contenido a exponer..."
+                                          oninput="window.actualizarTextoRecurso(${rec.id}, this.value)"
+                                          class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue leading-relaxed">${rec.texto || ''}</textarea>
+                                <p class="text-[10px] text-slate-400 mt-1">Escribe el texto detallado que se proyectará como diapositiva en la sala.</p>
+                            </div>
+                        ` : (config.isFile ? `
                             <div>
                                 <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
                                     Seleccionar Archivo ${config.shortLabel}
@@ -466,7 +491,7 @@
                                 </div>
                                 <p class="text-[10px] text-slate-400 mt-1">El video se proyectará directamente en la sala en formato iFrame.</p>
                             </div>
-                        `}
+                        `)}
                     </div>
                 `;
             }).join('');
@@ -485,6 +510,7 @@
                 tipo: tipo,
                 titulo: tituloDefault || `${config.shortLabel} #${id}`,
                 url: '',
+                texto: '',
                 archivoNombre: ''
             });
 
@@ -516,6 +542,8 @@
                     if (titInput) r.titulo = titInput.value;
                     const urlInput = card.querySelector('input[name*="[url]"]');
                     if (urlInput) r.url = urlInput.value;
+                    const txtInput = card.querySelector('textarea[name*="[texto]"]');
+                    if (txtInput) r.texto = txtInput.value;
                 }
             });
 
@@ -537,6 +565,8 @@
                     if (archInp) archInp.name = `recursos[${i}][archivo]`;
                     const urlInp = card.querySelector('input[name*="[url]"]');
                     if (urlInp) urlInp.name = `recursos[${i}][url]`;
+                    const txtInp = card.querySelector('textarea[name*="[texto]"]');
+                    if (txtInp) txtInp.name = `recursos[${i}][texto]`;
 
                     // Actualizar número visual y selector
                     const numEl = card.querySelector('.recurso-pos-num');
@@ -559,6 +589,14 @@
             });
 
             actualizarVistaPrevia();
+        };
+
+        window.actualizarTextoRecurso = function (id, valor) {
+            const item = recursos.find(r => r.id === id);
+            if (item) {
+                item.texto = valor;
+                actualizarVistaPrevia();
+            }
         };
 
         window.actualizarTituloRecurso = function (id, valor) {

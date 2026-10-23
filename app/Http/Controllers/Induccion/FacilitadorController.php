@@ -112,6 +112,7 @@ class FacilitadorController extends Controller
                 'tiene_video' => collect($ind->lista_recursos)->contains('tipo', 'video'),
                 'tiene_pdf' => collect($ind->lista_recursos)->contains('tipo', 'pdf'),
                 'tiene_imagen' => collect($ind->lista_recursos)->contains('tipo', 'imagen'),
+                'tiene_texto' => collect($ind->lista_recursos)->contains('tipo', 'texto'),
             ]];
         });
 
@@ -175,6 +176,7 @@ class FacilitadorController extends Controller
                 $tipo = $rec['tipo'] ?? 'video';
                 $titulo = trim($rec['titulo'] ?? '') ?: ('Recurso ' . ($idx + 1));
                 $url = trim($rec['url'] ?? '');
+                $texto = trim($rec['texto'] ?? $rec['contenido'] ?? '');
                 $rutaArchivo = null;
 
                 // Revisar si se subió archivo para este recurso
@@ -193,11 +195,14 @@ class FacilitadorController extends Controller
                     }
                 }
 
-                // Si es video sin URL o archivo sin subir ni URL, omitir si está vacío
+                // Validar omisión si está vacío
                 if ($tipo === 'video' && empty($url)) {
                     continue;
                 }
-                if ($tipo !== 'video' && empty($rutaArchivo) && empty($url)) {
+                if ($tipo === 'texto' && empty($texto)) {
+                    continue;
+                }
+                if (!in_array($tipo, ['video', 'texto']) && empty($rutaArchivo) && empty($url)) {
                     continue;
                 }
 
@@ -213,6 +218,7 @@ class FacilitadorController extends Controller
                     'titulo' => $titulo,
                     'url' => $url ?: null,
                     'archivo' => $rutaArchivo,
+                    'texto' => $texto ?: null,
                 ];
             }
         }
@@ -399,11 +405,20 @@ class FacilitadorController extends Controller
                         'titulo' => $rec['titulo'] ?? 'Material Visual',
                         'url' => asset('storage/' . $rec['archivo']),
                     ];
+                } elseif ($rec['tipo'] === 'texto' && !empty($rec['texto'])) {
+                    $slides[] = [
+                        'id' => 'slide-texto-' . $rIdx,
+                        'tipo' => 'texto',
+                        'recurso_titulo' => $rec['titulo'] ?? 'Contenido Informativo',
+                        'titulo' => $rec['titulo'] ?? 'Contenido Informativo',
+                        'subtitulo' => 'Información de la Inducción',
+                        'contenido' => $rec['texto'],
+                    ];
                 }
             }
 
-            // 3. Si no tiene diapositivas visuales, agregar diapositivas estructuradas de contenido
-            $tieneContenidoVisual = collect($slides)->contains(fn($s) => in_array($s['tipo'], ['pptx', 'pdf', 'imagen', 'video']));
+            // 3. Si no tiene diapositivas visuales ni de texto, agregar diapositivas estructuradas por defecto
+            $tieneContenidoVisual = collect($slides)->contains(fn($s) => in_array($s['tipo'], ['pptx', 'pdf', 'imagen', 'video', 'texto']));
             if (!$tieneContenidoVisual) {
                 $slides[] = [
                     'id' => 'slide-objetivos',

@@ -181,8 +181,8 @@
                 </div>
             </div>
         @else
-            <!-- VISTA EN MÓVIL: TARJETAS EN COLUMNA (CERO SCROLL HORIZONTAL) -->
-            <div class="block md:hidden p-4 space-y-3.5" id="contenedorMovilInducciones">
+            <!-- VISTA EN TARJETAS: RESPONSIVA PARA ESCRITORIO Y MÓVIL -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 sm:p-6" id="contenedorTarjetasInducciones">
                 @foreach($inducciones as $ind)
                     @php
                         $recursosList = $ind->lista_recursos;
@@ -190,321 +190,176 @@
                         $numVideo = collect($recursosList)->where('tipo', 'video')->count();
                         $numPdf = collect($recursosList)->where('tipo', 'pdf')->count();
                         $numImg = collect($recursosList)->where('tipo', 'imagen')->count();
+                        $numTexto = collect($recursosList)->where('tipo', 'texto')->count();
                         $tieneRegistros = ($ind->sesiones_count > 0 || ($ind->asistencias_count ?? 0) > 0);
                     @endphp
-                    <div class="card-induccion-item bg-white rounded-2xl border border-slate-200 shadow-2xs p-4 space-y-3"
-                         data-search="{{ strtolower($ind->titulo . ' ' . $ind->descripcion) }}">
+                    <div class="card-induccion-item group bg-white rounded-3xl border border-slate-200/90 hover:border-cyan-400 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden relative"
+                         data-search="{{ strtolower($ind->titulo . ' ' . ($ind->descripcion ?? '')) }}">
 
-                        <!-- Fila Superior: Portada + Título -->
-                        <div class="flex items-start gap-3">
+                        {{-- CABECERA / PORTADA CON OVERLAY --}}
+                        <div class="relative h-44 sm:h-48 w-full overflow-hidden bg-slate-900 shrink-0">
                             <img src="{{ $ind->imagen_portada_url }}"
-                                 alt="Portada"
-                                 class="w-16 h-12 rounded-xl object-cover border border-slate-200 shadow-2xs shrink-0">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center justify-between gap-2 mb-1">
-                                    <!-- Toggle Estado -->
-                                    <form action="{{ route('admin.inducciones.toggle_estado', $ind->id) }}" method="POST">
-                                        @csrf
-                                        @method('PATCH')
-                                        @if($ind->estado)
-                                            <button type="submit"
-                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                                <span>Activa</span>
-                                            </button>
-                                        @else
-                                            <button type="submit"
-                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                                <span>Inactiva</span>
-                                            </button>
-                                        @endif
-                                    </form>
-                                </div>
-                                <h4 class="text-sm font-bold text-slate-900 leading-snug">
-                                    {{ $ind->titulo }}
-                                </h4>
-                            </div>
-                        </div>
+                                 alt="{{ $ind->titulo }}"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100">
 
-                        <!-- Descripción -->
-                        @if($ind->descripcion)
-                            <p class="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-                                {{ $ind->descripcion }}
-                            </p>
-                        @endif
+                            {{-- Gradiente oscuro superior e inferior --}}
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/30 to-slate-950/60 pointer-events-none"></div>
 
-                        <!-- Columna de Datos: Recursos y Sesiones -->
-                        <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-                            <div class="flex flex-wrap items-center gap-1">
-                                @if($numPptx > 0)
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
-                                        <i class="fa-solid fa-file-powerpoint text-orange-600"></i> {{ $numPptx }} PPTX
-                                    </span>
-                                @endif
-                                @if($numVideo > 0)
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-red-50 text-red-700 border border-red-200">
-                                        <i class="fa-solid fa-video text-red-600"></i> {{ $numVideo }} Video
-                                    </span>
-                                @endif
-                                @if($numPdf > 0)
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                                        <i class="fa-solid fa-file-pdf text-rose-600"></i> {{ $numPdf }} PDF
-                                    </span>
-                                @endif
-                                @if($numImg > 0)
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
-                                        <i class="fa-solid fa-image text-cyan-600"></i> {{ $numImg }} Img
-                                    </span>
-                                @endif
-                                @if(empty($recursosList))
-                                    <span class="text-[10px] text-slate-400 italic">Sin diapositivas</span>
-                                @endif
-                            </div>
-
-                            <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600">
-                                <i class="fa-solid fa-chalkboard text-cyan-600"></i>
-                                <span>{{ $ind->sesiones_count }} sesiones</span>
-                                @if(($ind->asistencias_count ?? 0) > 0)
-                                    <span class="text-slate-400">·</span>
-                                    <i class="fa-solid fa-users text-slate-500"></i>
-                                    <span>{{ $ind->asistencias_count }}</span>
-                                @endif
-                            </span>
-                        </div>
-
-                        <!-- Barra de Acciones Móvil -->
-                        <div class="grid grid-cols-4 gap-1.5 pt-2 border-t border-slate-100">
-                            <button type="button"
-                                    onclick="abrirModalVisualizar({{ $ind->id }})"
-                                    class="py-2 rounded-xl bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-800 text-[11px] font-bold text-center transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                                    title="Ver qué elementos y contenidos tiene esta inducción">
-                                <i class="fa-solid fa-eye text-cyan-600"></i>
-                                <span>Ver</span>
-                            </button>
-
-                            <a href="{{ route('induccion.index') }}"
-                               target="_blank"
-                               class="py-2 rounded-xl bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-800 text-[11px] font-bold text-center transition-colors flex items-center justify-center gap-1">
-                                <i class="fa-solid fa-chalkboard-user"></i>
-                                <span>Sala</span>
-                            </a>
-
-                            <a href="{{ route('admin.inducciones.edit', $ind->id) }}"
-                               class="py-2 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white text-[11px] font-bold text-center transition-colors flex items-center justify-center gap-1 shadow-2xs">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                                <span>Editar</span>
-                            </a>
-
-                            @if($tieneRegistros)
-                                <form action="{{ route('admin.inducciones.toggle_estado', $ind->id) }}" method="POST" class="w-full">
+                            {{-- Barra Superior: Estado (Activa/Inactiva) a la izquierda + Badge Sesiones a la derecha --}}
+                            <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
+                                <!-- Toggle Estado -->
+                                <form action="{{ route('admin.inducciones.toggle_estado', $ind->id) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
                                     @if($ind->estado)
                                         <button type="submit"
-                                                class="w-full h-full py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-bold text-center transition-colors flex items-center justify-center gap-1 border border-amber-200 cursor-pointer"
-                                                title="Tiene registros: Clic para Inactivar">
-                                            <i class="fa-solid fa-ban text-amber-700"></i>
-                                            <span>Inactivar</span>
+                                                title="Inducción Activa · Clic para Desactivar"
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-500/95 hover:bg-emerald-600 text-white backdrop-blur-md shadow-xs border border-white/20 transition-all cursor-pointer">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                            <span>Activa</span>
                                         </button>
                                     @else
                                         <button type="submit"
-                                                class="w-full h-full py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold text-center transition-colors flex items-center justify-center gap-1 border border-emerald-200 cursor-pointer"
-                                                title="Tiene registros: Clic para Activar">
-                                            <i class="fa-solid fa-check text-emerald-700"></i>
-                                            <span>Activar</span>
+                                                title="Inducción Inactiva · Clic para Activar"
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-slate-800/95 hover:bg-slate-700 text-slate-300 backdrop-blur-md shadow-xs border border-white/10 transition-all cursor-pointer">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                            <span>Inactiva</span>
                                         </button>
                                     @endif
                                 </form>
-                            @else
-                                <button type="button"
-                                        onclick="confirmarEliminarInduccion('{{ route('admin.inducciones.destroy', $ind->id) }}', '{{ addslashes($ind->titulo) }}')"
-                                        class="py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold text-center transition-colors flex items-center justify-center gap-1 border border-rose-200 cursor-pointer"
-                                        title="Eliminar inducción recién creada">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                    <span>Eliminar</span>
-                                </button>
-                            @endif
+
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-slate-900/85 text-cyan-300 backdrop-blur-md border border-cyan-500/30 shadow-xs">
+                                    <i class="fa-solid fa-chalkboard text-[10px]"></i>
+                                    <span>{{ $ind->sesiones_count }} {{ $ind->sesiones_count === 1 ? 'sesión' : 'sesiones' }}</span>
+                                </span>
+                            </div>
+
+                            {{-- Bottom Overlay de Portada: Badges de recursos multimedia --}}
+                            <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center gap-1 z-10">
+                                @if($numPptx > 0)
+                                    <span class="px-2 py-0.5 rounded-md bg-orange-600/90 text-white text-[10px] font-bold backdrop-blur-xs shadow-xs border border-white/20" title="{{ $numPptx }} diapositivas PowerPoint">
+                                        <i class="fa-solid fa-file-powerpoint mr-1"></i> {{ $numPptx }} PPTX
+                                    </span>
+                                @endif
+                                @if($numVideo > 0)
+                                    <span class="px-2 py-0.5 rounded-md bg-rose-600/90 text-white text-[10px] font-bold backdrop-blur-xs shadow-xs border border-white/20" title="{{ $numVideo }} videos">
+                                        <i class="fa-brands fa-youtube mr-1"></i> {{ $numVideo }} Video
+                                    </span>
+                                @endif
+                                @if($numPdf > 0)
+                                    <span class="px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] font-bold backdrop-blur-xs shadow-xs border border-white/20" title="{{ $numPdf }} documentos PDF">
+                                        <i class="fa-solid fa-file-pdf mr-1"></i> {{ $numPdf }} PDF
+                                    </span>
+                                @endif
+                                @if($numImg > 0)
+                                    <span class="px-2 py-0.5 rounded-md bg-cyan-600/90 text-white text-[10px] font-bold backdrop-blur-xs shadow-xs border border-white/20" title="{{ $numImg }} infografías">
+                                        <i class="fa-solid fa-image mr-1"></i> {{ $numImg }} Img
+                                    </span>
+                                @endif
+                                @if($numTexto > 0)
+                                    <span class="px-2 py-0.5 rounded-md bg-indigo-600/90 text-white text-[10px] font-bold backdrop-blur-xs shadow-xs border border-white/20" title="{{ $numTexto }} diapositivas de texto">
+                                        <i class="fa-solid fa-file-lines mr-1"></i> {{ $numTexto }} Texto
+                                    </span>
+                                @endif
+                                @if(empty($recursosList))
+                                    <span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-300 text-[10px] font-bold backdrop-blur-xs">
+                                        Presencial
+                                    </span>
+                                @endif
+                            </div>
                         </div>
 
-                    </div>
-                @endforeach
-            </div>
-
-            <!-- VISTA EN ESCRITORIO: TABLA COMPLETA -->
-            <div class="hidden md:block overflow-hidden">
-                <table class="w-full text-left text-xs" id="tablaEscritorioInducciones">
-                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
-                        <tr>
-                            <th class="py-3 px-4">Inducción</th>
-                            <th class="py-3 px-4">Recursos Multimedia</th>
-                            <th class="py-3 px-4 text-center">Sesiones Dictadas</th>
-                            <th class="py-3 px-4 text-center">Estado</th>
-                            <th class="py-3 px-4 text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 text-slate-600">
-                        @foreach($inducciones as $ind)
-                            @php
-                                $recursosList = $ind->lista_recursos;
-                                $numPptx = collect($recursosList)->where('tipo', 'pptx')->count();
-                                $numVideo = collect($recursosList)->where('tipo', 'video')->count();
-                                $numPdf = collect($recursosList)->where('tipo', 'pdf')->count();
-                                $numImg = collect($recursosList)->where('tipo', 'imagen')->count();
-                                $tieneRegistros = ($ind->sesiones_count > 0 || ($ind->asistencias_count ?? 0) > 0);
-                            @endphp
-                            <tr class="row-induccion-item hover:bg-slate-50/70 transition-colors"
-                                data-search="{{ strtolower($ind->titulo . ' ' . $ind->descripcion) }}">
-                                <!-- Portada + Título + Descripción -->
-                                <td class="py-3.5 px-4">
-                                    <div class="flex items-center gap-3">
-                                        <img src="{{ $ind->imagen_portada_url }}"
-                                             alt="Portada"
-                                             class="w-14 h-10 rounded-xl object-cover border border-slate-200 shadow-2xs shrink-0">
-                                        <div class="min-w-0">
-                                            <a href="{{ route('admin.inducciones.edit', $ind->id) }}"
-                                               class="font-bold text-slate-900 hover:text-cyan-700 transition-colors text-sm line-clamp-1">
-                                                {{ $ind->titulo }}
-                                            </a>
-                                            @if($ind->descripcion)
-                                                <p class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">{{ $ind->descripcion }}</p>
-                                            @endif
-                                            <div class="text-[10px] text-slate-400 mt-0.5">
-                                                Creado el {{ $ind->created_at ? $ind->created_at->format('d/m/Y') : 'N/A' }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <!-- Badges de Recursos -->
-                                <td class="py-3.5 px-4">
-                                    <div class="flex flex-wrap items-center gap-1.5">
-                                        @if($numPptx > 0)
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200" title="{{ $numPptx }} diapositivas PowerPoint">
-                                                <i class="fa-solid fa-file-powerpoint text-orange-600"></i> {{ $numPptx }} PPTX
-                                            </span>
-                                        @endif
-                                        @if($numVideo > 0)
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-red-50 text-red-700 border border-red-200" title="{{ $numVideo }} videos">
-                                                <i class="fa-solid fa-video text-red-600"></i> {{ $numVideo }} Video
-                                            </span>
-                                        @endif
-                                        @if($numPdf > 0)
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200" title="{{ $numPdf }} documentos PDF">
-                                                <i class="fa-solid fa-file-pdf text-rose-600"></i> {{ $numPdf }} PDF
-                                            </span>
-                                        @endif
-                                        @if($numImg > 0)
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200" title="{{ $numImg }} imágenes">
-                                                <i class="fa-solid fa-image text-cyan-600"></i> {{ $numImg }} Img
-                                            </span>
-                                        @endif
-                                        @if(empty($recursosList))
-                                            <span class="text-[11px] text-slate-400 italic">Sin diapositivas</span>
-                                        @endif
-                                    </div>
-                                </td>
-
-                                <!-- Sesiones Dictadas y Participantes -->
-                                <td class="py-3.5 px-4 text-center">
-                                    <div class="inline-flex flex-col items-center">
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200" title="{{ $ind->sesiones_count }} sesiones dictadas">
-                                            <i class="fa-solid fa-chalkboard text-[10px] text-cyan-700"></i> {{ $ind->sesiones_count }}
+                        {{-- CUERPO DE LA TARJETA --}}
+                        <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                            <div class="space-y-2">
+                                <!-- Metadatos: Fecha de Creación y Participantes -->
+                                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                                    <span class="flex items-center gap-1.5 truncate">
+                                        <i class="fa-solid fa-calendar-day text-slate-400 text-[10px]"></i>
+                                        <span>{{ $ind->created_at ? $ind->created_at->format('d/m/Y') : 'Reciente' }}</span>
+                                    </span>
+                                    @if(($ind->asistencias_count ?? 0) > 0)
+                                        <span class="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full text-[10px]">
+                                            <i class="fa-solid fa-users text-slate-500 text-[9px]"></i>
+                                            <span>{{ $ind->asistencias_count }} participantes</span>
                                         </span>
-                                        @if(($ind->asistencias_count ?? 0) > 0)
-                                            <span class="text-[10px] text-slate-400 font-semibold mt-0.5 flex items-center gap-1">
-                                                <i class="fa-solid fa-users text-[9px]"></i> {{ $ind->asistencias_count }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                </td>
+                                    @endif
+                                </div>
 
-                                <!-- Estado con Botón Toggle Rápido -->
-                                <td class="py-3.5 px-4 text-center">
-                                    <form action="{{ route('admin.inducciones.toggle_estado', $ind->id) }}" method="POST" class="inline-block">
+                                <!-- Título -->
+                                <h3 onclick="abrirModalVisualizar({{ $ind->id }})"
+                                    class="font-heading font-extrabold text-slate-900 group-hover:text-cyan-700 transition-colors text-base leading-snug line-clamp-2 cursor-pointer"
+                                    title="Clic para previsualizar: {{ $ind->titulo }}">
+                                    {{ $ind->titulo }}
+                                </h3>
+
+                                <!-- Descripción -->
+                                <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                                    {{ $ind->descripcion ?: 'Inducción formativa institucional para colaboradores y personal convocado.' }}
+                                </p>
+                            </div>
+
+                            <!-- Barra de Botones de Acción -->
+                            <div class="pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 items-center">
+                                <!-- Ver Contenido / Diapositivas -->
+                                <button type="button"
+                                        onclick="abrirModalVisualizar({{ $ind->id }})"
+                                        class="py-2 px-2.5 rounded-xl bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-800 text-[11px] font-bold text-center transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200 shadow-2xs"
+                                        title="Ver qué elementos y contenidos tiene esta inducción">
+                                    <i class="fa-solid fa-eye text-cyan-600 text-xs"></i>
+                                    <span>Ver</span>
+                                </button>
+
+                                <!-- Editar Inducción -->
+                                <a href="{{ route('admin.inducciones.edit', $ind->id) }}"
+                                   class="py-2 px-2 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white text-[11px] font-bold text-center transition-all flex items-center justify-center gap-1 shadow-2xs hover:shadow-xs"
+                                   title="Editar inducción y diapositivas">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    <span>Editar</span>
+                                </a>
+
+                                <!-- Inactivar o Eliminar -->
+                                @if($tieneRegistros)
+                                    <form action="{{ route('admin.inducciones.toggle_estado', $ind->id) }}" method="POST" class="w-full">
                                         @csrf
                                         @method('PATCH')
                                         @if($ind->estado)
                                             <button type="submit"
-                                                    title="Haz clic para desactivar esta inducción"
-                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                                <span>Activa</span>
+                                                    class="w-full py-2 px-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-bold text-center transition-all flex items-center justify-center gap-1 border border-amber-200 cursor-pointer shadow-2xs"
+                                                    title="Tiene registros: Clic para Inactivar">
+                                                <i class="fa-solid fa-ban text-amber-700 text-xs"></i>
+                                                <span>Inactivar</span>
                                             </button>
                                         @else
                                             <button type="submit"
-                                                    title="Haz clic para activar esta inducción"
-                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors cursor-pointer">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                                <span>Inactiva</span>
+                                                    class="w-full py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold text-center transition-all flex items-center justify-center gap-1 border border-emerald-200 cursor-pointer shadow-2xs"
+                                                    title="Tiene registros: Clic para Activar">
+                                                <i class="fa-solid fa-check text-emerald-700 text-xs"></i>
+                                                <span>Activar</span>
                                             </button>
                                         @endif
                                     </form>
-                                </td>
-
-                                <!-- Acciones CRUD -->
-                                <td class="py-3.5 px-4 text-right">
-                                        <button type="button"
-                                                onclick="abrirModalVisualizar({{ $ind->id }})"
-                                                class="p-2 rounded-xl text-slate-500 hover:text-cyan-700 hover:bg-cyan-50 transition-colors border border-transparent hover:border-cyan-200 cursor-pointer"
-                                                title="Ver elementos y contenidos de esta inducción">
-                                            <i class="fa-solid fa-eye text-xs text-cyan-600"></i>
-                                        </button>
-
-                                        <a href="{{ route('induccion.index') }}"
-                                           target="_blank"
-                                           class="p-2 rounded-xl text-slate-500 hover:text-cyan-700 hover:bg-cyan-50 transition-colors border border-transparent hover:border-cyan-200"
-                                           title="Proyectar en sala de inducción">
-                                            <i class="fa-solid fa-chalkboard-user text-xs"></i>
-                                        </a>
-
-                                        <a href="{{ route('admin.inducciones.edit', $ind->id) }}"
-                                           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-cyan-700 hover:text-white text-slate-700 font-bold text-xs transition-all shadow-2xs"
-                                           title="Editar inducción y recursos">
-                                            <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                            <span>Editar</span>
-                                        </a>
-
-                                        @if($tieneRegistros)
-                                            <form action="{{ route('admin.inducciones.toggle_estado', $ind->id) }}" method="POST" class="inline-block">
-                                                @csrf
-                                                @method('PATCH')
-                                                @if($ind->estado)
-                                                    <button type="submit"
-                                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                                                            title="Inducción protegida (tiene registros): Inactivar">
-                                                        <i class="fa-solid fa-ban text-xs text-amber-700"></i>
-                                                        <span class="hidden xl:inline">Inactivar</span>
-                                                    </button>
-                                                @else
-                                                    <button type="submit"
-                                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                                                            title="Inducción protegida (tiene registros): Activar">
-                                                        <i class="fa-solid fa-check text-xs text-emerald-700"></i>
-                                                        <span class="hidden xl:inline">Activar</span>
-                                                    </button>
-                                                @endif
-                                            </form>
-                                        @else
-                                            <button type="button"
-                                                    onclick="confirmarEliminarInduccion('{{ route('admin.inducciones.destroy', $ind->id) }}', '{{ addslashes($ind->titulo) }}')"
-                                                    class="p-2 rounded-xl text-rose-500 hover:text-white hover:bg-rose-600 transition-colors border border-transparent hover:border-rose-600 cursor-pointer"
-                                                    title="Eliminar inducción recién creada (sin registros)">
-                                                <i class="fa-solid fa-trash-can text-xs"></i>
-                                            </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                @else
+                                    <button type="button"
+                                            onclick="confirmarEliminarInduccion('{{ route('admin.inducciones.destroy', $ind->id) }}', '{{ addslashes($ind->titulo) }}')"
+                                            class="w-full py-2 px-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold text-center transition-all flex items-center justify-center gap-1 border border-rose-200 cursor-pointer shadow-2xs"
+                                            title="Eliminar inducción recién creada (sin registros)">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                        <span>Eliminar</span>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
 
             <!-- Paginación -->
-            <div class="p-4 border-t border-slate-200">
-                {{ $inducciones->links() }}
-            </div>
+            @if($inducciones->hasPages())
+                <div class="p-4 sm:px-6 sm:py-4 border-t border-slate-200/80 bg-slate-50/50">
+                    {{ $inducciones->links() }}
+                </div>
+            @endif
         @endif
     </div>
 
@@ -711,7 +566,8 @@
         if (ind.tiene_video) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-rose-600/90 text-white text-[10px] font-bold"><i class="fa-brands fa-youtube mr-1"></i> Video Explicativo</span>`;
         if (ind.tiene_pdf) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-file-pdf mr-1"></i> Documentos PDF</span>`;
         if (ind.tiene_imagen) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-emerald-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-image mr-1"></i> Infografías</span>`;
-        if (!ind.tiene_pptx && !ind.tiene_video && !ind.tiene_pdf && !ind.tiene_imagen) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-200 text-[10px] font-bold">Presencial</span>`;
+        if (ind.tiene_texto) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-indigo-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-file-lines mr-1"></i> Contenido de Texto</span>`;
+        if (!ind.tiene_pptx && !ind.tiene_video && !ind.tiene_pdf && !ind.tiene_imagen && !ind.tiene_texto) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-200 text-[10px] font-bold">Presencial</span>`;
 
 
         // Recursos
@@ -774,6 +630,16 @@
                             </div>
                         `;
                         actionHtml = `<a href="${r.archivo_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass-plus"></i><span>Ver a tamaño completo</span></a>`;
+                    }
+                } else if (r.tipo === 'texto') {
+                    iconHtml = '<i class="fa-solid fa-file-lines text-indigo-600 text-lg"></i>';
+                    tipoBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-indigo-100 text-indigo-700">Texto / Guía</span>';
+                    if (r.texto) {
+                        mediaPreviewHtml = `
+                            <div class="mt-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed whitespace-pre-line max-h-48 overflow-y-auto">
+                                ${r.texto}
+                            </div>
+                        `;
                     }
                 }
 

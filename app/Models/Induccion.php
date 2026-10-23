@@ -67,11 +67,11 @@ class Induccion extends Model
             return asset('storage/' . $this->imagen_portada);
         }
 
-        return asset('images/Logo.png');
+        return asset('images/Img-login.jpg');
     }
 
     /**
-     * Retorna la lista unificada y normalizada de recursos (Videos, PPTX, PDFs, Imágenes).
+     * Retorna la lista unificada y normalizada de recursos (Videos, PPTX, PDFs, Imágenes, Texto).
      */
     public function getListaRecursosAttribute(): array
     {
@@ -85,6 +85,7 @@ class Induccion extends Model
                 $url = $rec['url'] ?? null;
                 $archivo = $rec['archivo'] ?? null;
                 $archivoUrl = $archivo ? asset('storage/' . $archivo) : null;
+                $texto = $rec['texto'] ?? $rec['contenido'] ?? null;
 
                 $embedUrl = null;
                 if ($tipo === 'video' && $url) {
@@ -101,12 +102,13 @@ class Induccion extends Model
 
                 $items[] = [
                     'id' => $idx + 1,
-                    'tipo' => $tipo, // 'pptx', 'video', 'pdf', 'imagen'
+                    'tipo' => $tipo, // 'pptx', 'video', 'pdf', 'imagen', 'texto'
                     'titulo' => $titulo,
                     'url' => $url,
                     'archivo' => $archivo,
                     'archivo_url' => $archivoUrl,
                     'embed_url' => $embedUrl,
+                    'texto' => $texto,
                 ];
             }
         }

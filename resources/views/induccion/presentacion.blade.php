@@ -400,22 +400,22 @@
                                 </div>
                             </div>
 
-                        {{-- CASO 6: DIAPOSITIVAS ESTRUCTURADAS (TEMARIO / NORMAS) --}}
-                        @elseif(in_array($slide['tipo'], ['temario', 'normas']))
-                            <div class="w-full max-w-3xl bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-xl">
-                                <div class="flex items-center gap-3 mb-4">
+                        {{-- CASO 6: DIAPOSITIVAS ESTRUCTURADAS (TEMARIO / NORMAS / TEXTO) --}}
+                        @elseif(in_array($slide['tipo'], ['temario', 'normas', 'texto']))
+                            <div class="w-full max-w-3xl bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-xl max-h-[85vh] flex flex-col">
+                                <div class="flex items-center gap-3 mb-4 shrink-0">
                                     <div class="w-10 h-10 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center text-lg border border-blue-200">
-                                        <i class="fa-solid {{ $slide['tipo'] === 'temario' ? 'fa-bullseye' : 'fa-shield-halved' }}"></i>
+                                        <i class="fa-solid {{ $slide['tipo'] === 'temario' ? 'fa-bullseye' : ($slide['tipo'] === 'normas' ? 'fa-shield-halved' : 'fa-file-lines') }}"></i>
                                     </div>
                                     <div>
-                                        <span class="text-[10px] font-bold text-brand-blue uppercase tracking-wider">{{ $slide['subtitulo'] ?? 'Lineamiento' }}</span>
+                                        <span class="text-[10px] font-bold text-brand-blue uppercase tracking-wider">{{ $slide['subtitulo'] ?? 'Información' }}</span>
                                         <h3 class="text-xl sm:text-2xl font-black text-slate-900 font-heading">{{ $slide['titulo'] }}</h3>
                                     </div>
                                 </div>
-                                <div class="text-xs sm:text-sm text-slate-600 leading-relaxed bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-4">
+                                <div class="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200 mb-4 overflow-y-auto whitespace-pre-line flex-1">
                                     {{ $slide['contenido'] ?? '' }}
                                 </div>
-                                <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
+                                <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100 shrink-0">
                                     <span>C.I. Piscícola New York</span>
                                     <span>Sesión: {{ $sesion->codigo_sesion }}</span>
                                 </div>

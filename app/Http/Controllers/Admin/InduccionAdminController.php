@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\AsistenciaInduccion;
 use App\Models\Configuracion;
 use App\Models\Induccion;
+use App\Models\Sede;
 use App\Models\SesionInduccion;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\PptxRenderer;
@@ -37,7 +39,7 @@ class InduccionAdminController extends Controller
             });
         }
 
-        $inducciones = $query->paginate(12)->withQueryString();
+        $inducciones = $query->paginate(6)->withQueryString();
 
         $totalInducciones = Induccion::count();
         $induccionesActivas = Induccion::where('estado', true)->count();
@@ -60,6 +62,7 @@ class InduccionAdminController extends Controller
                 'tiene_video' => collect($ind->lista_recursos)->contains('tipo', 'video'),
                 'tiene_pdf' => collect($ind->lista_recursos)->contains('tipo', 'pdf'),
                 'tiene_imagen' => collect($ind->lista_recursos)->contains('tipo', 'imagen'),
+                'tiene_texto' => collect($ind->lista_recursos)->contains('tipo', 'texto'),
             ]];
         });
 
@@ -78,9 +81,14 @@ class InduccionAdminController extends Controller
      */
     public function sesiones(Request $request): View
     {
-        $query = SesionInduccion::with(['induccion', 'facilitador', 'sede'])
-            ->withCount('asistencias')
-            ->latest();
+        $query = SesionInduccion::with([
+            'induccion',
+            'facilitador',
+            'sede',
+            'asistencias.usuario.area'
+        ])
+        ->withCount('asistencias')
+        ->latest();
 
         if ($request->filled('estado')) {
             $est = strtoupper(trim($request->estado));
@@ -99,6 +107,9 @@ class InduccionAdminController extends Controller
         $totalAsistencias = AsistenciaInduccion::count();
         $asistenciasExternos = AsistenciaInduccion::where('es_externo', true)->count();
 
+        $sedes = Sede::where('estado', true)->orderBy('nombre')->get(['id', 'nombre', 'ciudad']);
+        $areas = Area::with('sede')->where('estado', true)->orderBy('nombre')->get(['id', 'nombre', 'sede_id']);
+
         $metricas = [
             'total_sesiones' => $totalSesiones,
             'en_curso' => $sesionesEnCurso,
@@ -107,7 +118,7 @@ class InduccionAdminController extends Controller
             'asistencias_externos' => $asistenciasExternos,
         ];
 
-        return view('admin.inducciones.sesiones', compact('sesiones', 'metricas'));
+        return view('admin.inducciones.sesiones', compact('sesiones', 'metricas', 'sedes', 'areas'));
     }
 
     /**
@@ -157,6 +168,7 @@ class InduccionAdminController extends Controller
                 $tipo = $rec['tipo'] ?? 'video';
                 $titulo = trim($rec['titulo'] ?? '') ?: ('Recurso ' . ($idx + 1));
                 $url = trim($rec['url'] ?? '');
+                $texto = trim($rec['texto'] ?? $rec['contenido'] ?? '');
                 $rutaArchivo = null;
 
                 if (isset($archivosInput[$idx]['archivo']) && $archivosInput[$idx]['archivo']->isValid()) {
@@ -177,7 +189,10 @@ class InduccionAdminController extends Controller
                 if ($tipo === 'video' && empty($url)) {
                     continue;
                 }
-                if ($tipo !== 'video' && empty($rutaArchivo) && empty($url)) {
+                if ($tipo === 'texto' && empty($texto)) {
+                    continue;
+                }
+                if (!in_array($tipo, ['video', 'texto']) && empty($rutaArchivo) && empty($url)) {
                     continue;
                 }
 
@@ -193,6 +208,7 @@ class InduccionAdminController extends Controller
                     'titulo' => $titulo,
                     'url' => $url ?: null,
                     'archivo' => $rutaArchivo,
+                    'texto' => $texto ?: null,
                 ];
             }
         }
@@ -269,6 +285,7 @@ class InduccionAdminController extends Controller
                 $tipo = $rec['tipo'] ?? 'video';
                 $titulo = trim($rec['titulo'] ?? '') ?: ('Recurso ' . ($idx + 1));
                 $url = trim($rec['url'] ?? '');
+                $texto = trim($rec['texto'] ?? $rec['contenido'] ?? '');
                 $rutaArchivo = $rec['archivo_actual'] ?? null;
 
                 // Si se subió un nuevo archivo reemplazando el anterior
@@ -293,7 +310,10 @@ class InduccionAdminController extends Controller
                 if ($tipo === 'video' && empty($url)) {
                     continue;
                 }
-                if ($tipo !== 'video' && empty($rutaArchivo) && empty($url)) {
+                if ($tipo === 'texto' && empty($texto)) {
+                    continue;
+                }
+                if (!in_array($tipo, ['video', 'texto']) && empty($rutaArchivo) && empty($url)) {
                     continue;
                 }
 
@@ -309,6 +329,7 @@ class InduccionAdminController extends Controller
                     'titulo' => $titulo,
                     'url' => $url ?: null,
                     'archivo' => $rutaArchivo,
+                    'texto' => $texto ?: null,
                 ];
             }
         }
@@ -498,6 +519,59 @@ class InduccionAdminController extends Controller
         $pptxData = PptxRenderer::render($archivoRelativo);
 
         return view('induccion.visor_diapositivas', compact('induccion', 'archivoRelativo', 'pptxData'));
+    }
+
+    /**
+     * Retorna el listado de participantes y firmas digitales de una sesión en JSON para visualización interactiva.
+     */
+    public function participantesJson(SesionInduccion $sesion): JsonResponse
+    {
+        $sesion->load([
+            'induccion',
+            'facilitador',
+            'sede',
+            'asistencias.usuario.area',
+            'asistencias.usuario.sede',
+        ]);
+
+        $participantes = $sesion->asistencias->map(function ($asist) {
+            $u = $asist->usuario;
+            return [
+                'id' => $asist->id,
+                'identificacion' => $asist->identificacion ?: ($u?->identificacion ?? '—'),
+                'nombre_completo' => $asist->nombre_completo ?: ($u?->nombre_completo ?? 'Colaborador'),
+                'cargo' => $asist->cargo ?: ($u?->cargoOficial() ?? '—'),
+                'sede' => $asist->sede ?: ($u?->sedeActual()?->nombre ?? 'Sin sede'),
+                'area' => $asist->area ?: ($u?->area?->nombre ?? 'Sin área'),
+                'es_externo' => (bool)$asist->es_externo,
+                'empresa_externa' => $asist->empresa_externa,
+                'telefono' => $asist->telefono,
+                'fecha_registro' => $asist->fecha_registro ? $asist->fecha_registro->format('d/m/Y h:i A') : ($asist->created_at ? $asist->created_at->format('d/m/Y h:i A') : '—'),
+                'firma_url' => $asist->firma_url,
+                'tiene_firma' => !empty($asist->firma_digital),
+            ];
+        })->values();
+
+        return response()->json([
+            'success' => true,
+            'sesion' => [
+                'id' => $sesion->id,
+                'codigo' => $sesion->codigo_sesion,
+                'induccion_titulo' => $sesion->induccion?->titulo ?? 'Inducción sin título',
+                'facilitador' => $sesion->facilitador?->nombre_completo ?? 'Facilitador no asignado',
+                'sede' => $sesion->sede?->nombre ?? 'Sede Principal',
+                'areas_convocadas' => $sesion->areas_convocadas_nombres,
+                'areas_convocadas_array' => $sesion->areas_convocadas_nombres_array,
+                'fecha_inicio' => $sesion->fecha_inicio ? $sesion->fecha_inicio->format('d/m/Y h:i A') : 'N/A',
+                'fecha_cierre' => $sesion->fecha_cierre ? $sesion->fecha_cierre->format('d/m/Y h:i A') : null,
+                'estado' => $sesion->estado,
+                'es_activa' => $sesion->estaActiva(),
+                'total_participantes' => $participantes->count(),
+                'total_externos' => $participantes->where('es_externo', true)->count(),
+                'acta_pdf_url' => route('admin.inducciones.acta_pdf', $sesion->id),
+            ],
+            'participantes' => $participantes,
+        ]);
     }
 }
 

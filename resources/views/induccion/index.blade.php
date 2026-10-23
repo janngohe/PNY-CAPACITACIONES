@@ -763,7 +763,8 @@
         if (ind.tiene_video) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-rose-600/90 text-white text-[10px] font-bold"><i class="fa-brands fa-youtube mr-1"></i> Video Explicativo</span>`;
         if (ind.tiene_pdf) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-file-pdf mr-1"></i> Documentos PDF</span>`;
         if (ind.tiene_imagen) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-emerald-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-image mr-1"></i> Infografías</span>`;
-        if (!ind.tiene_pptx && !ind.tiene_video && !ind.tiene_pdf && !ind.tiene_imagen) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-200 text-[10px] font-bold">Presencial</span>`;
+        if (ind.tiene_texto) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-indigo-600/90 text-white text-[10px] font-bold"><i class="fa-solid fa-file-lines mr-1"></i> Contenido de Texto</span>`;
+        if (!ind.tiene_pptx && !ind.tiene_video && !ind.tiene_pdf && !ind.tiene_imagen && !ind.tiene_texto) badgesCont.innerHTML += `<span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-200 text-[10px] font-bold">Presencial</span>`;
 
 
         // Recursos
@@ -826,6 +827,16 @@
                             </div>
                         `;
                         actionHtml = `<a href="${r.archivo_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass-plus"></i><span>Ver a tamaño completo</span></a>`;
+                    }
+                } else if (r.tipo === 'texto') {
+                    iconHtml = '<i class="fa-solid fa-file-lines text-indigo-600 text-lg"></i>';
+                    tipoBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-indigo-100 text-indigo-700">Texto / Guía</span>';
+                    if (r.texto) {
+                        mediaPreviewHtml = `
+                            <div class="mt-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed whitespace-pre-line max-h-48 overflow-y-auto">
+                                ${r.texto}
+                            </div>
+                        `;
                     }
                 }
 

@@ -4,7 +4,7 @@
 @section('page_title', 'Crear Nueva Inducción')
 
 @php
-    $imagenActual = asset('images/Logo.png');
+    $imagenActual = asset('images/Img-login.jpg');
 @endphp
 
 @section('content')
@@ -166,7 +166,7 @@
                     </div>
 
                     <!-- Botonera de Acción Rápida para Agregar Recursos -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                         <button type="button" onclick="agregarRecurso('pptx')"
                                 class="p-3 rounded-2xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-950 font-bold text-xs flex flex-col items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:scale-102">
                             <span class="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center text-sm shadow-xs">
@@ -197,6 +197,14 @@
                                 <i class="fa-solid fa-image"></i>
                             </span>
                             <span>+ Infografía / Imagen</span>
+                        </button>
+
+                        <button type="button" onclick="agregarRecurso('texto')"
+                                class="p-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-bold text-xs flex flex-col items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:scale-102">
+                            <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-sm shadow-xs">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </span>
+                            <span>+ Texto / Guía</span>
                         </button>
                     </div>
 
@@ -330,6 +338,14 @@
                 placeholder: 'Ej: Organigrama o Mapa de Rutas de Evacuación',
                 fileAccept: '.png,.jpg,.jpeg,.webp',
                 fileHint: 'Sube una imagen o infografía de alta resolución'
+            },
+            texto: {
+                label: 'Contenido Informativo / Texto Explicativo',
+                shortLabel: 'TEXTO',
+                iconClass: 'fa-solid fa-file-lines text-indigo-500',
+                badgeClass: 'bg-indigo-100 text-indigo-950 border-indigo-300',
+                placeholder: 'Ej: Normas Internas, Políticas o Temas Clave',
+                textHint: 'Escribe el texto detallado que se proyectará como diapositiva en la sala'
             }
         };
 
@@ -398,6 +414,7 @@
                 tipo: tipo,
                 titulo: tituloSugerido,
                 url: '',
+                texto: '',
                 archivoNombre: ''
             });
 
@@ -425,6 +442,8 @@
                     if (tit) r.titulo = tit.value;
                     const url = card.querySelector('input[name*="[url]"]');
                     if (url) r.url = url.value;
+                    const txt = card.querySelector('textarea[name*="[texto]"]');
+                    if (txt) r.texto = txt.value;
                 }
             });
 
@@ -446,6 +465,8 @@
                     if (tit) r.titulo = tit.value;
                     const url = card.querySelector('input[name*="[url]"]');
                     if (url) r.url = url.value;
+                    const txt = card.querySelector('textarea[name*="[texto]"]');
+                    if (txt) r.texto = txt.value;
                 }
             });
 
@@ -468,6 +489,14 @@
             const r = recursos.find(it => it.id === id);
             if (r) {
                 r.url = valor;
+                actualizarVistaPrevia();
+            }
+        };
+
+        window.actualizarTextoRecurso = function (id, valor) {
+            const r = recursos.find(it => it.id === id);
+            if (r) {
+                r.texto = valor;
                 actualizarVistaPrevia();
             }
         };
@@ -506,6 +535,20 @@
                                    oninput="window.actualizarUrlRecurso(${rec.id}, this.value)"
                                    class="induccion-form-input w-full px-3.5 py-2.5 rounded-xl border text-xs font-semibold">
                             <p class="text-[10px] text-slate-500 mt-1">${config.urlHint}</p>
+                        </div>
+                    `;
+                } else if (rec.tipo === 'texto') {
+                    inputEspecifico = `
+                        <div>
+                            <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-800 mb-1">
+                                Contenido de la Diapositiva de Texto <span class="text-rose-600">*</span>
+                            </label>
+                            <textarea name="recursos[${index}][texto]"
+                                      rows="4"
+                                      placeholder="Escribe aquí los lineamientos, temario, instrucciones o contenido a exponer..."
+                                      oninput="window.actualizarTextoRecurso(${rec.id}, this.value)"
+                                      class="induccion-form-input w-full px-3.5 py-2.5 rounded-xl border text-xs font-medium leading-relaxed">${escaparHtml(rec.texto || '')}</textarea>
+                            <p class="text-[10px] text-slate-500 mt-1">${config.textHint}</p>
                         </div>
                     `;
                 } else {

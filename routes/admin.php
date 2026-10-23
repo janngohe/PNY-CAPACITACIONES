@@ -112,6 +112,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
     Route::patch('/inducciones/{induccion}/toggle-estado', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'toggleEstado'])->name('inducciones.toggle_estado');
     Route::post('/inducciones/regenerar-pin', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'regenerarPin'])->name('inducciones.regenerar_pin');
     Route::get('/inducciones/sesiones/{sesion}/acta-pdf', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'descargarActaPdf'])->name('inducciones.acta_pdf');
+    Route::get('/inducciones/sesiones/{sesion}/participantes-json', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'participantesJson'])->name('inducciones.sesiones.participantes_json');
     Route::get('/inducciones/{induccion}/slides-json', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'slidesJson'])->name('inducciones.slides_json');
     Route::get('/inducciones/{induccion}/visor-diapositivas', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'visorDiapositivas'])->name('inducciones.visor_diapositivas');
 });

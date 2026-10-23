@@ -256,6 +256,10 @@
                                     class="px-2.5 py-1.5 rounded-xl bg-cyan-50 hover:bg-cyan-100 text-cyan-950 border border-cyan-200 text-xs font-bold transition-all flex items-center gap-1 shadow-2xs">
                                 <i class="fa-solid fa-image text-cyan-600"></i> + Imagen
                             </button>
+                            <button type="button" onclick="agregarRecurso('texto')"
+                                    class="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-950 border border-indigo-200 text-xs font-bold transition-all flex items-center gap-1 shadow-2xs">
+                                <i class="fa-solid fa-file-lines text-indigo-600"></i> + Texto
+                            </button>
                         </div>
                     </div>
 
@@ -484,6 +488,7 @@
                         if (r.tipo === 'video') { icono = 'fa-video text-red-400'; etiqueta = 'VIDEO'; }
                         else if (r.tipo === 'pdf') { icono = 'fa-file-pdf text-rose-400'; etiqueta = 'PDF'; }
                         else if (r.tipo === 'imagen') { icono = 'fa-image text-cyan-400'; etiqueta = 'IMG'; }
+                        else if (r.tipo === 'texto') { icono = 'fa-file-lines text-indigo-400'; etiqueta = 'TEXTO'; }
 
                         const displayTit = r.titulo || `Recurso ${i + 1}`;
                         return `
@@ -515,6 +520,7 @@
                 tipo: tipo,
                 titulo: datosExistentes ? (datosExistentes.titulo || '') : (tituloSugerido || ''),
                 url: datosExistentes ? (datosExistentes.url || '') : '',
+                texto: datosExistentes ? (datosExistentes.texto || '') : '',
                 archivo: datosExistentes ? (datosExistentes.archivo || '') : '',
                 archivoNombre: datosExistentes && datosExistentes.archivo ? datosExistentes.archivo.split('/').pop() : ''
             };
@@ -539,6 +545,9 @@
             } else if (r.tipo === 'imagen') {
                 icono = 'fa-image text-cyan-600 bg-cyan-100 border-cyan-300';
                 tipoLabel = 'Infografía o Imagen Explicativa';
+            } else if (r.tipo === 'texto') {
+                icono = 'fa-file-lines text-indigo-600 bg-indigo-100 border-indigo-300';
+                tipoLabel = 'Contenido Informativo / Texto Explicativo';
             }
 
             const card = document.createElement('div');
@@ -558,6 +567,20 @@
                                oninput="actualizarUrlRecurso(${r.id}, this.value)"
                                placeholder="https://www.youtube.com/watch?v=..."
                                class="induccion-form-input w-full px-3.5 py-2.5 rounded-xl border text-xs font-semibold">
+                    </div>
+                `;
+            } else if (r.tipo === 'texto') {
+                campoContenidoHtml = `
+                    <div>
+                        <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-800 mb-1">
+                            Contenido de la Diapositiva de Texto <span class="text-rose-600">*</span>
+                        </label>
+                        <textarea name="recursos[${index}][texto]"
+                                  rows="4"
+                                  oninput="actualizarTextoRecurso(${r.id}, this.value)"
+                                  placeholder="Escribe aquí los lineamientos, temario, instrucciones o contenido a exponer..."
+                                  class="induccion-form-input w-full px-3.5 py-2.5 rounded-xl border text-xs font-medium leading-relaxed">${escaparHtml(r.texto || '')}</textarea>
+                        <p class="text-[10px] text-slate-500 mt-1">Escribe el texto detallado que se proyectará como diapositiva en la sala</p>
                     </div>
                 `;
             } else {
@@ -610,7 +633,7 @@
                         </span>
                         <div class="flex items-center gap-1.5">
                             <span class="w-7 h-7 rounded-lg border flex items-center justify-center text-xs shadow-2xs ${icono}">
-                                <i class="fa-solid ${r.tipo === 'video' ? 'fa-video' : (r.tipo === 'pptx' ? 'fa-file-powerpoint' : (r.tipo === 'pdf' ? 'fa-file-pdf' : 'fa-image'))}"></i>
+                                <i class="fa-solid ${r.tipo === 'video' ? 'fa-video' : (r.tipo === 'pptx' ? 'fa-file-powerpoint' : (r.tipo === 'pdf' ? 'fa-file-pdf' : (r.tipo === 'texto' ? 'fa-file-lines' : 'fa-image')))}"></i>
                             </span>
                             <span class="text-xs font-extrabold text-slate-900">${tipoLabel}</span>
                         </div>
@@ -727,6 +750,9 @@
                     const urlInp = card.querySelector('input[name*="[url]"]');
                     if (urlInp) urlInp.name = `recursos[${i}][url]`;
 
+                    const txtInp = card.querySelector('textarea[name*="[texto]"]');
+                    if (txtInp) txtInp.name = `recursos[${i}][texto]`;
+
                     contenedor.appendChild(card);
                 }
             });
@@ -752,6 +778,8 @@
                     if (titInput) r.titulo = titInput.value;
                     const urlInput = card.querySelector('input[name*="[url]"]');
                     if (urlInput) r.url = urlInput.value;
+                    const txtInput = card.querySelector('textarea[name*="[texto]"]');
+                    if (txtInput) r.texto = txtInput.value;
                 }
             });
 
@@ -774,6 +802,14 @@
             const item = recursos.find(r => r.id === id);
             if (item) {
                 item.url = valor;
+                actualizarVistaPrevia();
+            }
+        };
+
+        window.actualizarTextoRecurso = function (id, valor) {
+            const item = recursos.find(r => r.id === id);
+            if (item) {
+                item.texto = valor;
                 actualizarVistaPrevia();
             }
         };
