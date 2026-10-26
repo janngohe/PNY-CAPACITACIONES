@@ -7,7 +7,8 @@
 <div class="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6">
 
     <!-- BANNER HERO DEL SISTEMA DE PUNTOS -->
-    <div class="relative overflow-hidden rounded-3xl bg-linear-to-r from-brand-dark via-brand-navy to-brand-blue text-white p-6 sm:p-8 shadow-sm">
+    <div style="background: linear-gradient(135deg, #002d5e 0%, #003d80 50%, #0056b3 100%);"
+         class="relative overflow-hidden rounded-3xl text-white p-5 sm:p-8 shadow-sm w-full max-w-full">
         <!-- Olas decorativas de fondo -->
         <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
             <i class="fa-solid fa-gift text-9xl"></i>
@@ -17,12 +18,12 @@
         </div>
 
         <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            <div class="md:col-span-2 space-y-2">
+            <div class="md:col-span-2 space-y-2.5 min-w-0">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold uppercase tracking-wider">
                     <i class="fa-solid fa-star text-[11px]"></i>
                     Programa de Puntos Acumulables
                 </span>
-                <h1 class="font-heading font-extrabold text-2xl sm:text-3xl text-white">
+                <h1 class="font-heading font-extrabold text-xl sm:text-2xl md:text-3xl text-white leading-tight break-words">
                     ¡Aprende, acumula puntos y desbloquea beneficios!
                 </h1>
                 <p class="text-xs sm:text-sm text-slate-200/90 max-w-2xl leading-relaxed">
@@ -97,21 +98,27 @@
                     @php
                         $estado = $b->estadoParaUsuario($usuario);
                         $porcentaje = $b->porcentajeProgreso($usuario);
-                        $canjeRealizado = $canjes->firstWhere('beneficio_id', $b->id);
+                        $canjeRealizado = $canjes->firstWhere('beneficio_id', $b->id)
+                            ?? \App\Models\CanjeBeneficio::where('usuario_id', $usuario->id)->where('beneficio_id', $b->id)->latest()->first();
                     @endphp
-                    <div class="bg-white rounded-3xl border {{ $estado === 'DISPONIBLE' ? 'border-amber-400 ring-2 ring-amber-300/40' : ($estado === 'CANJEADO' ? 'border-emerald-300 bg-emerald-50/20' : 'border-line/80') }} p-5 shadow-2xs flex flex-col justify-between transition-all duration-200 hover:shadow-xs">
+                    <div class="bg-white rounded-3xl border {{ $estado === 'DISPONIBLE' ? 'border-amber-400 ring-2 ring-amber-300/40' : ($estado === 'CANJEADO' ? 'border-emerald-300 bg-emerald-50/20' : ($estado === 'SOLICITADO' ? 'border-blue-300 ring-2 ring-blue-300/40 bg-blue-50/20' : 'border-line/80')) }} p-5 shadow-2xs flex flex-col justify-between transition-all duration-200 hover:shadow-xs">
                         <div class="space-y-3">
                             <!-- Cabecera de la tarjeta -->
                             <div class="flex items-start justify-between gap-3">
-                                <div class="w-12 h-12 rounded-2xl {{ $estado === 'CANJEADO' ? 'bg-emerald-100 text-emerald-700' : ($estado === 'DISPONIBLE' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500') }} flex items-center justify-center text-xl shrink-0">
+                                <div class="w-12 h-12 rounded-2xl {{ $estado === 'CANJEADO' ? 'bg-emerald-100 text-emerald-700' : ($estado === 'SOLICITADO' ? 'bg-blue-100 text-blue-700' : ($estado === 'DISPONIBLE' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500')) }} flex items-center justify-center text-xl shrink-0">
                                     <i class="fa-solid {{ $b->icono ?: 'fa-gift' }}"></i>
                                 </div>
 
                                 <!-- Badge de estado -->
                                 @if($estado === 'CANJEADO')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
                                         <i class="fa-solid fa-circle-check text-[10px]"></i>
                                         Canjeado
+                                    </span>
+                                @elseif($estado === 'SOLICITADO')
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-100 text-blue-800 border border-blue-200 animate-pulse">
+                                        <i class="fa-solid fa-clock text-[10px]"></i>
+                                        Por Reclamar
                                     </span>
                                 @elseif($estado === 'DISPONIBLE')
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-amber-100 text-amber-800 animate-pulse">
@@ -147,14 +154,18 @@
                             <div class="space-y-1.5 pt-1">
                                 <div class="flex items-center justify-between text-[11px]">
                                     <span class="text-muted font-medium">
-                                        {{ min($usuario->puntos_saldo, $b->puntos_requeridos) }} de {{ $b->puntos_requeridos }} puntos
+                                        @if($estado === 'CANJEADO' || $estado === 'SOLICITADO')
+                                            {{ $b->puntos_requeridos }} de {{ $b->puntos_requeridos }} puntos
+                                        @else
+                                            {{ min($usuario->puntos_saldo, $b->puntos_requeridos) }} de {{ $b->puntos_requeridos }} puntos
+                                        @endif
                                     </span>
                                     <span class="font-bold {{ $porcentaje >= 100 ? 'text-emerald-600' : 'text-slate-600' }}">
                                         {{ $porcentaje }}%
                                     </span>
                                 </div>
                                 <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                                    <div class="h-2.5 rounded-full transition-all duration-500 {{ $porcentaje >= 100 ? 'bg-linear-to-r from-amber-400 to-emerald-500' : 'bg-linear-to-r from-brand-blue to-amber-500' }}"
+                                    <div class="h-2.5 rounded-full transition-all duration-500 {{ $porcentaje >= 100 ? 'bg-linear-to-r from-emerald-500 to-teal-500' : 'bg-linear-to-r from-brand-blue to-amber-500' }}"
                                          style="width: {{ $porcentaje }}%"></div>
                                 </div>
                             </div>
@@ -162,18 +173,45 @@
 
                         <!-- Acción o Estado final -->
                         <div class="pt-4 mt-3 border-t border-line/60">
-                            @if($estado === 'CANJEADO')
-                                <div class="bg-emerald-50 border border-emerald-200/80 rounded-xl p-2.5 text-center">
-                                    <span class="block text-[10px] uppercase font-bold text-emerald-800 tracking-wider">Código de Canje</span>
-                                    <span class="font-mono font-extrabold text-xs text-emerald-900 tracking-widest">{{ $canjeRealizado->codigo_canje ?? 'CNJ-OK' }}</span>
-                                    <span class="block text-[10px] text-emerald-700 mt-0.5">Presenta este código a Gestión Humana</span>
+                            @if($estado === 'CANJEADO' && $canjeRealizado)
+                                <div class="bg-emerald-50/90 border border-emerald-200 rounded-2xl p-3.5 text-center space-y-2.5 shadow-2xs">
+                                    <div class="flex items-center justify-center gap-1.5 text-emerald-800 text-[11px] font-bold uppercase tracking-wider">
+                                        <i class="fa-solid fa-circle-check text-emerald-600 text-xs"></i>
+                                        <span>Beneficio Canjeado</span>
+                                    </div>
+                                    <button type="button"
+                                            onclick="mostrarQrPorCanje({{ $canjeRealizado->id }})"
+                                            style="background-color: #059669 !important; color: #ffffff !important;"
+                                            class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-extrabold text-xs shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                        <i class="fa-solid fa-qrcode text-sm text-white"></i>
+                                        <span class="text-white font-bold">Ver mi Código QR</span>
+                                    </button>
+                                    <span class="block text-[10px] text-emerald-700 font-medium">
+                                        Recibido el {{ $canjeRealizado->fecha_entrega ? $canjeRealizado->fecha_entrega->format('d/m/Y H:i') : ($canjeRealizado->fecha_canje ? $canjeRealizado->fecha_canje->format('d/m/Y H:i') : '—') }}
+                                    </span>
+                                </div>
+                            @elseif($estado === 'SOLICITADO' && $canjeRealizado)
+                                <div class="bg-blue-50/90 border border-blue-200 rounded-2xl p-3.5 text-center space-y-2.5 shadow-2xs">
+                                    <div class="flex items-center justify-center gap-1.5 text-blue-900 text-[11px] font-bold uppercase tracking-wider">
+                                        <i class="fa-solid fa-clock text-brand-blue text-xs"></i>
+                                        <span>Pendiente de Entrega</span>
+                                    </div>
+                                    <button type="button"
+                                            onclick="mostrarQrPorCanje({{ $canjeRealizado->id }})"
+                                            style="background-color: #0056b3 !important; color: #ffffff !important;"
+                                            class="w-full py-2.5 px-3 rounded-xl bg-brand-blue hover:bg-brand-dark text-white font-heading font-extrabold text-xs shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                        <i class="fa-solid fa-qrcode text-sm text-white"></i>
+                                        <span class="text-white font-bold">Presentar mi Código QR</span>
+                                    </button>
+                                    <span class="block text-[10.5px] text-blue-800 font-medium">Presenta este QR a Gestión Humana para confirmar</span>
                                 </div>
                             @elseif($estado === 'DISPONIBLE')
                                 <button type="button"
                                         onclick="abrirModalCanje('{{ $b->id }}', '{{ addslashes($b->nombre) }}', {{ $b->puntos_requeridos }})"
-                                        class="w-full py-2.5 px-4 rounded-xl bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-heading font-extrabold text-xs shadow-2xs hover:shadow-xs transition transform hover:scale-101 flex items-center justify-center gap-2 cursor-pointer">
-                                    <i class="fa-solid fa-gift"></i>
-                                    <span>Reclamar Beneficio</span>
+                                        style="background-color: #d97706 !important; color: #ffffff !important;"
+                                        class="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-heading font-extrabold text-xs shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-gift text-sm text-white"></i>
+                                    <span class="text-white font-bold">Reclamar Beneficio</span>
                                 </button>
                             @else
                                 <div class="text-center py-2 px-3 rounded-xl bg-slate-50 border border-slate-200/60 text-slate-500 text-xs font-medium flex items-center justify-center gap-1.5">
@@ -333,8 +371,173 @@
     </div>
 </div>
 
+<!-- MODAL DE VISUALIZACIÓN DE CÓDIGO QR -->
+<div id="modal-qr-canje" class="fixed inset-0 z-50 hidden bg-brand-dark/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm sm:max-w-md w-full p-6 shadow-2xl border border-line space-y-4 animate-in fade-in zoom-in-95 duration-150 relative max-h-[92vh] overflow-y-auto">
+        <!-- Botón cerrar X -->
+        <button type="button" onclick="cerrarModalQrCanje()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition p-2">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+
+        <div class="text-center space-y-1.5">
+            <div class="w-14 h-14 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-2xl mx-auto shadow-md">
+                <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <h3 class="font-heading font-extrabold text-lg text-brand-dark">Código QR del Beneficio</h3>
+            <p class="text-xs text-muted max-w-xs mx-auto">
+                Escanéalo con la cámara de cualquier teléfono celular o preséntalo directamente en Gestión Humana.
+            </p>
+        </div>
+
+        <!-- Contenedor del QR -->
+        <div class="flex flex-col items-center justify-center p-5 bg-white rounded-2xl border-2 border-dashed border-emerald-300 shadow-inner">
+            <div id="qr-target" class="flex items-center justify-center bg-white p-2 rounded-xl"></div>
+            <div class="mt-3 flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                <i class="fa-solid fa-circle-check text-[10px]"></i>
+                <span id="modal-qr-codigo-label">QR Único</span>
+            </div>
+
+            <!-- Indicador de URL pública / Ngrok para escaneo móvil -->
+            <div class="mt-2.5 flex items-center justify-between gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200/90 rounded-xl text-[10.5px] w-full max-w-[320px]">
+                <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                    <span class="font-bold text-slate-700 shrink-0">URL:</span>
+                    <span id="modal-qr-url-badge" class="text-slate-600 truncate font-mono text-[10px]"></span>
+                </div>
+                <button type="button" onclick="configurarNgrokCanje()" class="text-cyan-700 hover:text-cyan-900 font-bold shrink-0 text-[10px] flex items-center gap-1 hover:underline cursor-pointer" title="Configurar o cambiar URL pública de Ngrok">
+                    <i class="fa-solid fa-bolt text-amber-500"></i>
+                    <span>Túnel</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Ficha de detalles del canje codificados en el QR -->
+        <div class="bg-slate-50 rounded-2xl p-4 border border-line/80 space-y-2 text-xs">
+            <div class="flex items-start justify-between gap-3">
+                <span class="text-muted font-medium shrink-0">Colaborador:</span>
+                <span id="modal-qr-colaborador" class="font-bold text-brand-dark text-right"></span>
+            </div>
+            <div class="flex items-start justify-between gap-3">
+                <span class="text-muted font-medium shrink-0">Área:</span>
+                <span id="modal-qr-area" class="font-bold text-brand-dark text-right"></span>
+            </div>
+            <div class="flex items-start justify-between gap-3">
+                <span class="text-muted font-medium shrink-0">Beneficio:</span>
+                <span id="modal-qr-beneficio" class="font-bold text-emerald-700 text-right"></span>
+            </div>
+            <div class="flex items-start justify-between gap-3 pt-2 border-t border-line/60">
+                <span class="text-muted font-medium shrink-0">Fecha de Canje:</span>
+                <span id="modal-qr-fecha" class="font-semibold text-slate-600 text-right"></span>
+            </div>
+            <div class="flex items-start justify-between gap-3 pt-2 border-t border-line/60">
+                <span class="text-muted font-medium shrink-0">Estado:</span>
+                <span id="modal-qr-estado-badge" class="font-bold text-right"></span>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
+            <button type="button" onclick="descargarImagenQr()" class="flex-1 py-2.5 px-4 rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-heading font-extrabold text-xs shadow-2xs hover:shadow-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-download"></i>
+                <span>Descargar Imagen QR</span>
+            </button>
+            <button type="button" onclick="cerrarModalQrCanje()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Script QRCode -->
+<script src="{{ asset('qrcode.min.js') }}"></script>
+<script>
+if (typeof QRCode === 'undefined') {
+    document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
+}
+</script>
+
 <script>
 const saldoActual = {{ (int) $usuario->puntos_saldo }};
+let currentQrInstance = null;
+let currentQrData = '';
+let currentQrNombre = '';
+let currentCanjeActivo = null;
+
+// Base Ngrok detectada automáticamente por el servidor o guardada en local
+let URL_NGROK_BASE = localStorage.getItem('pny_ngrok_url') || @json($urlNgrokBase) || '';
+
+// Si estamos navegando a través de un túnel ngrok directamente en el navegador
+if (window.location.hostname.includes('ngrok')) {
+    URL_NGROK_BASE = window.location.origin;
+}
+
+// Almacén seguro de canjes para evitar errores de sintaxis en atributos HTML
+window.canjesUsuario = {
+    @foreach($canjes as $c)
+        {{ $c->id }}: {
+            id: {{ $c->id }},
+            beneficio: @js($c->beneficio?->nombre ?? 'Beneficio'),
+            codigo: @js($c->codigo_canje),
+            url_verificacion: @js($c->url_verificacion),
+            colaborador: @js($usuario->nombre_completo),
+            area: @js($usuario->area?->nombre ?? ($usuario->sedeActual()?->nombre ?? 'Sin área asignada')),
+            fecha: @js($c->fecha_canje ? $c->fecha_canje->format('d/m/Y H:i') : now()->format('d/m/Y H:i')),
+            estado: @js($c->estado),
+            fecha_entrega: @js($c->fecha_entrega ? $c->fecha_entrega->format('d/m/Y H:i') : null)
+        },
+    @endforeach
+};
+
+function resolverUrlCanje(codigo, fallbackUrl) {
+    if (URL_NGROK_BASE) {
+        return URL_NGROK_BASE.replace(/\/+$/, '') + '/canje/verificar/' + codigo;
+    }
+    if (window.location.hostname.includes('ngrok')) {
+        return window.location.origin + '/canje/verificar/' + codigo;
+    }
+    if (fallbackUrl && !fallbackUrl.includes('.test')) {
+        return fallbackUrl;
+    }
+    return window.location.origin + '/canje/verificar/' + codigo;
+}
+
+function mostrarQrPorCanje(canjeId) {
+    const data = window.canjesUsuario ? window.canjesUsuario[canjeId] : null;
+    if (!data) {
+        console.error('Canje no encontrado para ID:', canjeId);
+        return;
+    }
+    currentCanjeActivo = data;
+    const urlFinal = resolverUrlCanje(data.codigo, data.url_verificacion);
+    abrirModalQrCanje(
+        data.beneficio,
+        data.codigo,
+        urlFinal,
+        data.colaborador,
+        data.area,
+        data.fecha,
+        data.estado,
+        data.fecha_entrega
+    );
+}
+
+function configurarNgrokCanje() {
+    const actual = URL_NGROK_BASE || 'https://xxxx.ngrok-free.dev';
+    const nueva = prompt('Ingresa la URL pública de Ngrok para escanear con celulares:', actual);
+    if (nueva !== null) {
+        const limpia = nueva.trim().replace(/\/+$/, '');
+        if (limpia) {
+            URL_NGROK_BASE = limpia;
+            localStorage.setItem('pny_ngrok_url', limpia);
+        } else {
+            URL_NGROK_BASE = '';
+            localStorage.removeItem('pny_ngrok_url');
+        }
+        if (currentCanjeActivo) {
+            mostrarQrPorCanje(currentCanjeActivo.id);
+        }
+    }
+}
 
 function abrirModalCanje(beneficioId, nombre, puntos) {
     document.getElementById('modal-canje-nombre').textContent = nombre;
@@ -352,11 +555,107 @@ function cerrarModalCanje() {
     document.getElementById('modal-canje').classList.add('hidden');
 }
 
+function abrirModalQrCanje(beneficioNombre, codigo, qrUrl, colaborador, area, fecha, estado, fechaEntrega) {
+    document.getElementById('modal-qr-beneficio').textContent = beneficioNombre;
+    document.getElementById('modal-qr-codigo-label').textContent = codigo;
+    document.getElementById('modal-qr-colaborador').textContent = colaborador;
+    document.getElementById('modal-qr-area').textContent = area;
+    document.getElementById('modal-qr-fecha').textContent = fecha;
+
+    const estadoBadge = document.getElementById('modal-qr-estado-badge');
+    if (estadoBadge) {
+        if (estado === 'CANJEADO') {
+            const fechaTxt = fechaEntrega ? ` (${fechaEntrega})` : '';
+            estadoBadge.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-200"><i class="fa-solid fa-circle-check"></i> Canjeado y Recibido${fechaTxt}</span>`;
+        } else {
+            estadoBadge.innerHTML = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] bg-blue-100 text-blue-800 font-extrabold border border-blue-200 animate-pulse"><i class="fa-solid fa-clock"></i> Pendiente de Entrega</span>`;
+        }
+    }
+
+    const urlBadge = document.getElementById('modal-qr-url-badge');
+    if (urlBadge) {
+        urlBadge.textContent = qrUrl;
+        urlBadge.title = qrUrl;
+    }
+
+    currentQrData = qrUrl;
+    currentQrNombre = beneficioNombre;
+
+    // Mostrar modal primero para que el contenedor esté visible y renderice correctamente
+    document.getElementById('modal-qr-canje').classList.remove('hidden');
+
+    const qrContainer = document.getElementById('qr-target');
+    qrContainer.innerHTML = '';
+
+    // Generar el código QR con la URL pública
+    if (typeof QRCode !== 'undefined') {
+        try {
+            currentQrInstance = new QRCode(qrContainer, {
+                text: qrUrl,
+                width: 200,
+                height: 200,
+                colorDark: "#002d5e",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } catch (e1) {
+            console.warn('Error en QRCode local, usando renderizador alternativo:', e1);
+            qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" alt="Código QR Canje" class="w-[200px] h-[200px] object-contain rounded-lg">`;
+        }
+    } else {
+        qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" alt="Código QR Canje" class="w-[200px] h-[200px] object-contain rounded-lg">`;
+    }
+}
+
+function cerrarModalQrCanje() {
+    document.getElementById('modal-qr-canje').classList.add('hidden');
+}
+
+function descargarImagenQr() {
+    const qrContainer = document.getElementById('qr-target');
+    const img = qrContainer.querySelector('img');
+    const canvas = qrContainer.querySelector('canvas');
+    let dataUrl = null;
+
+    if (canvas) {
+        dataUrl = canvas.toDataURL("image/png");
+    } else if (img && img.src) {
+        dataUrl = img.src;
+    }
+
+    if (dataUrl) {
+        const link = document.createElement('a');
+        link.download = 'Canje-QR-' + (currentQrNombre.replace(/\s+/g, '-')) + '.png';
+        link.href = dataUrl;
+        link.click();
+    }
+}
+
 // Cerrar con Escape
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         cerrarModalCanje();
+        cerrarModalQrCanje();
     }
 });
+
+// Si recién se confirmó un canje con éxito, abrir inmediatamente el modal con el QR generado
+@if(session('canje_exitoso'))
+document.addEventListener('DOMContentLoaded', function() {
+    const c = @js(session('canje_exitoso'));
+    if (c) {
+        currentCanjeActivo = c;
+        const urlFinal = resolverUrlCanje(c.codigo, c.url_verificacion);
+        abrirModalQrCanje(
+            c.beneficio,
+            c.codigo,
+            urlFinal,
+            c.nombre,
+            c.area,
+            c.fecha
+        );
+    }
+});
+@endif
 </script>
 @endsection

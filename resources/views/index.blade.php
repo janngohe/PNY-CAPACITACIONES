@@ -354,10 +354,10 @@
              HEADER CORPORATIVO (SIN "PORTAL DE CAPACITACIONES", SOLO RAZÓN SOCIAL)
              ==================================================================== -->
         <header class="w-full glass-header sticky top-0 z-40" aria-label="Cabecera principal de C.I. Piscícola New York">
-            <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-3.5 flex items-center justify-between gap-4">
+            <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-3.5 flex items-center justify-center sm:justify-between gap-4">
                 
                 <!-- Logo & Razón Social Limpia (Sin "Portal de Capacitaciones") -->
-                <div class="flex items-center gap-3.5">
+                <div class="flex items-center justify-center gap-3 sm:gap-3.5 text-center sm:text-left">
                     <div class="h-11 sm:h-12 md:h-13 flex items-center justify-center p-1 rounded-xl bg-white shadow-xs border border-slate-200/80">
                         <img src="{{ asset('images/Logo.png') }}" 
                              alt="Logo C.I. Piscícola New York" 
@@ -368,8 +368,8 @@
                     </div>
                 </div>
 
-                <!-- Insignia Corporativa Limpia de Acceso Seguro -->
-                <div class="flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border shadow-2xs backdrop-blur-md"
+                <!-- Insignia Corporativa Limpia de Acceso Seguro (Oculta en móvil) -->
+                <div class="hidden sm:flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border shadow-2xs backdrop-blur-md"
                      style="background: var(--badge-bg); border-color: var(--badge-border); color: var(--badge-text);">
                     <span class="w-2 h-2 rounded-full bg-cyan-600 animate-pulse"></span>
                     <span>Acceso Seguro</span>

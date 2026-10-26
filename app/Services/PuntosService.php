@@ -107,19 +107,43 @@ class PuntosService
             $userBloqueado->save();
             $usuario->puntos_saldo = $saldoNuevo;
 
-            // Generar código de canje único
-            $codigo = 'CNJ-' . strtoupper(Str::random(8));
+            // Generar código QR único
+            $codigo = 'QR-' . strtoupper(Str::random(10));
             while (CanjeBeneficio::where('codigo_canje', $codigo)->exists()) {
-                $codigo = 'CNJ-' . strtoupper(Str::random(8));
+                $codigo = 'QR-' . strtoupper(Str::random(10));
             }
+
+            $userBloqueado->loadMissing(['area', 'sede']);
+            $empleadoNombre = $userBloqueado->nombre_completo;
+            $empleadoDoc = $userBloqueado->identificacion ? 'CC ' . $userBloqueado->identificacion : '—';
+            $areaNombre = $userBloqueado->area?->nombre ?? ($userBloqueado->sedeActual()?->nombre ?? 'Sin área asignada');
+            $beneficioNombre = $beneficio->nombre;
+            $fechaCanje = now();
+            $fechaTexto = $fechaCanje->format('d/m/Y H:i');
+            $urlVerif = CanjeBeneficio::resolverUrlBasePublica() . '/canje/verificar/' . $codigo;
+
+            // Contenido completo del código QR legible por cualquier cámara de smartphone
+            $qrData = "C.I. PISCÍCOLA NEW YORK\n"
+                . "CANJE DE BENEFICIO AUTORIZADO\n"
+                . "----------------------------------------\n"
+                . "Colaborador: {$empleadoNombre}\n"
+                . "Identificación: {$empleadoDoc}\n"
+                . "Área: {$areaNombre}\n"
+                . "Beneficio: {$beneficioNombre}\n"
+                . "Puntos: {$puntosRequeridos} pts\n"
+                . "Código QR: {$codigo}\n"
+                . "Fecha: {$fechaTexto}\n"
+                . "Estado: SOLICITADO (PENDIENTE DE ENTREGA)\n"
+                . "Verificar: {$urlVerif}";
 
             $canje = CanjeBeneficio::create([
                 'usuario_id' => $userBloqueado->id,
                 'beneficio_id' => $beneficio->id,
                 'puntos_utilizados' => $puntosRequeridos,
-                'estado' => 'CANJEADO',
+                'estado' => 'SOLICITADO',
                 'codigo_canje' => $codigo,
-                'fecha_canje' => now(),
+                'qr_data' => $qrData,
+                'fecha_canje' => $fechaCanje,
                 'notas' => 'Canje solicitado a través del portal de empleados.',
             ]);
 
@@ -131,7 +155,7 @@ class PuntosService
                 'puntos' => -$puntosRequeridos,
                 'saldo_anterior' => $saldoAnterior,
                 'saldo_nuevo' => $saldoNuevo,
-                'motivo' => "Canje de beneficio: {$beneficio->nombre} (Cód: {$codigo})",
+                'motivo' => "Canje de beneficio: {$beneficio->nombre} (QR: {$codigo})",
             ]);
 
             return $canje;

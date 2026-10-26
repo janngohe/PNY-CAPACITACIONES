@@ -60,6 +60,7 @@ class BeneficioController extends Controller
                     return [
                         'id' => $c->id,
                         'codigo' => $c->codigo_canje,
+                        'qr_data' => $c->qr_contenido,
                         'empleado' => $u ? $u->nombre_completo : 'Colaborador no encontrado',
                         'documento' => $u ? $u->identificacion : '—',
                         'cargo' => $u ? $u->cargoOficial() : '—',
@@ -68,6 +69,8 @@ class BeneficioController extends Controller
                         'puntos' => $c->puntos_utilizados,
                         'fecha' => $c->fecha_canje ? $c->fecha_canje->format('d/m/Y H:i') : ($c->created_at ? $c->created_at->format('d/m/Y H:i') : '—'),
                         'estado' => $c->estado ?? 'CANJEADO',
+                        'entregado_por' => $c->entregado_por,
+                        'fecha_entrega' => $c->fecha_entrega ? $c->fecha_entrega->format('d/m/Y H:i') : null,
                     ];
                 })->values(),
             ]];

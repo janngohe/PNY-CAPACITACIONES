@@ -34,16 +34,16 @@ class Beneficio extends Model
 
     /**
      * Determina el estado del beneficio para un usuario específico.
-     * Retorna: 'CANJEADO', 'DISPONIBLE' o 'PENDIENTE'.
+     * Retorna: 'CANJEADO', 'SOLICITADO', 'DISPONIBLE' o 'PENDIENTE'.
      */
     public function estadoParaUsuario(Usuario $usuario): string
     {
-        $yaCanjeado = $this->canjes()
+        $canje = $this->canjes()
             ->where('usuario_id', $usuario->id)
-            ->exists();
+            ->first();
 
-        if ($yaCanjeado) {
-            return 'CANJEADO';
+        if ($canje) {
+            return $canje->estado; // 'CANJEADO' o 'SOLICITADO'
         }
 
         if (($usuario->puntos_saldo ?? 0) >= $this->puntos_requeridos) {
@@ -58,6 +58,11 @@ class Beneficio extends Model
      */
     public function porcentajeProgreso(Usuario $usuario): int
     {
+        $estado = $this->estadoParaUsuario($usuario);
+        if ($estado === 'CANJEADO' || $estado === 'SOLICITADO') {
+            return 100;
+        }
+
         if ($this->puntos_requeridos <= 0) {
             return 100;
         }

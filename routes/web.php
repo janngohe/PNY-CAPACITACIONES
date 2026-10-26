@@ -58,3 +58,9 @@ Route::get('/asistencia/{codigo?}', [AsistenciaController::class, 'formulario'])
 Route::post('/asistencia/buscar-identificacion', [AsistenciaController::class, 'buscarIdentificacion'])->name('induccion.asistencia.buscar');
 Route::post('/asistencia/{codigo}/registrar', [AsistenciaController::class, 'registrar'])->name('induccion.asistencia.registrar');
 
+// Verificación y confirmación pública de Canje de Beneficios vía Código QR
+Route::get('/canje/verificar/{codigo}', [App\Http\Controllers\Empleado\BeneficioController::class, 'verificarCanjePublico'])->name('canje.verificar');
+Route::match(['get', 'post'], '/canje/buscar-responsable', [App\Http\Controllers\Empleado\BeneficioController::class, 'buscarResponsable'])->name('canje.buscar_responsable');
+Route::post('/canje/confirmar/{codigo}', [App\Http\Controllers\Empleado\BeneficioController::class, 'confirmarCanjePublico'])->name('canje.confirmar');
+
+

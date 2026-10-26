@@ -298,7 +298,7 @@
                 <table class="w-full text-left text-xs text-brand-dark">
                     <thead class="bg-slate-50 text-muted uppercase text-[10px] font-bold border-b border-line sticky top-0">
                         <tr>
-                            <th class="py-2.5 px-3">Código</th>
+                            <th class="py-2.5 px-3">Código QR</th>
                             <th class="py-2.5 px-3">Colaborador</th>
                             <th class="py-2.5 px-3">Sede</th>
                             <th class="py-2.5 px-3">Área</th>
@@ -394,7 +394,12 @@ function renderizarFilasModal(lista, totalOriginal) {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/60 transition';
         tr.innerHTML = `
-            <td class="py-2.5 px-3 font-mono font-bold text-brand-blue text-[11px] whitespace-nowrap">${c.codigo}</td>
+            <td class="py-2.5 px-3 whitespace-nowrap">
+                <span class="inline-flex items-center gap-1 font-mono font-bold text-brand-blue text-[11px] bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">
+                    <i class="fa-solid fa-qrcode text-[10px]"></i>
+                    ${c.codigo}
+                </span>
+            </td>
             <td class="py-2.5 px-3">
                 <div class="font-bold text-brand-dark text-xs">${c.empleado}</div>
                 <div class="text-[10px] text-muted flex items-center gap-1.5 mt-0.5">
@@ -416,9 +421,10 @@ function renderizarFilasModal(lista, totalOriginal) {
             </td>
             <td class="py-2.5 px-3 text-muted text-[11px] whitespace-nowrap">${c.fecha}</td>
             <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700">
-                    ${c.estado}
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${c.estado === 'CANJEADO' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+                    ${c.estado === 'CANJEADO' ? 'Canjeado' : (c.estado === 'SOLICITADO' ? 'Por Reclamar' : c.estado)}
                 </span>
+                ${c.entregado_por ? `<div class="text-[9.5px] text-slate-500 font-normal mt-0.5 truncate max-w-[180px] text-right" title="Entregado por: ${c.entregado_por}">Entregó: ${c.entregado_por.split('(')[0].trim()}</div>` : ''}
             </td>
         `;
         tbody.appendChild(tr);
@@ -428,9 +434,12 @@ function renderizarFilasModal(lista, totalOriginal) {
         card.className = 'bg-slate-50/90 border border-line/80 rounded-2xl p-3.5 space-y-2.5 w-full';
         card.innerHTML = `
             <div class="flex items-center justify-between border-b border-line/60 pb-2">
-                <span class="font-mono font-bold text-brand-blue text-xs tracking-wider">${c.codigo}</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700">
-                    ${c.estado}
+                <span class="inline-flex items-center gap-1 font-mono font-bold text-brand-blue text-xs tracking-wider bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">
+                    <i class="fa-solid fa-qrcode text-[11px]"></i>
+                    ${c.codigo}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${c.estado === 'CANJEADO' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">
+                    ${c.estado === 'CANJEADO' ? 'Canjeado' : (c.estado === 'SOLICITADO' ? 'Por Reclamar' : c.estado)}
                 </span>
             </div>
             <div>
@@ -455,6 +464,12 @@ function renderizarFilasModal(lista, totalOriginal) {
                         <span>${c.area}</span>
                     </span>
                 </div>
+                ${c.entregado_por ? `
+                    <div class="mt-1 text-[10px] text-slate-600 bg-white px-2 py-1 rounded-lg border border-line/60 flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-check text-emerald-600 text-[10px] shrink-0"></i>
+                        <span class="truncate"><strong>Entregó:</strong> ${c.entregado_por}</span>
+                    </div>
+                ` : ''}
             </div>
             <div class="flex items-center justify-between pt-2 border-t border-line/50 text-[11px] text-muted">
                 <span class="flex items-center gap-1">
