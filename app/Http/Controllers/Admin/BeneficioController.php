@@ -20,7 +20,12 @@ class BeneficioController extends Controller
         $estado = $request->query('estado', 'todos');
 
         $query = Beneficio::withCount('canjes')
-            ->with(['canjes.usuario.area.sede', 'canjes.usuario.sede']);
+            ->with([
+                'canjes.usuario.area.sede',
+                'canjes.usuario.sede',
+                'canjes.responsable.area.sede',
+                'canjes.responsable.sede',
+            ]);
 
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
@@ -40,41 +45,64 @@ class BeneficioController extends Controller
         $todosCanjes = CanjeBeneficio::with([
             'usuario.area.sede',
             'usuario.sede',
-            'beneficio'
+            'beneficio',
+            'responsable.area.sede',
+            'responsable.sede',
         ])
-        ->orderByDesc('fecha_canje')
+        ->orderByDesc('created_at')
         ->orderByDesc('id')
         ->get();
 
         $sedes = Sede::orderBy('nombre')->get();
         $areas = Area::with('sede')->orderBy('nombre')->get();
 
-        $canjesPorBeneficio = $beneficios->mapWithKeys(function ($b) {
+        $formatearCanje = function ($c, $b = null) {
+            $u = $c->usuario;
+            $r = $c->responsable;
+            $beneficio = $b ?: $c->beneficio;
+
+            return [
+                'id' => $c->id,
+                'codigo' => $c->codigo_canje,
+                'qr_data' => $c->qr_contenido,
+                'url_verificacion' => $c->url_verificacion,
+                'beneficio_id' => $beneficio ? $beneficio->id : null,
+                'beneficio_nombre' => $beneficio ? $beneficio->nombre : 'Incentivo',
+                'beneficio_icono' => $beneficio ? ($beneficio->icono ?: 'fa-gift') : 'fa-gift',
+                'empleado' => $u ? $u->nombre_completo : 'Colaborador no encontrado',
+                'documento' => $u ? $u->identificacion : '—',
+                'cargo' => $u ? $u->cargoOficial() : '—',
+                'sede' => $u && $u->sedeActual() ? $u->sedeActual()->nombre : 'Sin sede asignada',
+                'area' => $u && $u->area ? $u->area->nombre : 'Sin área asignada',
+                'puntos' => $c->puntos_utilizados ?? ($beneficio?->puntos_requeridos ?? 0),
+                'fecha' => $c->fecha_canje ? $c->fecha_canje->format('d/m/Y H:i') : ($c->created_at ? $c->created_at->format('d/m/Y H:i') : '—'),
+                'fecha_raw' => $c->created_at ? $c->created_at->format('Y-m-d H:i:s') : null,
+                'estado' => $c->estado ?? 'CANJEADO',
+                'entregado_por' => $c->entregado_por,
+                'fecha_entrega' => $c->fecha_entrega ? $c->fecha_entrega->format('d/m/Y H:i') : null,
+                'responsable_nombre' => $r ? $r->nombre_completo : ($c->entregado_por ? trim(explode('(', $c->entregado_por)[0]) : null),
+                'responsable_cc' => $c->responsable_cc ?: ($r ? $r->identificacion : null),
+                'responsable_cargo' => $r ? $r->cargoOficial() : null,
+                'responsable_sede' => $r && $r->sedeActual() ? $r->sedeActual()->nombre : null,
+                'responsable_area' => $r && $r->area ? $r->area->nombre : null,
+            ];
+        };
+
+        $canjesPorBeneficio = $beneficios->mapWithKeys(function ($b) use ($formatearCanje) {
             return [$b->id => [
                 'id' => $b->id,
                 'nombre' => $b->nombre,
                 'puntos' => $b->puntos_requeridos,
                 'icono' => $b->icono ?: 'fa-gift',
-                'canjes' => $b->canjes->map(function ($c) {
-                    $u = $c->usuario;
-                    return [
-                        'id' => $c->id,
-                        'codigo' => $c->codigo_canje,
-                        'qr_data' => $c->qr_contenido,
-                        'empleado' => $u ? $u->nombre_completo : 'Colaborador no encontrado',
-                        'documento' => $u ? $u->identificacion : '—',
-                        'cargo' => $u ? $u->cargoOficial() : '—',
-                        'sede' => $u && $u->sedeActual() ? $u->sedeActual()->nombre : 'Sin sede asignada',
-                        'area' => $u && $u->area ? $u->area->nombre : 'Sin área asignada',
-                        'puntos' => $c->puntos_utilizados,
-                        'fecha' => $c->fecha_canje ? $c->fecha_canje->format('d/m/Y H:i') : ($c->created_at ? $c->created_at->format('d/m/Y H:i') : '—'),
-                        'estado' => $c->estado ?? 'CANJEADO',
-                        'entregado_por' => $c->entregado_por,
-                        'fecha_entrega' => $c->fecha_entrega ? $c->fecha_entrega->format('d/m/Y H:i') : null,
-                    ];
+                'canjes' => $b->canjes->map(function ($c) use ($b, $formatearCanje) {
+                    return $formatearCanje($c, $b);
                 })->values(),
             ]];
         });
+
+        $todosCanjesArray = $todosCanjes->map(function ($c) use ($formatearCanje) {
+            return $formatearCanje($c);
+        })->values();
 
         $totalCanjes = CanjeBeneficio::count();
         $puntosCanjeados = abs((int) MovimientoPuntos::where('tipo', 'CANJE')->sum('puntos'));
@@ -87,6 +115,8 @@ class BeneficioController extends Controller
             'activos' => Beneficio::where('estado', true)->count(),
             'inactivos' => Beneficio::where('estado', false)->count(),
             'total_canjes' => $totalCanjes,
+            'pendientes' => CanjeBeneficio::where('estado', 'SOLICITADO')->count(),
+            'canjeados' => CanjeBeneficio::where('estado', 'CANJEADO')->count(),
             'puntos_canjeados' => $puntosCanjeados,
             'colaboradores_canje' => CanjeBeneficio::distinct('usuario_id')->count('usuario_id'),
         ];
@@ -94,6 +124,7 @@ class BeneficioController extends Controller
         return view('admin.beneficios.index', compact(
             'beneficios',
             'todosCanjes',
+            'todosCanjesArray',
             'canjesPorBeneficio',
             'sedes',
             'areas',
