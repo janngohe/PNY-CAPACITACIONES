@@ -633,23 +633,37 @@
         <!-- COLUMNA DERECHA: PANEL FIJO DE ASISTENCIA Y QR EN VIVO -->
         <aside class="sidebar-column" id="sidebarColumn">
 
-            <!-- Bloque 1: Código QR y Código Manual de Acceso -->
-            <div class="p-4 bg-slate-50 border-b border-slate-200 text-center relative shrink-0">
+            <!-- Barra Superior Móvil: Solo visible en móvil para ampliar el QR y ver código -->
+            <div class="lg:hidden p-3 bg-white border-b border-slate-200 shrink-0 flex items-center justify-between gap-2 shadow-2xs">
+                <button type="button" onclick="abrirModalQR()"
+                        class="px-3.5 py-1.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all">
+                    <i class="fa-solid fa-qrcode text-xs"></i>
+                    <span>Ampliar QR</span>
+                </button>
+
+                <div class="flex items-center gap-2 min-w-0">
+                    <div class="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+                        <span>Cód:</span>
+                        <strong class="font-bold text-brand-deep bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 cursor-pointer select-all" onclick="copiarCodigo()" title="Copiar código">{{ $sesion->codigo_sesion }}</strong>
+                    </div>
+
+                    <button type="button" onclick="cambiarModoVistaMovil('slides')"
+                            class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-chalkboard text-brand-blue text-[11px]"></i>
+                        <span>Slides</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bloque 1: Código QR y Código Manual de Acceso (Solo visible en pantalla grande/proyector >= lg) -->
+            <div class="hidden lg:block p-4 bg-slate-50 border-b border-slate-200 text-center relative shrink-0">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-[11px] font-bold text-brand-blue uppercase tracking-wider flex items-center gap-1.5">
                         <i class="fa-solid fa-qrcode"></i> Escaneo de Asistencia
                     </span>
-                    <div class="flex items-center gap-1.5">
-                        <button type="button" onclick="cambiarModoVistaMovil('slides')"
-                                class="lg:hidden text-[11px] font-bold text-slate-600 hover:text-brand-blue flex items-center gap-1 cursor-pointer bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs"
-                                title="Volver a las diapositivas">
-                            <i class="fa-solid fa-chalkboard text-[10px]"></i>
-                            <span>Diapositivas</span>
-                        </button>
-                        <button type="button" onclick="abrirModalQR()" class="text-[11px] font-bold text-brand-blue hover:text-brand-deep cursor-pointer" title="Agrandar QR para proyector">
-                            <i class="fa-solid fa-maximize mr-0.5"></i> Ampliar
-                        </button>
-                    </div>
+                    <button type="button" onclick="abrirModalQR()" class="text-[11px] font-bold text-brand-blue hover:text-brand-deep cursor-pointer" title="Agrandar QR para proyector">
+                        <i class="fa-solid fa-maximize mr-0.5"></i> Ampliar
+                    </button>
                 </div>
 
                 <!-- Lienzo QR Nítido -->
@@ -726,10 +740,14 @@
 
             <!-- Listado con scroll de asistentes que van firmando -->
             <div id="contenedorListaAsistentes" class="flex-1 overflow-y-auto p-2.5 space-y-2 bg-slate-50/40">
-                <div class="text-center py-8 text-xs text-slate-400">
-                    <i class="fa-solid fa-user-clock text-2xl text-slate-300 mb-2"></i>
-                    <div>Esperando participantes...</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5">El código QR está disponible para escanear.</div>
+                <div class="text-center py-10 px-4 text-xs text-slate-400 flex flex-col items-center justify-center">
+                    <i class="fa-solid fa-user-clock text-3xl text-slate-300 mb-2.5"></i>
+                    <div class="font-bold text-slate-600 text-xs">Esperando participantes...</div>
+                    <div class="text-[11px] text-slate-400 mt-1 max-w-xs">Pide a los asistentes que apunten al código QR para registrar su firma.</div>
+                    <button type="button" onclick="abrirModalQR()" class="mt-4 px-4 py-2 rounded-xl bg-brand-blue hover:bg-brand-deep text-white text-xs font-bold shadow-xs cursor-pointer active:scale-95 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-qrcode text-sm"></i>
+                        <span>Mostrar QR para Escanear</span>
+                    </button>
                 </div>
             </div>
 
@@ -863,8 +881,77 @@
                     </div>
                 </div>
 
-                <!-- Tabla de Asistencias -->
-                <div class="overflow-x-auto">
+                <!-- VISTA MÓVIL: TARJETAS EN COLUMNA (md:hidden) -->
+                <div id="listaCardsFinalizadosMobile" class="md:hidden p-3 space-y-3 bg-slate-50/40">
+                    @forelse($sesion->asistencias as $idx => $asistencia)
+                        @php
+                            $ini = collect(explode(' ', $asistencia->nombre_completo))->map(fn($n) => $n[0] ?? '')->take(2)->join('');
+                        @endphp
+                        <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs card-asistente-mobile space-y-3">
+                            <!-- Fila Superior: Avatar, Nombre y Estado -->
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-ocean-wave text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">
+                                        {{ strtoupper($ini) }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="font-bold text-slate-900 text-xs truncate participante-nombre">{{ $asistencia->nombre_completo }}</div>
+                                        <div class="text-[10px] text-brand-blue font-mono font-bold participante-documento">CC: {{ $asistencia->identificacion }}</div>
+                                    </div>
+                                </div>
+                                <span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
+                                    <i class="fa-solid fa-check text-[8px]"></i> Confirmado
+                                </span>
+                            </div>
+
+                            @if($asistencia->es_externo)
+                                <div>
+                                    <span class="inline-flex text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                        [EXTERNO] {{ $asistencia->empresa_externa ?? 'Contratista' }}
+                                    </span>
+                                </div>
+                            @endif
+
+                            <!-- Fila Central: Cargo / Área y Hora de registro -->
+                            <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                <div>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">Cargo / Área</div>
+                                    <div class="font-medium text-slate-800 text-[11px] truncate mt-0.5">{{ $asistencia->cargo ?? 'Colaborador' }}</div>
+                                    <div class="text-[10px] text-slate-500 truncate">{{ $asistencia->area ?? 'General' }}</div>
+                                </div>
+                                <div>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">Hora de Registro</div>
+                                    <div class="font-mono text-slate-700 text-[11px] mt-0.5 font-bold">
+                                        <i class="fa-regular fa-clock text-slate-400 mr-1 text-[10px]"></i>{{ $asistencia->fecha_registro ? $asistencia->fecha_registro->format('h:i A') : '--' }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fila Inferior: Firma Digital -->
+                            <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+                                <span class="text-[10px] font-bold text-slate-500">Firma digital:</span>
+                                @if($asistencia->firma_url)
+                                    <button type="button" onclick="verFirmaModal('{{ $asistencia->firma_url }}', '{{ addslashes($asistencia->nombre_completo) }}')"
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-blue-50 text-brand-blue rounded-lg border border-slate-200 text-[11px] font-bold shadow-2xs cursor-pointer transition-colors"
+                                            title="Ver firma digital ampliada">
+                                        <img src="{{ $asistencia->firma_url }}" alt="Firma" class="h-5 max-w-[60px] object-contain">
+                                        <span>Ver Firma</span>
+                                    </button>
+                                @else
+                                    <span class="text-[10px] text-slate-400 italic">Sin firma</span>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-10 text-center text-slate-400 text-xs">
+                            <i class="fa-solid fa-user-xmark text-3xl text-slate-300 mb-2"></i>
+                            <div>No se registraron participantes durante esta sesión de inducción.</div>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- VISTA ESCRITORIO: TABLA CLÁSICA (hidden md:block) -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-700">
                         <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
                             <tr>
@@ -1100,6 +1187,27 @@
                 </div>
             </div>
 
+            <div class="mt-3 flex items-center justify-center gap-1.5 text-[10px] flex-wrap">
+                @if(!empty($urlAsistenciaNgrok))
+                    <button type="button" id="btnModoNgrokModal" onclick="seleccionarModoRed('ngrok')"
+                            class="px-2.5 py-1 rounded-lg font-bold transition-all bg-emerald-600 text-white cursor-pointer shadow-2xs flex items-center gap-1"
+                            title="Túnel público por Ngrok (ideal para celulares con datos)">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-pulse"></span>
+                        <i class="fa-solid fa-bolt"></i> Ngrok
+                    </button>
+                @endif
+                <button type="button" id="btnModoLocalModal" onclick="seleccionarModoRed('local')"
+                        class="px-2.5 py-1 rounded-lg font-bold transition-all text-slate-600 hover:text-slate-900 bg-white border border-slate-200 cursor-pointer shadow-2xs flex items-center gap-1"
+                        title="WiFi Sala">
+                    <i class="fa-solid fa-wifi"></i> WiFi Sala
+                </button>
+                <button type="button" id="btnModoWebModal" onclick="seleccionarModoRed('actual')"
+                        class="px-2.5 py-1 rounded-lg font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 cursor-pointer transition-all flex items-center gap-1"
+                        title="Web">
+                    <i class="fa-solid fa-globe"></i> Web
+                </button>
+            </div>
+
             <div class="mt-4">
                 <button type="button" onclick="cerrarModalQR()"
                         class="px-6 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider cursor-pointer border border-slate-200">
@@ -1318,6 +1426,13 @@
             if (btnNgrok) btnNgrok.className = (modo === 'ngrok') ? activeEmerald : inactive;
             if (btnLocal) btnLocal.className = (modo === 'local') ? activeBlue : inactive;
             if (btnWeb) btnWeb.className = (modo === 'actual') ? activeBlue : inactive;
+
+            const mBtnNgrok = document.getElementById('btnModoNgrokModal');
+            const mBtnLocal = document.getElementById('btnModoLocalModal');
+            const mBtnWeb = document.getElementById('btnModoWebModal');
+            if (mBtnNgrok) mBtnNgrok.className = (modo === 'ngrok') ? activeEmerald : inactive;
+            if (mBtnLocal) mBtnLocal.className = (modo === 'local') ? activeBlue : inactive;
+            if (mBtnWeb) mBtnWeb.className = (modo === 'actual') ? activeBlue : inactive;
 
             actualizarCodigosQR();
         }
@@ -1671,10 +1786,14 @@
 
             if (asistencias.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-8 text-xs text-slate-400">
-                        <i class="fa-solid fa-user-clock text-2xl text-slate-300 mb-2"></i>
-                        <div>Esperando participantes...</div>
-                        <div class="text-[10px] text-slate-400 mt-0.5">El código QR está disponible para escanear.</div>
+                    <div class="text-center py-10 px-4 text-xs text-slate-400 flex flex-col items-center justify-center">
+                        <i class="fa-solid fa-user-clock text-3xl text-slate-300 mb-2.5"></i>
+                        <div class="font-bold text-slate-600 text-xs">Esperando participantes...</div>
+                        <div class="text-[11px] text-slate-400 mt-1 max-w-xs">Pide a los asistentes que apunten al código QR para registrar su firma.</div>
+                        <button type="button" onclick="abrirModalQR()" class="mt-4 px-4 py-2 rounded-xl bg-brand-blue hover:bg-brand-deep text-white text-xs font-bold shadow-xs cursor-pointer active:scale-95 transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-qrcode text-sm"></i>
+                            <span>Mostrar QR para Escanear</span>
+                        </button>
                     </div>
                 `;
                 return;
@@ -1730,6 +1849,7 @@
         function filtrarTablaFinalizados() {
             const query = (document.getElementById('filtroTablaFinalizados')?.value || '').toLowerCase().trim();
             const filas = document.querySelectorAll('.fila-asistente');
+            const cards = document.querySelectorAll('.card-asistente-mobile');
 
             filas.forEach(fila => {
                 const nombre = (fila.querySelector('.participante-nombre')?.textContent || '').toLowerCase();
@@ -1739,6 +1859,17 @@
                     fila.style.display = '';
                 } else {
                     fila.style.display = 'none';
+                }
+            });
+
+            cards.forEach(card => {
+                const nombre = (card.querySelector('.participante-nombre')?.textContent || '').toLowerCase();
+                const documento = (card.querySelector('.participante-documento')?.textContent || '').toLowerCase();
+
+                if (!query || nombre.includes(query) || documento.includes(query)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
                 }
             });
         }
@@ -1944,6 +2075,7 @@
             if (metricaTotal) metricaTotal.textContent = totalAsistentesAnterior;
 
             if (listaAsistentesCache && listaAsistentesCache.length > 0) {
+                // 1. Llenar tabla de escritorio
                 const tbody = document.getElementById('cuerpoTablaFinalizados');
                 if (tbody) {
                     tbody.innerHTML = listaAsistentesCache.map((a, idx) => {
@@ -1995,6 +2127,68 @@
                                     </span>
                                 </td>
                             </tr>
+                        `;
+                    }).join('');
+                }
+
+                // 2. Llenar tarjetas en columna para móvil
+                const containerCards = document.getElementById('listaCardsFinalizadosMobile');
+                if (containerCards) {
+                    containerCards.innerHTML = listaAsistentesCache.map((a) => {
+                        const ini = (a.nombre || '').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+                        const firmaHtml = a.firma_url 
+                            ? `<button type="button" onclick="verFirmaModal('${a.firma_url}', '${(a.nombre || '').replace(/'/g, "\\'")}')" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-blue-50 text-brand-blue rounded-lg border border-slate-200 text-[11px] font-bold shadow-2xs cursor-pointer transition-colors" title="Ver firma digital ampliada">
+                                <img src="${a.firma_url}" alt="Firma" class="h-5 max-w-[60px] object-contain">
+                                <span>Ver Firma</span>
+                               </button>`
+                            : `<span class="text-[10px] text-slate-400 italic">Sin firma</span>`;
+
+                        const externoBadge = a.es_externo 
+                            ? `<div>
+                                <span class="inline-flex text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                    [EXTERNO] ${a.empresa || 'Contratista'}
+                                </span>
+                               </div>`
+                            : '';
+
+                        return `
+                            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs card-asistente-mobile space-y-3">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-ocean-wave text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">
+                                            ${ini}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="font-bold text-slate-900 text-xs truncate participante-nombre">${a.nombre}</div>
+                                            <div class="text-[10px] text-brand-blue font-mono font-bold participante-documento">CC: ${a.identificacion}</div>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
+                                        <i class="fa-solid fa-check text-[8px]"></i> Confirmado
+                                    </span>
+                                </div>
+
+                                ${externoBadge}
+
+                                <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <div>
+                                        <div class="text-[9px] font-bold text-slate-400 uppercase">Cargo / Área</div>
+                                        <div class="font-medium text-slate-800 text-[11px] truncate mt-0.5">${a.cargo || 'Colaborador'}</div>
+                                        <div class="text-[10px] text-slate-500 truncate">${a.area || 'General'}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[9px] font-bold text-slate-400 uppercase">Hora de Registro</div>
+                                        <div class="font-mono text-slate-700 text-[11px] mt-0.5 font-bold">
+                                            <i class="fa-regular fa-clock text-slate-400 mr-1 text-[10px]"></i>${a.hora || '--'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+                                    <span class="text-[10px] font-bold text-slate-500">Firma digital:</span>
+                                    ${firmaHtml}
+                                </div>
+                            </div>
                         `;
                     }).join('');
                 }

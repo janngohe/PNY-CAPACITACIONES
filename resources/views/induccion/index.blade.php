@@ -678,7 +678,13 @@
                     </div>
                 </div>
 
-                <div class="max-h-60 overflow-y-auto">
+                <!-- VISTA MÓVIL: TARJETAS EN COLUMNA (md:hidden) -->
+                <div id="listaCardsParticipantesModal" class="md:hidden max-h-72 overflow-y-auto p-3 space-y-2.5 bg-slate-50/50">
+                    <!-- Se puebla dinámicamente -->
+                </div>
+
+                <!-- VISTA ESCRITORIO: TABLA (hidden md:block) -->
+                <div class="hidden md:block max-h-60 overflow-y-auto">
                     <table class="w-full text-left text-xs">
                         <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] sticky top-0 border-b border-slate-200">
                             <tr>
@@ -992,6 +998,8 @@
             console.error(err);
             document.getElementById('modalDetallesTituloTexto').textContent = 'Error al cargar detalles';
             document.getElementById('cuerpoTablaParticipantesModal').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-rose-500">Ocurrió un error al consultar los detalles de la sesión.</td></tr>';
+            const cardsCont = document.getElementById('listaCardsParticipantesModal');
+            if (cardsCont) cardsCont.innerHTML = '<div class="text-center py-8 text-rose-500 text-xs">Ocurrió un error al consultar los detalles de la sesión.</div>';
         }
     }
 
@@ -1004,51 +1012,113 @@
 
     function renderizarTablaParticipantesModal(asistentes) {
         const tbody = document.getElementById('cuerpoTablaParticipantesModal');
-        if (!tbody) return;
+        const cardsCont = document.getElementById('listaCardsParticipantesModal');
 
         if (asistentes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-400">No se registraron participantes en esta sesión.</td></tr>';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-400">No se registraron participantes en esta sesión.</td></tr>';
+            if (cardsCont) cardsCont.innerHTML = '<div class="py-8 text-center text-slate-400 text-xs"><i class="fa-solid fa-user-xmark text-2xl text-slate-300 mb-1.5 block"></i>No se registraron participantes en esta sesión.</div>';
             return;
         }
 
-        tbody.innerHTML = asistentes.map((a, idx) => {
-            const ini = (a.nombre || '').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-            const firma = a.firma_url 
-                ? `<button type="button" onclick="verFirmaModal('${a.firma_url}', '${(a.nombre || '').replace(/'/g, "\\'")}')" class="inline-block p-1 bg-white rounded-lg border border-slate-200 hover:border-brand-blue shadow-2xs transition-all cursor-pointer group" title="Ver firma ampliada">
-                     <img src="${a.firma_url}" alt="Firma" class="h-7 max-w-[80px] object-contain mx-auto group-hover:scale-105 transition-transform">
-                   </button>`
-                : '<span class="text-[10px] text-slate-400 italic">Sin firma</span>';
+        // 1. Vista Escritorio (Tabla)
+        if (tbody) {
+            tbody.innerHTML = asistentes.map((a, idx) => {
+                const ini = (a.nombre || '').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+                const firma = a.firma_url 
+                    ? `<button type="button" onclick="verFirmaModal('${a.firma_url}', '${(a.nombre || '').replace(/'/g, "\\'")}')" class="inline-block p-1 bg-white rounded-lg border border-slate-200 hover:border-brand-blue shadow-2xs transition-all cursor-pointer group" title="Ver firma ampliada">
+                         <img src="${a.firma_url}" alt="Firma" class="h-7 max-w-[80px] object-contain mx-auto group-hover:scale-105 transition-transform">
+                       </button>`
+                    : '<span class="text-[10px] text-slate-400 italic">Sin firma</span>';
 
-            const externoBadge = a.es_externo 
-                ? `<span class="inline-flex text-[9px] font-bold text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200 ml-1">[EXT]</span>`
-                : '';
+                const externoBadge = a.es_externo 
+                    ? `<span class="inline-flex text-[9px] font-bold text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200 ml-1">[EXT]</span>`
+                    : '';
 
-            return `
-                <tr class="hover:bg-blue-50/30 transition-colors fila-modal-asistente">
-                    <td class="py-2.5 px-3 font-mono font-bold text-slate-400 text-center text-xs">${idx + 1}</td>
-                    <td class="py-2.5 px-3">
-                        <div class="flex items-center gap-2">
-                            <div class="w-6 h-6 rounded-lg bg-brand-blue text-white text-[10px] font-bold flex items-center justify-center shrink-0">
-                                ${ini}
+                return `
+                    <tr class="hover:bg-blue-50/30 transition-colors fila-modal-asistente">
+                        <td class="py-2.5 px-3 font-mono font-bold text-slate-400 text-center text-xs">${idx + 1}</td>
+                        <td class="py-2.5 px-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-lg bg-brand-blue text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                                    ${ini}
+                                </div>
+                                <div class="font-bold text-slate-900 text-xs truncate max-w-[180px] part-nombre">${a.nombre} ${externoBadge}</div>
                             </div>
-                            <div class="font-bold text-slate-900 text-xs truncate max-w-[180px] part-nombre">${a.nombre} ${externoBadge}</div>
+                        </td>
+                        <td class="py-2.5 px-3 font-mono font-bold text-brand-blue text-xs part-doc">${a.identificacion}</td>
+                        <td class="py-2.5 px-3">
+                            <div class="text-slate-800 text-xs">${a.cargo || 'Colaborador'}</div>
+                            <div class="text-[10px] text-slate-400">${a.area || 'General'}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-center font-mono text-slate-500 text-xs">${a.hora || '-'}</td>
+                        <td class="py-2.5 px-3 text-center">${firma}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 2. Vista Móvil (Tarjetas en Columna)
+        if (cardsCont) {
+            cardsCont.innerHTML = asistentes.map((a) => {
+                const ini = (a.nombre || '').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+                const firma = a.firma_url 
+                    ? `<button type="button" onclick="verFirmaModal('${a.firma_url}', '${(a.nombre || '').replace(/'/g, "\\'")}')" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-blue-50 text-brand-blue rounded-lg border border-slate-200 text-[11px] font-bold shadow-2xs cursor-pointer transition-colors" title="Ver firma ampliada">
+                         <img src="${a.firma_url}" alt="Firma" class="h-5 max-w-[60px] object-contain">
+                         <span>Ver Firma</span>
+                       </button>`
+                    : '<span class="text-[10px] text-slate-400 italic">Sin firma</span>';
+
+                const externoBadge = a.es_externo 
+                    ? `<div class="mt-0.5"><span class="inline-flex text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">[EXTERNO] ${a.empresa || 'Contratista'}</span></div>`
+                    : '';
+
+                return `
+                    <div class="p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs card-modal-asistente space-y-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-blue to-ocean-wave text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">
+                                    ${ini}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="font-bold text-slate-900 text-xs truncate part-nombre">${a.nombre}</div>
+                                    <div class="text-[10px] text-brand-blue font-mono font-bold part-doc">CC: ${a.identificacion}</div>
+                                    ${externoBadge}
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
+                                <i class="fa-solid fa-check text-[8px]"></i> Asistió
+                            </span>
                         </div>
-                    </td>
-                    <td class="py-2.5 px-3 font-mono font-bold text-brand-blue text-xs part-doc">${a.identificacion}</td>
-                    <td class="py-2.5 px-3">
-                        <div class="text-slate-800 text-xs">${a.cargo || 'Colaborador'}</div>
-                        <div class="text-[10px] text-slate-400">${a.area || 'General'}</div>
-                    </td>
-                    <td class="py-2.5 px-3 text-center font-mono text-slate-500 text-xs">${a.hora || '-'}</td>
-                    <td class="py-2.5 px-3 text-center">${firma}</td>
-                </tr>
-            `;
-        }).join('');
+
+                        <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            <div>
+                                <div class="text-[9px] font-bold text-slate-400 uppercase">Cargo / Área</div>
+                                <div class="font-medium text-slate-800 text-[11px] truncate mt-0.5">${a.cargo || 'Colaborador'}</div>
+                                <div class="text-[10px] text-slate-500 truncate">${a.area || 'General'}</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] font-bold text-slate-400 uppercase">Hora</div>
+                                <div class="font-mono text-slate-700 text-[11px] mt-0.5 font-bold">
+                                    <i class="fa-regular fa-clock text-slate-400 mr-1 text-[10px]"></i>${a.hora || '--'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+                            <span class="text-[10px] font-bold text-slate-500">Firma digital:</span>
+                            ${firma}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
     }
 
     function filtrarParticipantesModal() {
         const query = (document.getElementById('filtroParticipantesModal')?.value || '').toLowerCase().trim();
         const filas = document.querySelectorAll('.fila-modal-asistente');
+        const cards = document.querySelectorAll('.card-modal-asistente');
+
         filas.forEach(f => {
             const nom = (f.querySelector('.part-nombre')?.textContent || '').toLowerCase();
             const doc = (f.querySelector('.part-doc')?.textContent || '').toLowerCase();
@@ -1056,6 +1126,16 @@
                 f.style.display = '';
             } else {
                 f.style.display = 'none';
+            }
+        });
+
+        cards.forEach(c => {
+            const nom = (c.querySelector('.part-nombre')?.textContent || '').toLowerCase();
+            const doc = (c.querySelector('.part-doc')?.textContent || '').toLowerCase();
+            if (!query || nom.includes(query) || doc.includes(query)) {
+                c.style.display = '';
+            } else {
+                c.style.display = 'none';
             }
         });
     }
