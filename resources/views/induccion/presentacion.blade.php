@@ -97,6 +97,67 @@
             overflow: hidden !important;
         }
 
+        /* Responsividad en Dispositivos Móviles y Tablets (< 1024px) */
+        @media (max-width: 1023px) {
+            body.is-fullscreen #mobileTabBar {
+                display: none !important;
+            }
+
+            .layout-container {
+                height: calc(100dvh - 56px - 49px);
+                flex-direction: column;
+                width: 100vw;
+            }
+
+            body.is-fullscreen .layout-container {
+                height: 100dvh !important;
+            }
+
+            /* Modo Diapositivas en móvil */
+            .layout-container.mobile-mode-slides .slider-column {
+                display: flex !important;
+                width: 100% !important;
+                min-width: 100% !important;
+                height: 100% !important;
+            }
+            .layout-container.mobile-mode-slides .sidebar-column {
+                display: none !important;
+            }
+
+            /* Modo QR y Asistencia en móvil */
+            .layout-container.mobile-mode-asistencia .sidebar-column {
+                display: flex !important;
+                width: 100% !important;
+                min-width: 100% !important;
+                max-width: 100% !important;
+                height: 100% !important;
+                border-left: none !important;
+            }
+            .layout-container.mobile-mode-asistencia .slider-column {
+                display: none !important;
+            }
+        }
+
+        /* Pantallas Grandes de Escritorio y Proyector (>= 1024px) */
+        @media (min-width: 1024px) {
+            .sidebar-column {
+                display: flex !important;
+                width: 380px;
+                min-width: 340px;
+                max-width: 420px;
+            }
+            .sidebar-column.collapsed {
+                width: 0 !important;
+                min-width: 0 !important;
+                border-left: none !important;
+                overflow: hidden !important;
+            }
+            .slider-column {
+                display: flex !important;
+                flex: 1 1 0% !important;
+            }
+        }
+
         .slide-pane {
             display: none !important;
             width: 100%;
@@ -158,34 +219,35 @@
 <body class="h-full flex flex-col font-sans antialiased text-slate-800 overflow-hidden select-none bg-slate-100">
 
     <!-- 1. BARRA SUPERIOR DE CONTROL -->
-    <header id="topHeaderBar" class="bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between gap-3 z-30 shrink-0 h-[56px] shadow-xs">
+    <header id="topHeaderBar" class="bg-white border-b border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-3 z-30 shrink-0 h-[56px] shadow-xs">
         <!-- Izquierda: Regresar, Código y Título -->
-        <div class="flex items-center gap-3 min-w-0">
-            <a href="{{ route('induccion.index') }}" class="p-2 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-brand-blue transition-colors border border-slate-200" title="Volver al panel de inducciones">
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+            <a href="{{ route('induccion.index') }}" class="p-2 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-brand-blue transition-colors border border-slate-200 shrink-0" title="Volver al panel de inducciones">
                 <i class="fa-solid fa-arrow-left text-xs"></i>
             </a>
 
             <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-brand-blue border border-blue-200">
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <span class="hidden md:inline px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-brand-blue border border-blue-200 shrink-0">
                         Inducción Presencial
                     </span>
-                    <span class="text-xs font-mono text-slate-500">
-                        Código: <strong class="text-brand-deep bg-blue-50/80 px-1.5 py-0.5 rounded border border-blue-200 select-all cursor-pointer font-bold" onclick="copiarCodigo()">{{ $sesion->codigo_sesion }}</strong>
+                    <span class="text-xs font-mono text-slate-500 flex items-center gap-1">
+                        <span class="hidden xs:inline">Cód:</span>
+                        <strong class="text-brand-deep bg-blue-50/80 px-1.5 py-0.5 rounded border border-blue-200 select-all cursor-pointer font-bold text-[11px] sm:text-xs shrink-0" onclick="copiarCodigo()" title="Clic para copiar código">{{ $sesion->codigo_sesion }}</strong>
                     </span>
                     <span class="text-slate-300 hidden sm:inline">|</span>
                     <span class="text-xs text-slate-500 truncate hidden sm:inline">
                         <i class="fa-solid fa-location-dot text-brand-blue mr-1"></i>{{ $sesion->sede->nombre ?? 'Sede Principal' }}
                     </span>
                 </div>
-                <h1 class="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-sm sm:max-w-md lg:max-w-xl font-heading">
+                <h1 class="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[140px] xs:max-w-[200px] sm:max-w-md lg:max-w-xl font-heading">
                     {{ $sesion->induccion->titulo }}
                 </h1>
             </div>
         </div>
 
-        <!-- Centro: Controles del Slider (SOLO SI LA SESIÓN ESTÁ ACTIVA) -->
-        <div id="controlesSliderHeader" class="{{ $sesion->estaActiva() ? 'flex' : 'hidden' }} items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-xl border border-slate-200 shrink-0">
+        <!-- Centro: Controles del Slider (SOLO EN PANTALLAS GRANDES lg Y SI LA SESIÓN ESTÁ ACTIVA) -->
+        <div id="controlesSliderHeader" class="{{ $sesion->estaActiva() ? 'hidden lg:flex' : 'hidden' }} items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-xl border border-slate-200 shrink-0">
             <button type="button" onclick="slideAnterior()"
                     class="p-1.5 rounded-lg text-slate-600 hover:text-brand-blue hover:bg-white transition-all cursor-pointer"
                     title="Diapositiva Anterior (Tecla Flecha Izquierda)">
@@ -207,49 +269,81 @@
         </div>
 
         <!-- Derecha: Acciones según Estado de la Sesión -->
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <!-- Si la sesión sigue activa -->
-            <div id="accionesSesionActivaHeader" class="{{ $sesion->estaActiva() ? 'flex' : 'hidden' }} items-center gap-2">
+            <div id="accionesSesionActivaHeader" class="{{ $sesion->estaActiva() ? 'flex' : 'hidden' }} items-center gap-1.5 sm:gap-2">
                 <button type="button" onclick="toggleSidebarAsistencias()" id="btnToggleSidebar"
-                        class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 border border-slate-300 transition-all cursor-pointer shadow-2xs"
+                        class="hidden lg:flex px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold items-center gap-1.5 border border-slate-300 transition-all cursor-pointer shadow-2xs"
                         title="Ocultar o Mostrar el Panel Lateral">
                     <i class="fa-solid fa-table-columns text-brand-blue text-xs"></i>
-                    <span class="hidden md:inline" id="textoToggleSidebar">Ocultar Panel</span>
+                    <span id="textoToggleSidebar">Ocultar Panel</span>
                 </button>
 
                 <button type="button" onclick="togglePantallaCompleta()" id="btnFullscreenTop"
-                        class="px-3 py-1.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                        class="hidden sm:flex px-2.5 sm:px-3 py-1.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white text-xs font-bold items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                         title="Proyectar a Pantalla Completa (Tecla F o F11)">
                     <i id="fullscreenIconTop" class="fa-solid fa-expand text-xs"></i>
-                    <span class="hidden sm:inline">Pantalla Completa</span>
+                    <span class="hidden md:inline">Pantalla Completa</span>
                 </button>
 
                 <!-- Botón Finalizar Sesión con Modal -->
                 <button type="button" onclick="abrirModalConfirmarFinalizar()"
-                        class="px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 text-xs font-bold transition-all cursor-pointer shadow-2xs">
-                    <i class="fa-solid fa-flag-checkered mr-1"></i> <span>Finalizar</span>
+                        class="px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 text-xs font-bold transition-all cursor-pointer shadow-2xs flex items-center gap-1">
+                    <i class="fa-solid fa-flag-checkered text-xs"></i>
+                    <span>Finalizar</span>
                 </button>
             </div>
 
             <!-- Si la sesión ya fue finalizada -->
             <div id="accionesSesionFinalizadaHeader" class="{{ !$sesion->estaActiva() ? 'flex' : 'hidden' }} items-center gap-2">
-                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5 shadow-2xs">
-                    <i class="fa-solid fa-circle-check text-emerald-600"></i> Sesión Finalizada
+                <span class="px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5 shadow-2xs">
+                    <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                    <span class="hidden xs:inline">Sesión Finalizada</span>
+                    <span class="xs:hidden">Finalizada</span>
                 </span>
 
                 <a href="{{ route('induccion.acta.pdf', ['codigo' => $sesion->codigo_sesion]) }}"
-                   class="px-3.5 py-1.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm">
+                   class="px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm">
                     <i class="fa-solid fa-file-pdf"></i>
-                    <span>Descargar Acta (PDF)</span>
+                    <span class="hidden sm:inline">Descargar Acta (PDF)</span>
+                    <span class="sm:hidden">Acta PDF</span>
                 </a>
             </div>
         </div>
     </header>
 
+    <!-- 2. BARRA DE PESTAÑAS MÓVIL (SOLO VISIBLE EN PANTALLAS < 1024px) -->
+    <div id="mobileTabBar" class="lg:hidden bg-white border-b border-slate-200 px-3 py-1.5 z-20 shrink-0 {{ $sesion->estaActiva() ? '' : 'hidden' }}">
+        <div class="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <!-- Pestaña Diapositivas -->
+            <button type="button" id="tabBtnSlides" onclick="cambiarModoVistaMovil('slides')"
+                    class="py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-white text-brand-blue shadow-2xs">
+                <i class="fa-solid fa-chalkboard text-xs"></i>
+                <span>Diapositivas</span>
+                <span class="font-mono text-[10px] bg-blue-50 text-brand-deep px-1.5 py-0.2 rounded border border-blue-200 font-bold">
+                    <span id="badgeSlideActualTab">1</span>/<span id="badgeSlideTotalTab">{{ count($slides) }}</span>
+                </span>
+            </button>
+
+            <!-- Pestaña QR y Asistencia -->
+            <button type="button" id="tabBtnAsistencia" onclick="cambiarModoVistaMovil('asistencia')"
+                    class="py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-slate-600 hover:text-slate-900">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>QR & Asistentes</span>
+                <span id="badgeAsistentesTab" class="font-mono text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded font-bold">
+                    {{ $sesion->asistencias->count() }}
+                </span>
+            </button>
+        </div>
+    </div>
+
     <!-- ========================================================================= -->
     <!-- ESCENARIO A: SESIÓN EN CURSO (SLIDER DE DIAPOSITIVAS + ASISTENCIA EN VIVO) -->
     <!-- ========================================================================= -->
-    <div id="seccionSesionActiva" class="layout-container {{ $sesion->estaActiva() ? '' : 'hidden' }}">
+    <div id="seccionSesionActiva" class="layout-container mobile-mode-slides {{ $sesion->estaActiva() ? '' : 'hidden' }}">
 
         <!-- COLUMNA IZQUIERDA: SLIDER PRINCIPAL -->
         <section class="slider-column" id="sliderColumn">
@@ -273,46 +367,46 @@
 
                         {{-- CASO 1: PORTADA INSTITUCIONAL --}}
                         @if($slide['tipo'] === 'portada')
-                            <div class="w-full max-w-4xl bg-white border border-slate-200 rounded-3xl p-5 sm:p-8 md:p-10 shadow-xl relative text-center flex flex-col items-center justify-center max-h-[86vh] overflow-y-auto my-auto custom-scrollbar">
-                                <div class="flex items-center gap-2 mb-3 bg-slate-50 px-4 py-1.5 rounded-xl border border-slate-200 shrink-0">
-                                    <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-6 sm:h-7 w-auto object-contain">
-                                    <span class="text-xs font-bold tracking-wider text-brand-dark uppercase">C.I. Piscícola New York S.A.</span>
+                            <div class="w-full max-w-4xl bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 shadow-lg sm:shadow-xl relative text-center flex flex-col items-center justify-center max-h-[85vh] overflow-y-auto my-auto custom-scrollbar">
+                                <div class="flex items-center gap-2 mb-2 sm:mb-3 bg-slate-50 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl border border-slate-200 shrink-0">
+                                    <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-5 sm:h-7 w-auto object-contain">
+                                    <span class="text-[11px] sm:text-xs font-bold tracking-wider text-brand-dark uppercase">C.I. Piscícola New York S.A.</span>
                                 </div>
 
-                                <span class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-brand-blue border border-blue-200 mb-2.5 inline-flex items-center gap-1.5 shrink-0">
+                                <span class="px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-blue-50 text-brand-blue border border-blue-200 mb-2 sm:mb-2.5 inline-flex items-center gap-1.5 shrink-0">
                                     <i class="fa-solid fa-chalkboard-user"></i> Sesión de Inducción
                                 </span>
 
-                                <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-3 font-heading max-w-3xl leading-tight shrink-0">
+                                <h2 class="text-lg sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 sm:mb-3 font-heading max-w-3xl leading-snug sm:leading-tight shrink-0">
                                     {{ $sesion->induccion->titulo }}
                                 </h2>
 
                                 @if($sesion->induccion->descripcion)
                                     <div class="w-full max-w-2xl my-2 shrink-0">
-                                        <div class="text-xs sm:text-sm text-slate-700 leading-relaxed max-h-48 sm:max-h-60 overflow-y-auto px-4 py-3 bg-slate-50/90 rounded-2xl border border-slate-200 text-left sm:text-center whitespace-pre-line shadow-2xs custom-scrollbar">
+                                        <div class="text-xs sm:text-sm text-slate-700 leading-relaxed max-h-36 sm:max-h-60 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 bg-slate-50/90 rounded-2xl border border-slate-200 text-left sm:text-center whitespace-pre-line shadow-2xs custom-scrollbar">
                                             {{ $sesion->induccion->descripcion }}
                                         </div>
                                     </div>
                                 @endif
 
-                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full max-w-2xl mb-5 text-left text-xs shrink-0">
-                                    <div class="bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200">
-                                        <div class="text-[10px] text-slate-500 font-bold uppercase">Facilitador</div>
-                                        <div class="font-bold text-slate-900 mt-0.5 truncate">{{ $sesion->facilitador->nombre_completo ?? 'Facilitador' }}</div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 w-full max-w-2xl mb-4 sm:mb-5 text-left text-xs shrink-0">
+                                    <div class="bg-slate-50 p-2 sm:p-3 rounded-xl border border-slate-200">
+                                        <div class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase">Facilitador</div>
+                                        <div class="font-bold text-slate-900 mt-0.5 truncate text-[11px] sm:text-xs">{{ $sesion->facilitador->nombre_completo ?? 'Facilitador' }}</div>
                                     </div>
-                                    <div class="bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200">
-                                        <div class="text-[10px] text-slate-500 font-bold uppercase">Sede</div>
-                                        <div class="font-bold text-slate-900 mt-0.5 truncate">{{ $sesion->sede->nombre ?? 'Principal' }}</div>
+                                    <div class="bg-slate-50 p-2 sm:p-3 rounded-xl border border-slate-200">
+                                        <div class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase">Sede</div>
+                                        <div class="font-bold text-slate-900 mt-0.5 truncate text-[11px] sm:text-xs">{{ $sesion->sede->nombre ?? 'Principal' }}</div>
                                     </div>
-                                    <div class="bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
-                                        <div class="text-[10px] text-slate-500 font-bold uppercase">Código Sesión</div>
-                                        <div class="font-mono font-black text-brand-blue text-sm mt-0.5">{{ $sesion->codigo_sesion }}</div>
+                                    <div class="bg-slate-50 p-2 sm:p-3 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
+                                        <div class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase">Código Sesión</div>
+                                        <div class="font-mono font-black text-brand-blue text-xs sm:text-sm mt-0.5">{{ $sesion->codigo_sesion }}</div>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-3 shrink-0">
                                     <button type="button" onclick="slideSiguiente()"
-                                            class="px-8 py-3 rounded-2xl bg-brand-blue hover:bg-brand-deep text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer">
+                                            class="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-brand-blue hover:bg-brand-deep text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95">
                                         <span>Comenzar Explicación</span>
                                         <i class="fa-solid fa-arrow-right"></i>
                                     </button>
@@ -457,35 +551,61 @@
 
                 <!-- Flechas Laterales Flotantes en el Slider -->
                 <button type="button" onclick="slideAnterior()"
-                        class="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-2xl bg-white/95 hover:bg-brand-blue text-slate-700 hover:text-white border border-slate-200 flex items-center justify-center transition-all cursor-pointer z-10 shadow-lg hover:scale-105 active:scale-95"
+                        class="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white/95 hover:bg-brand-blue text-slate-700 hover:text-white border border-slate-200 flex items-center justify-center transition-all cursor-pointer z-10 shadow-md sm:shadow-lg hover:scale-105 active:scale-95"
                         title="Diapositiva Anterior (Flecha Izquierda)">
-                    <i class="fa-solid fa-chevron-left text-sm"></i>
+                    <i class="fa-solid fa-chevron-left text-xs sm:text-sm"></i>
                 </button>
 
                 <button type="button" onclick="slideSiguiente()"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-2xl bg-white/95 hover:bg-brand-blue text-slate-700 hover:text-white border border-slate-200 flex items-center justify-center transition-all cursor-pointer z-10 shadow-lg hover:scale-105 active:scale-95"
+                        class="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white/95 hover:bg-brand-blue text-slate-700 hover:text-white border border-slate-200 flex items-center justify-center transition-all cursor-pointer z-10 shadow-md sm:shadow-lg hover:scale-105 active:scale-95"
                         title="Diapositiva Siguiente (Flecha Derecha o Espacio)">
-                    <i class="fa-solid fa-chevron-right text-sm"></i>
+                    <i class="fa-solid fa-chevron-right text-xs sm:text-sm"></i>
                 </button>
             </div>
 
             <!-- Barra Inferior de Navegación del Slider -->
-            <footer class="bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-between text-xs z-10 shrink-0 h-11 shadow-2xs">
-                <div class="flex items-center gap-2 text-slate-500 text-[11px] truncate">
-                    <span>Tema:</span>
-                    <strong id="slideTituloFooter" class="text-slate-800 truncate max-w-xs sm:max-w-md font-bold">
+            <footer class="bg-white border-t border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between text-xs z-10 shrink-0 h-12 sm:h-11 shadow-2xs">
+                <div class="flex items-center gap-2 text-slate-500 text-[11px] truncate min-w-0">
+                    <span class="hidden sm:inline">Tema:</span>
+                    <strong id="slideTituloFooter" class="text-slate-800 truncate max-w-[130px] xs:max-w-[200px] sm:max-w-md font-bold">
                         {{ $slides[0]['titulo'] ?? 'Inicio' }}
                     </strong>
                 </div>
 
-                <div class="flex items-center gap-3 shrink-0">
-                    <span class="text-slate-400 hidden sm:inline text-[11px]">
+                <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                    <!-- Controles móviles rápidos en el footer -->
+                    <div class="flex lg:hidden items-center gap-1">
+                        <button type="button" onclick="slideAnterior()"
+                                class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer active:scale-95"
+                                title="Anterior">
+                            <i class="fa-solid fa-chevron-left text-[11px]"></i>
+                        </button>
+                        <button type="button" onclick="abrirModalIndice()"
+                                class="px-2 py-1 rounded-lg bg-blue-50 text-brand-blue font-mono font-bold text-xs border border-blue-200 cursor-pointer"
+                                title="Índice de diapositivas">
+                            <span id="badgeSlideActualFooterMobile">1</span> / {{ count($slides) }}
+                        </button>
+                        <button type="button" onclick="slideSiguiente()"
+                                class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer active:scale-95"
+                                title="Siguiente">
+                            <i class="fa-solid fa-chevron-right text-[11px]"></i>
+                        </button>
+                    </div>
+
+                    <span class="text-slate-400 hidden lg:inline text-[11px]">
                         Atajos: <span class="text-slate-600 font-mono font-bold">← / →</span> diapositivas · <span class="text-slate-600 font-mono font-bold">F</span> pantalla completa
                     </span>
 
-                    <div class="flex items-center gap-1 font-mono font-bold text-brand-deep bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    <div class="hidden lg:flex items-center gap-1 font-mono font-bold text-brand-deep bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                         <span id="badgeSlideActualFooter">1</span> / {{ count($slides) }}
                     </div>
+
+                    <!-- Botón rápido en móvil para ver QR / Asistentes -->
+                    <button type="button" onclick="cambiarModoVistaMovil('asistencia')"
+                            class="lg:hidden px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer active:scale-95">
+                        <i class="fa-solid fa-qrcode text-emerald-600"></i>
+                        <span class="hidden xs:inline">Ver QR</span>
+                    </button>
                 </div>
             </footer>
 
@@ -519,9 +639,17 @@
                     <span class="text-[11px] font-bold text-brand-blue uppercase tracking-wider flex items-center gap-1.5">
                         <i class="fa-solid fa-qrcode"></i> Escaneo de Asistencia
                     </span>
-                    <button type="button" onclick="abrirModalQR()" class="text-[11px] font-bold text-brand-blue hover:text-brand-deep cursor-pointer" title="Agrandar QR para proyector">
-                        <i class="fa-solid fa-maximize mr-0.5"></i> Ampliar
-                    </button>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="cambiarModoVistaMovil('slides')"
+                                class="lg:hidden text-[11px] font-bold text-slate-600 hover:text-brand-blue flex items-center gap-1 cursor-pointer bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs"
+                                title="Volver a las diapositivas">
+                            <i class="fa-solid fa-chalkboard text-[10px]"></i>
+                            <span>Diapositivas</span>
+                        </button>
+                        <button type="button" onclick="abrirModalQR()" class="text-[11px] font-bold text-brand-blue hover:text-brand-deep cursor-pointer" title="Agrandar QR para proyector">
+                            <i class="fa-solid fa-maximize mr-0.5"></i> Ampliar
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Lienzo QR Nítido -->
@@ -1272,8 +1400,14 @@
                 const bTop = document.getElementById('badgeSlideActualTop');
                 if (bTop) bTop.textContent = slideActualIndex + 1;
 
+                const bTab = document.getElementById('badgeSlideActualTab');
+                if (bTab) bTab.textContent = slideActualIndex + 1;
+
                 const bFoot = document.getElementById('badgeSlideActualFooter');
                 if (bFoot) bFoot.textContent = slideActualIndex + 1;
+
+                const bFootMob = document.getElementById('badgeSlideActualFooterMobile');
+                if (bFootMob) bFootMob.textContent = slideActualIndex + 1;
 
                 const titulo = slideNuevoElem.dataset.slideTitle || `Diapositiva ${slideActualIndex + 1}`;
                 const tFoot = document.getElementById('slideTituloFooter');
@@ -1327,8 +1461,10 @@
             const stage = document.getElementById('slideStage');
             if (!stage) return;
 
-            const stageWidth = stage.clientWidth - 40;
-            const stageHeight = stage.clientHeight - 40;
+            const paddingH = window.innerWidth < 640 ? 16 : 40;
+            const paddingV = window.innerWidth < 640 ? 16 : 40;
+            const stageWidth = Math.max(stage.clientWidth - paddingH, 200);
+            const stageHeight = Math.max(stage.clientHeight - paddingV, 150);
 
             document.querySelectorAll('.pptx-slide-wrapper').forEach(wrapper => {
                 const origW = parseFloat(wrapper.dataset.width || 1920);
@@ -1493,10 +1629,12 @@
                 const total = data.total || 0;
                 const badgeSide = document.getElementById('badgeTotalAsistentesSidebar');
                 const badgeHUD = document.getElementById('hudAsistentesBadge');
+                const badgeTab = document.getElementById('badgeAsistentesTab');
                 const modalFinalizarTotal = document.getElementById('modalFinalizarConteo');
 
                 if (badgeSide) badgeSide.textContent = total;
                 if (badgeHUD) badgeHUD.textContent = total;
+                if (badgeTab) badgeTab.textContent = total;
                 if (modalFinalizarTotal) modalFinalizarTotal.textContent = `${total} participantes`;
 
                 if (total > totalAsistentesAnterior) {
@@ -1606,8 +1744,44 @@
         }
 
         // ==========================================
-        // PANTALLA COMPLETA Y COLAPSO DE SIDEBAR
+        // PANTALLA COMPLETA Y CONTROL RESPONSIVO MÓVIL
         // ==========================================
+        let vistaMovilActual = 'slides';
+
+        function cambiarModoVistaMovil(modo) {
+            vistaMovilActual = modo;
+            const container = document.getElementById('seccionSesionActiva');
+            const tabSlides = document.getElementById('tabBtnSlides');
+            const tabAsist = document.getElementById('tabBtnAsistencia');
+            if (!container) return;
+
+            if (modo === 'slides') {
+                container.classList.remove('mobile-mode-asistencia');
+                container.classList.add('mobile-mode-slides');
+
+                if (tabSlides && tabAsist) {
+                    tabSlides.className = "py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-white text-brand-blue shadow-2xs";
+                    tabAsist.className = "py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-slate-600 hover:text-slate-900";
+                }
+
+                setTimeout(() => {
+                    ajustarEscalaPptx();
+                    const slideActualElem = document.getElementById(`slidePane-${slideActualIndex}`);
+                    if (slideActualElem && slideActualElem.dataset.slideType === 'pdf') {
+                        renderizarSlidePdf(slideActualElem);
+                    }
+                }, 80);
+            } else {
+                container.classList.remove('mobile-mode-slides');
+                container.classList.add('mobile-mode-asistencia');
+
+                if (tabSlides && tabAsist) {
+                    tabSlides.className = "py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-slate-600 hover:text-slate-900";
+                    tabAsist.className = "py-2 px-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-white text-brand-blue shadow-2xs";
+                }
+            }
+        }
+
         function toggleSidebarAsistencias() {
             const sidebar = document.getElementById('sidebarColumn');
             const texto = document.getElementById('textoToggleSidebar');
@@ -1687,6 +1861,12 @@
                     if (seccionActiva) {
                         seccionActiva.classList.add('hidden');
                         seccionActiva.style.setProperty('display', 'none', 'important');
+                    }
+
+                    const mobileTabBar = document.getElementById('mobileTabBar');
+                    if (mobileTabBar) {
+                        mobileTabBar.classList.add('hidden');
+                        mobileTabBar.style.setProperty('display', 'none', 'important');
                     }
 
                     // 4. ADAPTAR HEADER
@@ -1991,6 +2171,38 @@
                 seleccionarModoRed(qrActualMode);
                 actualizarCodigosQR();
                 ajustarEscalaPptx();
+
+                // Soporte táctil de deslizamiento (swipe) para celulares y tablets
+                const stage = document.getElementById('slideStage');
+                if (stage) {
+                    let touchStartX = 0;
+                    let touchStartY = 0;
+                    let touchEndX = 0;
+                    let touchEndY = 0;
+
+                    stage.addEventListener('touchstart', (e) => {
+                        if (e.touches.length === 1) {
+                            touchStartX = e.touches[0].screenX;
+                            touchStartY = e.touches[0].screenY;
+                        }
+                    }, { passive: true });
+
+                    stage.addEventListener('touchend', (e) => {
+                        if (e.changedTouches.length === 1) {
+                            touchEndX = e.changedTouches[0].screenX;
+                            touchEndY = e.changedTouches[0].screenY;
+                            const diffX = touchEndX - touchStartX;
+                            const diffY = touchEndY - touchStartY;
+                            if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY)) {
+                                if (diffX < 0) {
+                                    slideSiguiente();
+                                } else {
+                                    slideAnterior();
+                                }
+                            }
+                        }
+                    }, { passive: true });
+                }
 
                 const primerSlide = document.getElementById('slidePane-0');
                 if (primerSlide && primerSlide.dataset.slideType === 'pdf') {
