@@ -122,6 +122,7 @@
                     $rolBadge = match($u->rol) {
                         'ADMINISTRADOR' => 'bg-purple-50 text-purple-700 border-purple-200',
                         'JEFE_AREA' => 'bg-blue-50 text-brand-blue border-blue-200',
+                        'PSICOLOGIA' => 'bg-teal-50 text-teal-700 border-teal-200',
                         default => 'bg-slate-100 text-slate-700 border-slate-200',
                     };
                 @endphp
@@ -253,6 +254,7 @@
                                     $rolBadge = match($u->rol) {
                                         'ADMINISTRADOR' => 'bg-purple-50 text-purple-700 border-purple-200',
                                         'JEFE_AREA' => 'bg-blue-50 text-brand-blue border-blue-200',
+                                        'PSICOLOGIA' => 'bg-teal-50 text-teal-700 border-teal-200',
                                         default => 'bg-slate-100 text-slate-700 border-slate-200',
                                     };
                                 @endphp

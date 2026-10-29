@@ -21,6 +21,7 @@ class UsuarioController extends Controller
         'EMPLEADO' => 'Empleado',
         'JEFE_AREA' => 'Jefe de Área',
         'ADMINISTRADOR' => 'Administrador',
+        'PSICOLOGIA' => 'Psicología',
     ];
 
     public function index(Request $request)
@@ -159,13 +160,13 @@ class UsuarioController extends Controller
             'nombre_completo' => ['required', 'string', 'max:150'],
             'rol' => ['required', Rule::in(array_keys(self::ROLES))],
             'sede_id' => [
-                Rule::requiredIf(fn () => in_array($request->input('rol'), ['EMPLEADO', 'JEFE_AREA'], true)),
+                Rule::requiredIf(fn () => in_array($request->input('rol'), ['EMPLEADO', 'JEFE_AREA', 'PSICOLOGIA'], true)),
                 'nullable',
                 'integer',
                 'exists:sedes,id',
             ],
             'area_id' => [
-                Rule::requiredIf(fn () => in_array($request->input('rol'), ['EMPLEADO', 'JEFE_AREA'], true)),
+                Rule::requiredIf(fn () => in_array($request->input('rol'), ['EMPLEADO', 'JEFE_AREA', 'PSICOLOGIA'], true)),
                 'nullable',
                 'integer',
                 Rule::exists('areas', 'id')->where(function ($query) use ($request) {

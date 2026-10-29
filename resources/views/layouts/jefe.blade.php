@@ -28,8 +28,9 @@
     $usuario = $usuario ?? auth()->user();
 
 
+    $enEstadisticas = request()->routeIs('jefe.dashboard') || request()->routeIs('jefe.estadisticas.*');
     $enBorradores = request()->routeIs('jefe.capacitaciones.borradores');
-    $enCapacitaciones = request()->routeIs('jefe.dashboard', 'jefe.capacitaciones.index', 'jefe.capacitaciones.show', 'jefe.capacitaciones.edit') && ! $enBorradores;
+    $enCapacitaciones = request()->routeIs('jefe.capacitaciones.index', 'jefe.capacitaciones.show', 'jefe.capacitaciones.edit') && ! $enBorradores;
     $enCrearCapacitacion = request()->routeIs('jefe.capacitaciones.create');
     $enCrearEvaluacion = request()->routeIs('jefe.evaluaciones.create');
     $enMisEvaluaciones = request()->routeIs('jefe.evaluaciones.index', 'jefe.evaluaciones.edit');
@@ -63,21 +64,21 @@
                     <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
                     <div class="absolute right-10 -top-8 w-24 h-24 rounded-full bg-brand-sky/10 pointer-events-none"></div>
 
-                    <div class="relative z-10 flex items-center gap-3">
+                    <a href="{{ route('jefe.dashboard') }}" class="relative z-10 flex items-center gap-3 group">
                         <div class="h-11 w-11 p-1 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0">
                             <img src="{{ asset('images/Logo.png') }}"
                                  alt="Logo C.I. Piscícola New York"
                                  class="h-full w-full object-contain">
                         </div>
                         <div>
-                            <span class="block font-heading font-extrabold text-[13px] tracking-wider uppercase leading-tight text-white">
+                            <span class="block font-heading font-extrabold text-[13px] tracking-wider uppercase leading-tight text-white group-hover:text-cyan-200 transition-colors">
                                 Piscícola New York
                             </span>
                             <span class="inline-block text-[10px] font-semibold tracking-wide text-brand-sky/90 uppercase mt-0.5">
                                 Portal Jefe de Área
                             </span>
                         </div>
-                    </div>
+                    </a>
 
                     <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none pointer-events-none">
                         <svg class="relative block w-full h-4 text-brand-sky/30" viewBox="0 0 320 20" preserveAspectRatio="none">
@@ -93,8 +94,20 @@
                 <nav class="px-4 py-5 flex flex-col gap-1.5" aria-label="Menú principal del jefe de área">
 
                     <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted/70">
-                        Gestión de Formación
+                        Gestión y Analítica
                     </div>
+
+                    <!-- 0. Estadísticas del Área -->
+                    <a href="{{ route('jefe.estadisticas.index') }}" id="nav-estadisticas"
+                       class="group flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-150 {{ $enEstadisticas ? $claseItemActivo : $claseItemInactivo }}">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-chart-pie text-sm w-5 text-center transition-colors {{ $enEstadisticas ? 'text-brand-blue' : 'text-slate-400 group-hover:text-brand-blue' }}"></i>
+                            <span>Estadísticas del Área</span>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $enEstadisticas ? 'bg-brand-blue text-white' : 'bg-cyan-50 text-cyan-800 border border-cyan-200' }}">
+                            Métricas
+                        </span>
+                    </a>
 
                     <!-- 1. Capacitaciones (Vista por defecto) -->
                     <a href="{{ route('jefe.capacitaciones.index') }}" id="nav-capacitaciones"

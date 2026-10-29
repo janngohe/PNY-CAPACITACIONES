@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Jefe\CapacitacionController;
+use App\Http\Controllers\Jefe\EstadisticaController;
 use App\Http\Controllers\Jefe\EvaluacionController;
 use App\Http\Controllers\Jefe\PersonalController;
 use App\Http\Controllers\Jefe\PlantillaController;
@@ -14,8 +15,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('jefe')->name('jefe.')->middleware(['auth', 'rol:JEFE_AREA'])->group(function () {
-    // Vista por defecto: capacitaciones publicadas por el jefe
-    Route::get('/', [CapacitacionController::class, 'index'])->name('dashboard');
+    // Vista principal: Panel de Estadísticas y Analítica del Área
+    Route::get('/', [EstadisticaController::class, 'index'])->name('dashboard');
+    Route::get('/estadisticas', [EstadisticaController::class, 'index'])->name('estadisticas.index');
 
     // CRUD de capacitaciones
     Route::get('/capacitaciones', [CapacitacionController::class, 'index'])->name('capacitaciones.index');

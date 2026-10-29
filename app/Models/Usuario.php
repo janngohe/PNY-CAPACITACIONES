@@ -70,6 +70,10 @@ class Usuario extends Authenticatable
             return $this->cargo;
         }
 
+        if ($this->rol === 'PSICOLOGIA') {
+            return 'Especialista en Psicología';
+        }
+
         if ($this->rol === 'JEFE_AREA') {
             return 'Jefe de Área ' . ($this->area?->nombre ?? '');
         }
@@ -127,10 +131,16 @@ class Usuario extends Authenticatable
         $ruta = match ($this->rol) {
             'ADMINISTRADOR' => 'admin.dashboard',
             'JEFE_AREA' => 'jefe.dashboard',
+            'PSICOLOGIA' => 'psicologia.portal_seleccion',
             default => 'empleado.capacitaciones',
         };
 
         return Route::has($ruta) ? $ruta : 'empleado.capacitaciones';
+    }
+
+    public function esPsicologia(): bool
+    {
+        return $this->rol === 'PSICOLOGIA';
     }
 
     public function progresoModulos(): HasMany

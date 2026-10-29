@@ -80,6 +80,22 @@
 
                 <!-- NAVEGACIÓN PRINCIPAL -->
                 <nav class="px-4 py-5 flex flex-col gap-1.5" aria-label="Menú principal del empleado">
+
+                    @if(auth()->user()?->esPsicologia())
+                        <div class="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-teal-700">
+                            Gestión Psicosocial
+                        </div>
+                        <a href="{{ route('psicologia.dashboard') }}"
+                           class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all duration-150 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 shadow-2xs mb-2">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-brain text-teal-600 text-sm"></i>
+                                <span>Panel de Psicología</span>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-600 text-white">
+                                Volver
+                            </span>
+                        </a>
+                    @endif
                     
                     <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted/70">
                         Menú de Formación
@@ -225,6 +241,15 @@
 
                 <!-- Elementos del extremo derecho -->
                 <div class="flex items-center gap-3 sm:gap-4">
+                    @if(auth()->user()?->esPsicologia())
+                        <a href="{{ route('psicologia.dashboard') }}"
+                           title="Volver a mi Panel de Psicología y Bienestar"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-300 font-heading font-bold text-xs transition shadow-2xs">
+                            <i class="fa-solid fa-brain text-teal-600"></i>
+                            <span class="hidden sm:inline">Panel</span> Psicología
+                        </a>
+                    @endif
+
                     <!-- Fecha actual -->
                     <span class="hidden md:inline-flex items-center gap-1.5 text-xs text-muted font-medium bg-slate-50 px-3 py-1.5 rounded-full border border-line/60">
                         <svg class="w-3.5 h-3.5 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
