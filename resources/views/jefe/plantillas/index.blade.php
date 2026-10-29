@@ -209,6 +209,7 @@
                         </div>
 
                         <!-- Lado derecho del resumen (Acción rápida y chevron interactivo) -->
+                        <div class="flex items-center gap-2 shrink-0">
                             {{-- OCULTO TEMPORALMENTE: Botón firmar ahora para implementación futura
                             @if(!$tieneFirmaJefe)
                                 <button type="button"

@@ -58,4 +58,5 @@ Route::prefix('jefe')->name('jefe.')->middleware(['auth', 'rol:JEFE_AREA'])->gro
     // Inducciones y Consulta de PIN
     Route::get('/inducciones', [\App\Http\Controllers\Jefe\InduccionJefeController::class, 'index'])->name('inducciones.index');
     Route::get('/inducciones/pin', [\App\Http\Controllers\Jefe\InduccionJefeController::class, 'consultarPin'])->name('inducciones.pin');
+    Route::get('/inducciones/sesiones/{sesion}/participantes-json', [\App\Http\Controllers\Jefe\InduccionJefeController::class, 'participantesJson'])->name('inducciones.participantes_json');
 });
