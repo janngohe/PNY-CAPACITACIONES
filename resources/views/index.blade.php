@@ -462,12 +462,12 @@
                         @endif
 
                         <!-- ====================================================
-                             CAMPO 1: IDENTIFICACIÓN (LIMPIO, SIN OLITAS AL TIPEAR)
+                             CAMPO 1: IDENTIFICACIÓN (ALFANUMÉRICO)
                              ==================================================== -->
                         <div class="input-group-clean">
                             <label for="identification" class="font-heading font-bold text-[13px] tracking-tight flex items-center justify-between" style="color: var(--text-heading);">
                                 <span>Número de identificación</span>
-                                <span class="text-[11px] font-normal text-slate-400">Cédula de ciudadanía</span>
+                                <span class="text-[11px] font-normal text-slate-400">Cédula o documento</span>
                             </label>
 
                             <div class="input-wrapper-clean">
@@ -482,9 +482,8 @@
                                            id="identification"
                                            name="identification"
                                            value="{{ old('identification') }}"
-                                           inputmode="numeric"
                                            autocomplete="username"
-                                           placeholder="Ingresa tu número de cédula"
+                                           placeholder="Ingresa tu número o documento de identificación"
                                            required
                                            class="w-full h-full px-3 border-0 outline-none bg-transparent text-sm sm:text-[15px] font-medium font-sans"
                                            style="color: var(--input-text);">
@@ -847,7 +846,7 @@
                 formLogin.action = "{{ route('induccion.acceso.post') }}";
                 badgeTexto.textContent = "Portal de Inducciones";
                 loginHeading.textContent = "Acceso a Inducción";
-                loginSubtitulo.textContent = "Ingresa tu número de cédula y el código PIN de 4 dígitos de facilitador.";
+                loginSubtitulo.textContent = "Ingresa tu identificación y el código PIN de 4 dígitos de facilitador.";
                 labelCampo2.textContent = "PIN de Facilitador (4 dígitos)";
                 sublabelCampo2.textContent = "Código de Sala";
                 passInput.name = "pin";

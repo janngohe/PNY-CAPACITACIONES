@@ -36,7 +36,8 @@ class LoginController extends Controller
             'password.required' => 'La contraseña es requerida.',
         ]);
 
-        $usuario = Usuario::where('identificacion', $credentials['identification'])->first();
+        $identificacion = trim($credentials['identification']);
+        $usuario = Usuario::where('identificacion', $identificacion)->first();
 
         // Verificar existencia y que el usuario se encuentre activo
         if (!$usuario || !$usuario->estado) {

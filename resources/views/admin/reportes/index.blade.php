@@ -33,21 +33,30 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             @if (in_array($clave, ['progreso', 'resultados', 'certificados', 'usuarios']))
                                 <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Filtrar por Sede</label>
+                                    <select name="sede_id" onchange="sincronizarAreasReporte('{{ $clave }}')" class="w-full px-2.5 py-1.5 rounded-xl border border-line bg-slate-50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
+                                        <option value="">Todas las sedes</option>
+                                        @foreach ($sedes as $s)
+                                            <option value="{{ $s->id }}">{{ $s->nombre }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
                                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Filtrar por Área</label>
                                     <select name="area_id" class="w-full px-2.5 py-1.5 rounded-xl border border-line bg-slate-50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
                                         <option value="">Todas las áreas</option>
                                         @foreach ($areas as $a)
-                                            <option value="{{ $a->id }}">{{ $a->nombre }}</option>
+                                            <option value="{{ $a->id }}" data-sede-id="{{ $a->sede_id }}">{{ $a->nombre }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                             @endif
 
                             @if (in_array($clave, ['progreso', 'resultados', 'certificados']))
-                                <div>
+                                <div class="sm:col-span-2">
                                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Capacitación</label>
                                     <select name="capacitacion_id" class="w-full px-2.5 py-1.5 rounded-xl border border-line bg-slate-50 text-xs text-brand-dark focus:bg-white focus:outline-none focus:border-brand-blue">
-                                        <option value="">Todas</option>
+                                        <option value="">Todas las capacitaciones</option>
                                         @foreach ($capacitaciones as $c)
                                             <option value="{{ $c->id }}">{{ $c->titulo }}</option>
                                         @endforeach
@@ -88,6 +97,32 @@
 </div>
 
 <script>
+    function sincronizarAreasReporte(tipo) {
+        const form = document.getElementById('form-reporte-' + tipo);
+        if (!form) return;
+        const selectSede = form.querySelector('select[name="sede_id"]');
+        const selectArea = form.querySelector('select[name="area_id"]');
+        if (!selectSede || !selectArea) return;
+
+        const sedeId = selectSede.value;
+        const opciones = selectArea.querySelectorAll('option[data-sede-id]');
+        let opcionValida = false;
+
+        opciones.forEach(opt => {
+            const optSedeId = opt.getAttribute('data-sede-id');
+            const coincide = !sedeId || String(optSedeId) === String(sedeId);
+            opt.hidden = !coincide;
+            opt.disabled = !coincide;
+            if (coincide && opt.value === selectArea.value) {
+                opcionValida = true;
+            }
+        });
+
+        if (selectArea.value && !opcionValida) {
+            selectArea.value = '';
+        }
+    }
+
     function descargarReporte(tipo, formato) {
         const form = document.getElementById('form-reporte-' + tipo);
         const params = new URLSearchParams(new FormData(form)).toString();

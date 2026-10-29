@@ -94,6 +94,9 @@
                 <td class="meta-table" style="width: 40%;">
                     <div><strong>Generado el:</strong> {{ $fecha->format('d/m/Y H:i:s') }}</div>
                     <div><strong>Emitido por:</strong> {{ $generadoPor }}</div>
+                    @if(!empty($sedeFiltro))
+                        <div><strong>Sede:</strong> {{ $sedeFiltro }}</div>
+                    @endif
                     <div><strong>Total registros:</strong> {{ count($filas) }}</div>
                 </td>
             </tr>
