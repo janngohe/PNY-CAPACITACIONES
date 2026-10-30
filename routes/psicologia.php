@@ -48,9 +48,8 @@ Route::prefix('psicologia')->name('psicologia.')->middleware(['auth', 'rol:PSICO
     // Panel Principal
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // 1. Realizar Prueba (Generación de QR y sesión)
+    // 1. Realizar Prueba (Código QR institucional único)
     Route::get('/realizar-prueba', [DashboardController::class, 'realizarPrueba'])->name('pruebas.realizar');
-    Route::post('/realizar-prueba/nuevo-codigo', [DashboardController::class, 'generarNuevoCodigo'])->name('pruebas.nuevo_codigo');
 
     // 2. Reportes
     Route::get('/reportes', [DashboardController::class, 'reportes'])->name('reportes');

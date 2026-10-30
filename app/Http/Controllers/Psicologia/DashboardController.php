@@ -51,11 +51,8 @@ class DashboardController extends Controller
         /** @var Usuario $usuario */
         $usuario = Auth::user();
 
-        $codigoSesion = $request->query('codigo')
-            ?? session('psicologia_codigo_sesion')
-            ?? 'PSI-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
-
-        session(['psicologia_codigo_sesion' => $codigoSesion]);
+        // Código institucional único y fijo para el QR de evaluación psicológica
+        $codigoSesion = 'PSI-PNY';
 
         // 1. Detección automática de túnel Ngrok si está activo en desarrollo (puerto 4040)
         $urlNgrokBase = null;
@@ -108,23 +105,11 @@ class DashboardController extends Controller
     }
 
     /**
-     * Genera un nuevo código de prueba y QR fresco.
-     */
-    public function generarNuevoCodigo()
-    {
-        $nuevoCodigo = 'PSI-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
-        session(['psicologia_codigo_sesion' => $nuevoCodigo]);
-
-        return redirect()->route('psicologia.pruebas.realizar')
-            ->with('success', "Se ha generado un nuevo código de evaluación: {$nuevoCodigo}");
-    }
-
-    /**
      * Paso 1: Vista pública que abre la persona evaluada al escanear el QR desde su celular.
      */
     public function evaluacionPublica(Request $request, ?string $codigo = null)
     {
-        $codigo = $codigo ?? session('psicologia_codigo_sesion') ?? 'PSI-DEMO';
+        $codigo = $codigo ?? 'PSI-PNY';
         $fechaHoraActual = now();
 
         return view('psicologia.evaluacion_candidato', compact('codigo', 'fechaHoraActual'));
@@ -135,7 +120,7 @@ class DashboardController extends Controller
      */
     public function guardarConsentimiento(Request $request, ?string $codigo = null)
     {
-        $codigo = $codigo ?? session('psicologia_codigo_sesion') ?? 'PSI-DEMO';
+        $codigo = $codigo ?? 'PSI-PNY';
 
         $validados = $request->validate([
             'nombre_completo' => ['required', 'string', 'min:3', 'max:150'],

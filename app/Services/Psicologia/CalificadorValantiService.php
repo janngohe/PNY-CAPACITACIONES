@@ -127,15 +127,56 @@ class CalificadorValantiService
         $maxVal = 70;
 
         $im = imagecreatetruecolor($width, $height);
-        imageantialias($im, true);
+        // Nota: No activar imageantialias($im, true) porque en GD deshabilita imagesetthickness.
 
         // Colores idénticos a la imagen de referencia de VALANTI
         $blanco = imagecolorallocate($im, 255, 255, 255);
         $negroEje = imagecolorallocate($im, 20, 20, 20);
         $negro = imagecolorallocate($im, 0, 0, 0);
-        $azulIdeal = imagecolorallocate($im, 0, 28, 155); // Azul oscuro corporativo #001c9b
+        $azulIdeal = imagecolorallocate($im, 0, 38, 195); // Azul corporativo intenso (#0026c3)
 
         imagefill($im, 0, 0, $blanco);
+
+        // Helper para trazar segmentos gruesos con polígono relleno (garantiza grosor exacto en cualquier ángulo)
+        $dibujarSegmentoGrueso = function ($x1, $y1, $x2, $y2, $color, float $grosor = 3.0) use ($im): void {
+            $dx = $x2 - $x1;
+            $dy = $y2 - $y1;
+            $len = hypot($dx, $dy);
+            if ($len < 0.5) {
+                return;
+            }
+            $nx = (-$dy / $len) * ($grosor / 2.0);
+            $ny = ($dx / $len) * ($grosor / 2.0);
+            $poly = [
+                (int) round($x1 + $nx), (int) round($y1 + $ny),
+                (int) round($x2 + $nx), (int) round($y2 + $ny),
+                (int) round($x2 - $nx), (int) round($y2 - $ny),
+                (int) round($x1 - $nx), (int) round($y1 - $ny),
+            ];
+            imagefilledpolygon($im, $poly, $color);
+        };
+
+        // Helper para trazar líneas punteadas gruesas sin depender de IMG_COLOR_STYLED
+        $dibujarLineaPunteadaGruesa = function ($x1, $y1, $x2, $y2, $color, float $grosor = 3.5, float $dash = 11.0, float $gap = 7.0) use ($dibujarSegmentoGrueso): void {
+            $dx = $x2 - $x1;
+            $dy = $y2 - $y1;
+            $distTotal = hypot($dx, $dy);
+            if ($distTotal < 1.0) {
+                return;
+            }
+            $ux = $dx / $distTotal;
+            $uy = $dy / $distTotal;
+            $pos = 0.0;
+            while ($pos < $distTotal) {
+                $fin = min($distTotal, $pos + $dash);
+                $sx = $x1 + $ux * $pos;
+                $sy = $y1 + $uy * $pos;
+                $ex = $x1 + $ux * $fin;
+                $ey = $y1 + $uy * $fin;
+                $dibujarSegmentoGrueso($sx, $sy, $ex, $ey, $color, $grosor);
+                $pos += ($dash + $gap);
+            }
+        };
 
         $fontRegular = 'C:/Windows/Fonts/arial.ttf';
         $fontBold = 'C:/Windows/Fonts/arialbd.ttf';
@@ -256,23 +297,15 @@ class CalificadorValantiService
             $coordsIdeal[] = $puntoPolar($eje['ideal'], $eje['angulo']);
         }
 
-        $estiloPunteado = array_merge(
-            array_fill(0, 9, $azulIdeal),
-            array_fill(0, 6, IMG_COLOR_TRANSPARENT)
-        );
-        imagesetstyle($im, $estiloPunteado);
-        imagesetthickness($im, 3);
-
         for ($i = 0; $i < 5; $i++) {
             [$x1, $y1] = $coordsIdeal[$i];
             [$x2, $y2] = $coordsIdeal[($i + 1) % 5];
-            imageline($im, $x1, $y1, $x2, $y2, IMG_COLOR_STYLED);
+            $dibujarLineaPunteadaGruesa($x1, $y1, $x2, $y2, $azulIdeal, 3.6, 11.0, 6.5);
         }
 
         // Marcadores Rombo azules
-        imagesetthickness($im, 1);
         foreach ($coordsIdeal as [$ix, $iy]) {
-            $d = 9;
+            $d = 10;
             $rombo = [
                 $ix, $iy - $d,
                 $ix + $d, $iy,
@@ -288,15 +321,13 @@ class CalificadorValantiService
             $coordsCandidato[] = $puntoPolar($eje['pe'], $eje['angulo']);
         }
 
-        imagesetthickness($im, 3);
         for ($i = 0; $i < 5; $i++) {
             [$x1, $y1] = $coordsCandidato[$i];
             [$x2, $y2] = $coordsCandidato[($i + 1) % 5];
-            imageline($im, $x1, $y1, $x2, $y2, $negro);
+            $dibujarSegmentoGrueso($x1, $y1, $x2, $y2, $negro, 3.4);
         }
 
         // Marcadores Cuadrados negros
-        imagesetthickness($im, 1);
         foreach ($coordsCandidato as [$kx, $ky]) {
             $s = 7;
             imagefilledrectangle($im, $kx - $s, $ky - $s, $kx + $s, $ky + $s, $negro);

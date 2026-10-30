@@ -18,16 +18,6 @@
         </div>
 
         <div class="flex items-center gap-2.5 shrink-0">
-            <!-- Formulario para regenerar código -->
-            <form method="POST" action="{{ route('psicologia.pruebas.nuevo_codigo') }}" class="m-0">
-                @csrf
-                <button type="submit"
-                        class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-brand-light text-slate-700 hover:text-brand-blue border border-line font-heading font-bold text-xs transition flex items-center gap-2 cursor-pointer shadow-2xs">
-                    <i class="fa-solid fa-rotate text-xs"></i>
-                    <span>Generar Nuevo Código</span>
-                </button>
-            </form>
-
             <!-- Botón para ver en pantalla completa -->
             <button type="button"
                     onclick="abrirModalQRGigante()"

@@ -177,9 +177,19 @@
         <div class="titulo-grafico">Cuestionario VALANTI</div>
 
         <div class="leyenda-box">
-            <span style="color: #001c9b; font-weight: bold;">- - &#9670; - - Perfil ideal</span>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <span style="color: #000000; font-weight: bold;">&#8212;&#9632;&#8212; {{ $evaluacion->nombre_completo }} (Puntaje estándar)</span>
+            <span style="color: #0026c3; font-weight: bold;">
+                <span style="display: inline-block; width: 10px; height: 3px; background-color: #0026c3; vertical-align: middle;"></span>
+                <span style="display: inline-block; width: 8px; height: 8px; background-color: #0026c3; vertical-align: middle; margin: 0 2px;"></span>
+                <span style="display: inline-block; width: 10px; height: 3px; background-color: #0026c3; vertical-align: middle; margin-right: 4px;"></span>
+                Perfil ideal
+            </span>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <span style="color: #000000; font-weight: bold;">
+                <span style="display: inline-block; width: 12px; height: 3px; background-color: #000000; vertical-align: middle;"></span>
+                <span style="display: inline-block; width: 8px; height: 8px; background-color: #000000; vertical-align: middle;"></span>
+                <span style="display: inline-block; width: 12px; height: 3px; background-color: #000000; vertical-align: middle; margin-right: 4px;"></span>
+                {{ $evaluacion->nombre_completo }} (Puntaje estándar)
+            </span>
         </div>
 
         <div style="margin-top: 2px;">
@@ -223,8 +233,14 @@
                     <td class="col-dim">{{ $info['nombre'] }} ({{ $info['area'] }})</td>
                     <td style="font-weight: bold;">{{ $pd }}</td>
                     <td>{{ number_format($info['media'], 2) }} / {{ number_format($info['desviacion'], 2) }}</td>
+                    @php
+                        $asteriscos = \App\Constants\ValantiPreguntas::asteriscosPuntajeEstandar($pe);
+                    @endphp
                     <td style="font-weight: bold;">{{ $pe }}</td>
-                    <td style="font-weight: bold;">{{ $nivel }}</td>
+                    <td style="font-weight: bold;">
+                        {{ $nivel }}
+                        <div style="color: #dc2626; font-family: monospace; font-size: 8.5pt; letter-spacing: 1px;">{{ $asteriscos }}</div>
+                    </td>
                     <td style="color: #001c9b; font-weight: bold;">{{ $ideal }}</td>
                     <td style="font-weight: bold; color: {{ $distancia >= 0 ? '#047857' : '#b45309' }};">
                         {{ $signo }}{{ $distancia }}
