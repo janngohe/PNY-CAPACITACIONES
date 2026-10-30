@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         if (Schema::hasColumn('plantillas_certificado', 'creado_por')) {
-            DB::statement("ALTER TABLE plantillas_certificado MODIFY COLUMN creado_por BIGINT UNSIGNED NULL");
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement("ALTER TABLE plantillas_certificado MODIFY COLUMN creado_por BIGINT UNSIGNED NULL");
+            }
         } else {
             Schema::table('plantillas_certificado', function (Blueprint $table) {
                 $table->unsignedBigInteger('creado_por')->nullable()->after('area_id');

@@ -43,7 +43,7 @@ return new class extends Migration
                 $table->string('video_url', 500)->nullable(); // URL de video (YouTube, Vimeo, etc. para iframe)
                 $table->json('contenido_diapositivas')->nullable(); // Diapositivas interactivas en JSON
                 $table->boolean('estado')->default(true);
-                $table->integer('creado_por')->nullable();
+                $table->unsignedBigInteger('creado_por')->nullable();
                 $table->timestamps();
 
                 $table->foreign('creado_por')->references('id')->on('usuarios')->nullOnDelete();
@@ -63,10 +63,8 @@ return new class extends Migration
         if (!Schema::hasTable('induccion_areas')) {
             Schema::create('induccion_areas', function (Blueprint $table) {
                 $table->foreignId('induccion_id')->constrained('inducciones')->cascadeOnDelete();
-                $table->integer('area_id');
+                $table->foreignId('area_id')->constrained('areas')->cascadeOnDelete();
                 $table->primary(['induccion_id', 'area_id']);
-
-                $table->foreign('area_id')->references('id')->on('areas')->cascadeOnDelete();
             });
         }
 
@@ -75,7 +73,7 @@ return new class extends Migration
             Schema::create('sesiones_induccion', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('induccion_id')->constrained('inducciones')->cascadeOnDelete();
-                $table->integer('facilitador_id');
+                $table->foreignId('facilitador_id')->constrained('usuarios')->cascadeOnDelete();
                 $table->foreignId('sede_id')->constrained('sedes')->cascadeOnDelete();
                 $table->string('codigo_sesion', 30)->unique(); // Ej: IND-4921
                 $table->enum('estado', ['EN_CURSO', 'FINALIZADA'])->default('EN_CURSO');
@@ -84,7 +82,6 @@ return new class extends Migration
                 $table->json('areas_convocadas')->nullable();
                 $table->timestamps();
 
-                $table->foreign('facilitador_id')->references('id')->on('usuarios')->cascadeOnDelete();
                 $table->index(['codigo_sesion', 'estado']);
             });
         }
@@ -94,7 +91,7 @@ return new class extends Migration
             Schema::create('asistencias_induccion', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('sesion_id')->constrained('sesiones_induccion')->cascadeOnDelete();
-                $table->integer('usuario_id')->nullable();
+                $table->foreignId('usuario_id')->nullable()->constrained('usuarios')->nullOnDelete();
                 $table->string('identificacion', 30);
                 $table->string('nombre_completo', 150);
                 $table->string('cargo', 150)->nullable();
@@ -108,7 +105,6 @@ return new class extends Migration
                 $table->string('ip_origen', 45)->nullable();
                 $table->timestamps();
 
-                $table->foreign('usuario_id')->references('id')->on('usuarios')->nullOnDelete();
                 $table->unique(['sesion_id', 'identificacion'], 'uk_asistencia_sesion_identificacion');
                 $table->index(['sesion_id', 'fecha_registro']);
             });

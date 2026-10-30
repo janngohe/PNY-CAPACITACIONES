@@ -78,6 +78,10 @@ class Usuario extends Authenticatable
             return 'Administrador del Sistema';
         }
 
+        if ($this->rol === 'PSICOLOGIA') {
+            return $this->cargo ?: 'Profesional de Psicología / Gestión Humana';
+        }
+
         return 'Colaborador ' . ($this->area?->nombre ?? '');
     }
 
@@ -127,6 +131,7 @@ class Usuario extends Authenticatable
         $ruta = match ($this->rol) {
             'ADMINISTRADOR' => 'admin.dashboard',
             'JEFE_AREA' => 'jefe.dashboard',
+            'PSICOLOGIA' => 'psicologia.dashboard',
             default => 'empleado.capacitaciones',
         };
 

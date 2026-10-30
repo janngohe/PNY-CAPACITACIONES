@@ -10,7 +10,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE contenidos MODIFY COLUMN tipo ENUM('TEXTO','VIDEO','IMAGEN','PDF','ENLACE','PPTX') NOT NULL DEFAULT 'TEXTO'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE contenidos MODIFY COLUMN tipo ENUM('TEXTO','VIDEO','IMAGEN','PDF','ENLACE','PPTX') NOT NULL DEFAULT 'TEXTO'");
+        }
     }
 
     /**
@@ -18,6 +20,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE contenidos MODIFY COLUMN tipo ENUM('TEXTO','VIDEO','IMAGEN','PDF','ENLACE') NOT NULL DEFAULT 'TEXTO'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE contenidos MODIFY COLUMN tipo ENUM('TEXTO','VIDEO','IMAGEN','PDF','ENLACE') NOT NULL DEFAULT 'TEXTO'");
+        }
     }
 };

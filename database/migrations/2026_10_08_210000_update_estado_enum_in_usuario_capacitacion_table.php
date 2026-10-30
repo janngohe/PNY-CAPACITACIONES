@@ -12,7 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE usuario_capacitacion MODIFY COLUMN estado ENUM('PENDIENTE', 'EN_PROGRESO', 'MODULOS_COMPLETOS', 'COMPLETADA', 'NO_APROBADA') NOT NULL DEFAULT 'PENDIENTE'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE usuario_capacitacion MODIFY COLUMN estado ENUM('PENDIENTE', 'EN_PROGRESO', 'MODULOS_COMPLETOS', 'COMPLETADA', 'NO_APROBADA') NOT NULL DEFAULT 'PENDIENTE'");
+        }
     }
 
     /**
@@ -20,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE usuario_capacitacion MODIFY COLUMN estado ENUM('PENDIENTE', 'EN_PROGRESO', 'COMPLETADA', 'NO_APROBADA') NOT NULL DEFAULT 'PENDIENTE'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE usuario_capacitacion MODIFY COLUMN estado ENUM('PENDIENTE', 'EN_PROGRESO', 'COMPLETADA', 'NO_APROBADA') NOT NULL DEFAULT 'PENDIENTE'");
+        }
     }
 };

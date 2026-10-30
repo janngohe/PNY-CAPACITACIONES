@@ -23,6 +23,8 @@ Route::post('/password/primer-ingreso', [LoginController::class, 'actualizarPass
 require __DIR__ . '/empleado.php';
 require __DIR__ . '/jefe.php';
 require __DIR__ . '/admin.php';
+require __DIR__ . '/psicologia.php';
+require __DIR__ . '/evaluacion.php';
 
 /*
 |--------------------------------------------------------------------------
