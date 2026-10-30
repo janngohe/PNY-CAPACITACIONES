@@ -320,7 +320,6 @@
                         <div class="mt-4 pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-600">
                             <div>
                                 <span class="text-slate-400">Cédula:</span>
-                                <strong id="docFirmaCedula" class="text-brand-dark font-bold">____________________</strong>
                                 <strong id="docFirmaCedula" class="text-brand-dark font-bold break-words">___</strong>
                             </div>
                             <div class="sm:text-right">
@@ -333,10 +332,15 @@
 
             </div>
 
-            <!-- ALERTA DE ERRORES DE VALIDACIÓN -->
-            <div id="alertaError" class="hidden p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2.5">
-                <i class="fa-solid fa-circle-exclamation text-rose-600 text-base shrink-0"></i>
-                <span id="mensajeError">Por favor completa todos los campos requeridos antes de continuar.</span>
+            <!-- ALERTA DE ERRORES DE VALIDACIÓN (AUTO-OCULTABLE) -->
+            <div id="alertaError" class="hidden p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between gap-2.5 transition-all duration-300 shadow-2xs">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-circle-exclamation text-rose-600 text-base shrink-0"></i>
+                    <span id="mensajeError">Por favor completa todos los campos requeridos antes de continuar.</span>
+                </div>
+                <button type="button" onclick="document.getElementById('alertaError').classList.add('hidden')" class="text-rose-600 hover:text-rose-900 p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
             <!-- BOTÓN PRINCIPAL DE ENVÍO -->
@@ -369,10 +373,6 @@
             const cedula = document.getElementById('identificacion').value.trim();
             const lugar = document.getElementById('lugar_expedicion').value.trim();
 
-            document.getElementById('docNombre').textContent = nombre || '____________________________________________';
-            document.getElementById('docCedula').textContent = cedula || '______________________';
-            document.getElementById('docLugar').textContent = lugar || '____________________________';
-            document.getElementById('docFirmaCedula').textContent = cedula || '____________________';
             document.getElementById('docNombre').textContent = nombre || '___';
             document.getElementById('docCedula').textContent = cedula || '___';
             document.getElementById('docLugar').textContent = lugar || '___';
@@ -504,7 +504,6 @@
             });
 
             window.addEventListener('mouseup', () => {
-                dibujando = false;
                 if (dibujando) {
                     dibujando = false;
                     registrarFirmaGuardada();
@@ -516,9 +515,12 @@
             if (!ctx || !canvas) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             firmaVacia = true;
+            firmaRespaldoDataUrl = null;
             document.getElementById('firma_digital_input').value = '';
             document.getElementById('firmaPlaceholder')?.classList.remove('hidden');
         }
+
+        let timerAlertaError = null;
 
         // Validación y Enviar
         function validarYEnviar(e) {
@@ -529,6 +531,10 @@
                 msg.textContent = texto;
                 alerta.classList.remove('hidden');
                 alerta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                clearTimeout(timerAlertaError);
+                timerAlertaError = setTimeout(() => {
+                    alerta.classList.add('hidden');
+                }, 4000);
             }
 
             const nombre = document.getElementById('nombre_completo').value.trim();

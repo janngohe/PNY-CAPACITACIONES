@@ -247,17 +247,27 @@
                 </div>
             </header>
 
-            <!-- MENSAJES FLASH -->
-            @if(session('success'))
-                <div class="m-4 sm:m-6 mb-0 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2.5">
-                    <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
-                    <span>{{ session('success') }}</span>
+            <!-- MENSAJES FLASH AUTO-OCULTABLES -->
+            @if(session('success') || session('exito'))
+                <div data-auto-dismiss="4000" class="notificacion-flash m-4 sm:m-6 mb-0 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between gap-2.5 transition-all duration-500 shadow-2xs">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-base shrink-0"></i>
+                        <span>{{ session('success') ?? session('exito') }}</span>
+                    </div>
+                    <button type="button" onclick="ocultarNotificacion(this.parentElement)" class="text-emerald-600 hover:text-emerald-900 p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
             @endif
-            @if(session('error'))
-                <div class="m-4 sm:m-6 mb-0 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2.5">
-                    <i class="fa-solid fa-triangle-exclamation text-rose-600 text-base"></i>
-                    <span>{{ session('error') }}</span>
+            @if(session('error') || session('error_validacion'))
+                <div data-auto-dismiss="5000" class="notificacion-flash m-4 sm:m-6 mb-0 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between gap-2.5 transition-all duration-500 shadow-2xs">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 text-base shrink-0"></i>
+                        <span>{{ session('error') ?? session('error_validacion') }}</span>
+                    </div>
+                    <button type="button" onclick="ocultarNotificacion(this.parentElement)" class="text-rose-600 hover:text-rose-900 p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
             @endif
 
@@ -269,7 +279,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE INTERACCIÓN MÓVIL DEL SIDEBAR -->
+    <!-- SCRIPT DE INTERACCIÓN MÓVIL DEL SIDEBAR Y AUTO-OCULTAMIENTO DE NOTIFICACIONES -->
     <script>
         function toggleSidebar(open) {
             const sidebar = document.getElementById('sidebar-psicologia');
@@ -284,6 +294,24 @@
                 document.body.classList.remove('overflow-hidden');
             }
         }
+
+        function ocultarNotificacion(el) {
+            if (!el) return;
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-8px)';
+            setTimeout(() => {
+                el.remove();
+            }, 400);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-auto-dismiss]').forEach((alerta) => {
+                const tiempo = parseInt(alerta.getAttribute('data-auto-dismiss') || '4000', 10);
+                setTimeout(() => {
+                    ocultarNotificacion(alerta);
+                }, tiempo);
+            });
+        });
     </script>
     @stack('scripts')
 </body>
