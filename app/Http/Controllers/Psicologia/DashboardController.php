@@ -116,7 +116,52 @@ class DashboardController extends Controller
     }
 
     /**
+     * Permite que un candidato/empleado que cerró su navegador o escaneó de nuevo el QR
+     * continúe exactamente en la prueba donde quedó ingresando su número de cédula.
+     */
+    public function retomarEvaluacionPorCedula(Request $request, ?string $codigo = null)
+    {
+        $codigo = $codigo ?? 'PSI-PNY';
+        $identificacion = trim((string) $request->input('identificacion_retomar', ''));
+
+        if ($identificacion === '') {
+            return back()->with('error_retomar', 'Ingresa tu número de cédula para buscar tu prueba en curso.');
+        }
+
+        $evaluacion = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+            ->where('identificacion', $identificacion)
+            ->latest('id')
+            ->first();
+
+        if (!$evaluacion) {
+            return back()->with('error_retomar', "No se encontró ninguna evaluación iniciada con la cédula {$identificacion}. Completa el formulario de autorización abajo para iniciar.");
+        }
+
+        session(['evaluacion_candidato_id' => $evaluacion->id]);
+
+        if (!$evaluacion->pacaFinalizada()) {
+            return redirect()->route('psicologia.evaluacion.paso2', [
+                'codigo' => $evaluacion->codigo_sesion ?: $codigo,
+                'evaluacion' => $evaluacion->id,
+            ]);
+        }
+
+        if (!$evaluacion->valantiFinalizada()) {
+            return redirect()->route('psicologia.evaluacion.paso3', [
+                'codigo' => $evaluacion->codigo_sesion ?: $codigo,
+                'evaluacion' => $evaluacion->id,
+            ]);
+        }
+
+        return redirect()->route('psicologia.evaluacion.completada', [
+            'codigo' => $evaluacion->codigo_sesion ?: $codigo,
+            'evaluacion' => $evaluacion->id,
+        ]);
+    }
+
+    /**
      * Procesa y almacena la Autorización firmada por el candidato (Paso 1) y redirige a la Prueba 1 (PAC-A).
+     * Si el candidato ya tenía una prueba en progreso sin finalizar con esa misma cédula, la retoma automáticamente.
      */
     public function guardarConsentimiento(Request $request, ?string $codigo = null)
     {
@@ -142,6 +187,27 @@ class DashboardController extends Controller
             'firma_digital.required' => 'Debes dibujar tu firma digital en el recuadro.',
             'acepta_terminos.accepted' => 'Debes marcar la casilla de aceptación para continuar.',
         ]);
+
+        // Si ya tiene una evaluación en progreso (incompleta) con esta cédula, retomarla sin duplicar
+        $enCurso = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+            ->where('identificacion', trim($validados['identificacion']))
+            ->whereDoesntHave('resultadoValanti')
+            ->latest('id')
+            ->first();
+
+        if ($enCurso) {
+            session(['evaluacion_candidato_id' => $enCurso->id]);
+            if (!$enCurso->pacaFinalizada()) {
+                return redirect()->route('psicologia.evaluacion.paso2', [
+                    'codigo' => $enCurso->codigo_sesion ?: $codigo,
+                    'evaluacion' => $enCurso->id,
+                ]);
+            }
+            return redirect()->route('psicologia.evaluacion.paso3', [
+                'codigo' => $enCurso->codigo_sesion ?: $codigo,
+                'evaluacion' => $enCurso->id,
+            ]);
+        }
 
         $firmaData = $validados['firma_digital'];
         $rutaFirma = $firmaData;
@@ -544,10 +610,45 @@ class DashboardController extends Controller
 
         $filtrosActivos = $request->anyFilled(['buscar', 'estado', 'fecha']);
 
+        // Detectar túnel Ngrok o IP local para construir el QR móvil de continuidad
+        $urlNgrokBase = null;
+        try {
+            $ch = curl_init('http://127.0.0.1:4040/api/tunnels');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT_MS => 250,
+                CURLOPT_CONNECTTIMEOUT_MS => 180,
+            ]);
+            $ngrokRes = curl_exec($ch);
+            curl_close($ch);
+            if ($ngrokRes) {
+                $ngrokData = json_decode($ngrokRes, true);
+                foreach ($ngrokData['tunnels'] ?? [] as $tun) {
+                    if (!empty($tun['public_url']) && str_starts_with($tun['public_url'], 'https://')) {
+                        $urlNgrokBase = rtrim($tun['public_url'], '/');
+                        break;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ngrok no activo
+        }
+
+        if (!$urlNgrokBase && str_contains($request->getHost(), 'ngrok')) {
+            $urlNgrokBase = $request->getSchemeAndHttpHost();
+        }
+
+        $localIp = gethostbyname(gethostname());
+        $puerto = $request->getPort();
+        $puertoStr = ($puerto && !in_array($puerto, [80, 443])) ? ':' . $puerto : '';
+        $urlLocalBase = 'http://' . $localIp . $puertoStr;
+
         return view('psicologia.pruebas.historial', compact(
             'usuario',
             'aplicaciones',
-            'filtrosActivos'
+            'filtrosActivos',
+            'urlNgrokBase',
+            'urlLocalBase'
         ));
     }
 

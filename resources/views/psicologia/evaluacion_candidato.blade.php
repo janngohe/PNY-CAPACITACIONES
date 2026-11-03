@@ -90,6 +90,45 @@
             </div>
         </div>
 
+        <!-- TARJETA RÁPIDA PARA RETOMAR PRUEBA EN CURSO (CONTINUIDAD AL ESCANEAR EL MISMO QR) -->
+        <div class="bg-gradient-to-r from-brand-light/80 to-sky-50 rounded-2xl p-4 sm:p-5 border border-brand-blue/25 shadow-2xs mb-6 no-print">
+            <form method="POST" action="{{ route('psicologia.evaluacion.retomar', ['codigo' => $codigo]) }}" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                @csrf
+                <div class="flex items-start sm:items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-brand-blue text-white flex items-center justify-center shrink-0 text-xs">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </span>
+                    <div>
+                        <span class="font-heading font-extrabold text-xs sm:text-sm text-brand-dark block leading-tight">
+                            ¿Ya habías iniciado tu evaluación?
+                        </span>
+                        <span class="text-[11px] text-slate-600 block mt-0.5">
+                            Ingresa tu número de cédula para continuar exactamente donde quedaste.
+                        </span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <input type="text"
+                           name="identificacion_retomar"
+                           inputmode="numeric"
+                           required
+                           placeholder="Tu número de cédula"
+                           class="w-full sm:w-44 px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-mono text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue">
+                    <button type="submit"
+                            class="px-3.5 py-2 rounded-xl bg-brand-blue hover:bg-brand-dark text-white font-heading font-bold text-xs transition shadow-2xs shrink-0 cursor-pointer flex items-center gap-1.5">
+                        <span>Continuar</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </div>
+            </form>
+            @if(session('error_retomar'))
+                <div data-auto-dismiss="5000" class="mt-2.5 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation text-rose-600 shrink-0"></i>
+                    <span>{{ session('error_retomar') }}</span>
+                </div>
+            @endif
+        </div>
+
         <!-- FORMULARIO PRINCIPAL DE AUTORIZACIÓN -->
         <form id="formConsentimiento"
               method="POST"

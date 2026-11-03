@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/evaluacion-psicologica/{codigo?}', [DashboardController::class, 'evaluacionPublica'])
     ->name('psicologia.evaluacion.publica');
 
+Route::post('/evaluacion-psicologica/{codigo?}/retomar', [DashboardController::class, 'retomarEvaluacionPorCedula'])
+    ->name('psicologia.evaluacion.retomar');
+
 Route::post('/evaluacion-psicologica/{codigo?}/consentimiento', [DashboardController::class, 'guardarConsentimiento'])
     ->name('psicologia.evaluacion.guardar_consentimiento');
 
