@@ -36,6 +36,35 @@
         </div>
     </div>
 
+    @if(!$usuario->tieneFirmaRegistrada())
+        <!-- ALERTA DE PRIMER INGRESO: FIRMA DIGITAL PENDIENTE -->
+        <div class="rounded-3xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50/70 p-5 sm:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 text-xl shadow-xs">
+                    <i class="fa-solid fa-signature"></i>
+                </div>
+                <div>
+                    <span class="inline-block text-[10px] font-extrabold uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2.5 py-0.5 rounded-full mb-1">
+                        Paso recomendado · Primer Ingreso
+                    </span>
+                    <h3 class="font-heading font-extrabold text-base text-amber-950">
+                        Registra tu Firma Digital Oficial para Certificados
+                    </h3>
+                    <p class="text-xs text-amber-900/80 mt-1 max-w-2xl leading-relaxed">
+                        Registra tu firma digital una sola vez para que todos los Certificados de Aptitud Psicológica (GH-FO-028) que emitas se firmen de forma automática, sin necesidad de firmar manualmente en cada uno.
+                    </p>
+                </div>
+            </div>
+
+            <button type="button"
+                    onclick="abrirModalFirmaPsicologa()"
+                    class="inline-flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2.5 shadow-xs transition-colors shrink-0 cursor-pointer">
+                <i class="fa-solid fa-pen-nib"></i>
+                <span>Registrar Mi Firma Ahora</span>
+            </button>
+        </div>
+    @endif
+
     <!-- SECCIÓN DE LOS 4 MÓDULOS PRINCIPALES -->
     <div>
         <div class="mb-5">

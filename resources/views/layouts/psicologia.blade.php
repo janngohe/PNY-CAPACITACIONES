@@ -212,7 +212,16 @@
                 </div>
 
                 <!-- Derecha: Switcher Rápido a Modo Colaborador & Perfil -->
-                <div class="flex items-center gap-3 sm:gap-4">
+                <div class="flex items-center gap-2.5 sm:gap-3">
+
+                    <!-- Botón de Firma Digital Oficial -->
+                    <button type="button"
+                            onclick="abrirModalFirmaPsicologa()"
+                            title="{{ $usuario->tieneFirmaRegistrada() ? 'Firma digital oficial activa. Clic para verla o cambiarla.' : 'Registra tu firma digital oficial para los certificados.' }}"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition shadow-2xs border cursor-pointer {{ $usuario->tieneFirmaRegistrada() ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 animate-pulse' }}">
+                        <i class="fa-solid {{ $usuario->tieneFirmaRegistrada() ? 'fa-signature text-emerald-600' : 'fa-pen-nib text-amber-600' }}"></i>
+                        <span class="hidden sm:inline">{{ $usuario->tieneFirmaRegistrada() ? 'Firma Oficial' : 'Registrar Firma' }}</span>
+                    </button>
 
                     <!-- Switcher Button a Capacitaciones -->
                     <a href="{{ route('empleado.capacitaciones') }}"
@@ -313,6 +322,7 @@
             });
         });
     </script>
+    @include('psicologia.partials.modal_firma_psicologa')
     @stack('scripts')
 </body>
 </html>

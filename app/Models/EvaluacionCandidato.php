@@ -23,6 +23,11 @@ class EvaluacionCandidato extends Model
         'fecha_hora_aceptacion',
         'paso_actual',
         'estado',
+        'certificado_ciudad_fecha',
+        'certificado_concepto',
+        'certificado_observaciones',
+        'certificado_emitido_at',
+        'certificado_emitido_por',
     ];
 
     protected function casts(): array
@@ -30,10 +35,59 @@ class EvaluacionCandidato extends Model
         return [
             'fecha_nacimiento' => 'date',
             'fecha_hora_aceptacion' => 'datetime',
+            'certificado_emitido_at' => 'datetime',
             'acepta_terminos' => 'boolean',
             'edad' => 'integer',
             'paso_actual' => 'integer',
         ];
+    }
+
+    public function certificadoEmitido(): bool
+    {
+        return !empty($this->certificado_concepto);
+    }
+
+    /**
+     * Devuelve el texto para la columna OBSERVACION del reporte Excel anual.
+     */
+    public function observacionReporteExcel(): string
+    {
+        $obs = trim((string) ($this->certificado_observaciones ?? ''));
+        if ($obs !== '') {
+            return $obs;
+        }
+
+        if ($this->certificado_concepto === 'CUMPLE_SIN_INDICE') {
+            return 'CUMPLE';
+        }
+
+        return '';
+    }
+
+    public function badgeCertificadoAptitudinal(): array
+    {
+        return match ($this->certificado_concepto) {
+            'CUMPLE_SIN_INDICE' => [
+                'texto' => 'Cumple (Sin Accidentalidad)',
+                'clase' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                'icono' => 'fa-circle-check',
+            ],
+            'CUMPLE_CON_RECOMENDACIONES' => [
+                'texto' => 'Cumple (Con Recomendaciones)',
+                'clase' => 'bg-sky-50 text-sky-700 border-sky-200',
+                'icono' => 'fa-circle-info',
+            ],
+            'NO_CUMPLE' => [
+                'texto' => 'No Cumple Perfil',
+                'clase' => 'bg-rose-50 text-rose-700 border-rose-200',
+                'icono' => 'fa-circle-xmark',
+            ],
+            default => [
+                'texto' => 'Pendiente por diligenciar',
+                'clase' => 'bg-amber-50 text-amber-700 border-amber-200',
+                'icono' => 'fa-pen-to-square',
+            ],
+        };
     }
 
     public function respuestasPaca(): HasMany

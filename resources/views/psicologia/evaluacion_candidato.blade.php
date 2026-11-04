@@ -220,16 +220,18 @@
                                    id="fecha_nacimiento"
                                    name="fecha_nacimiento"
                                    required
+                                   max="{{ now()->subYears(16)->format('Y-m-d') }}"
                                    value="{{ old('fecha_nacimiento') }}"
+                                   oninput="calcularEdad()"
                                    onchange="calcularEdad()"
                                    class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-line focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue text-xs text-slate-800">
                         </div>
                     </div>
 
-                    <!-- Edad (Auto calculada) -->
+                    <!-- Edad (Calculada automáticamente al día de hoy, bloqueada para escritura manual) -->
                     <div>
                         <label for="edad" class="block font-heading font-bold text-slate-700 mb-1.5">
-                            Edad (Años) <span class="text-rose-500">*</span>
+                            Edad (Calculada automáticamente) <span class="text-rose-500">*</span>
                         </label>
                         <div class="relative">
                             <i class="fa-solid fa-cake-candles absolute left-3.5 top-3 text-slate-400 text-xs"></i>
@@ -239,9 +241,12 @@
                                    min="16"
                                    max="99"
                                    required
+                                   readonly
+                                   tabindex="-1"
+                                   onkeydown="return false;"
                                    value="{{ old('edad') }}"
-                                   placeholder="Ej. 28"
-                                   class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-line focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue text-xs font-mono text-slate-800">
+                                   placeholder="Se calcula al elegir la fecha"
+                                   class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-xs font-mono font-bold text-slate-700 cursor-not-allowed select-none pointer-events-none focus:outline-none">
                         </div>
                     </div>
 
@@ -270,8 +275,6 @@
                 
                 <!-- Encabezado del Formato Institucional -->
                 <div class="border-b-2 border-slate-200 pb-5 mb-6 text-center">
-                    <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
-                        Formato Institucional de Gestión Humana · Código GH-F-042
                     <span class="inline-block text-[10.5px] font-bold uppercase tracking-widest text-slate-500 mb-1 font-mono">
                         CÓDIGO: GH-FO-025
                     </span>
@@ -285,10 +288,6 @@
 
                 <!-- Cuerpo Oficial del Documento con Respeto Exacto a la Redacción -->
                 <div class="bg-slate-50/80 rounded-2xl p-5 sm:p-7 border border-slate-200 text-slate-800 leading-relaxed text-xs sm:text-sm text-justify space-y-4 shadow-inner">
-                    <p>
-                        Yo, <span id="docNombre" class="font-bold underline decoration-brand-blue decoration-2 underline-offset-4 text-brand-dark">____________________________________________</span>, 
-                        identificado(a) con cédula de ciudadanía No. <span id="docCedula" class="font-bold font-mono underline decoration-brand-blue decoration-2 underline-offset-4 text-brand-dark">______________________</span>, 
-                        expedida en <span id="docLugar" class="font-bold underline decoration-brand-blue decoration-2 underline-offset-4 text-brand-dark">____________________________</span>, 
                     <p class="break-words">
                         Yo, <span id="docNombre" class="font-bold underline decoration-brand-blue decoration-2 underline-offset-4 text-brand-dark break-words">___</span>, 
                         identificado(a) con cédula de ciudadanía No. <span id="docCedula" class="font-bold font-mono underline decoration-brand-blue decoration-2 underline-offset-4 text-brand-dark break-words">___</span>, 
@@ -418,22 +417,35 @@
             document.getElementById('docFirmaCedula').textContent = cedula || '___';
         }
 
-        // Calcular edad automáticamente a partir de la fecha de nacimiento
+        // Calcular edad automáticamente al día de hoy a partir de la fecha de nacimiento (sin desfase de zona horaria)
         function calcularEdad() {
             const fechaInput = document.getElementById('fecha_nacimiento').value;
-            if (!fechaInput) return;
+            const inputEdad = document.getElementById('edad');
+            if (!fechaInput || !inputEdad) {
+                if (inputEdad) inputEdad.value = '';
+                return;
+            }
 
-            const nacimiento = new Date(fechaInput);
+            const partes = fechaInput.split('-').map(Number);
+            if (partes.length !== 3 || isNaN(partes[0]) || isNaN(partes[1]) || isNaN(partes[2])) {
+                inputEdad.value = '';
+                return;
+            }
+
+            const [anioNac, mesNac, diaNac] = partes;
             const hoy = new Date();
-            let edad = hoy.getFullYear() - nacimiento.getFullYear();
-            const mes = hoy.getMonth() - nacimiento.getMonth();
+            let edad = hoy.getFullYear() - anioNac;
+            const mesActual = hoy.getMonth() + 1;
+            const diaActual = hoy.getDate();
 
-            if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+            if (mesActual < mesNac || (mesActual === mesNac && diaActual < diaNac)) {
                 edad--;
             }
 
             if (edad >= 0 && edad <= 120) {
-                document.getElementById('edad').value = edad;
+                inputEdad.value = edad;
+            } else {
+                inputEdad.value = '';
             }
         }
 
@@ -653,6 +665,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             actualizarDocumento();
+            calcularEdad();
         });
     </script>
 </body>

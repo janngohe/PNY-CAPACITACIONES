@@ -54,8 +54,9 @@ Route::prefix('psicologia')->name('psicologia.')->middleware(['auth', 'rol:PSICO
     // 1. Realizar Prueba (Código QR institucional único)
     Route::get('/realizar-prueba', [DashboardController::class, 'realizarPrueba'])->name('pruebas.realizar');
 
-    // 2. Reportes
+    // 2. Reportes y Descarga de Excel Anual
     Route::get('/reportes', [DashboardController::class, 'reportes'])->name('reportes');
+    Route::get('/reportes/excel', [DashboardController::class, 'descargarReporteExcel'])->name('reportes.excel');
 
     // 3. Historial de Pruebas y Resultados (PAC-A + VALANTI) + Custodia GH-FO-025 + PDF Gráfico VALANTI
     Route::get('/historial-pruebas', [DashboardController::class, 'historialPruebas'])->name('pruebas.historial');
@@ -64,6 +65,12 @@ Route::prefix('psicologia')->name('psicologia.')->middleware(['auth', 'rol:PSICO
     Route::get('/pruebas/{evaluacion}/valanti-pdf', [DashboardController::class, 'verValantiPdf'])->name('valanti.pdf');
     Route::get('/pruebas/{evaluacion}/consentimiento-pdf', [DashboardController::class, 'verConsentimientoPdf'])->name('consentimientos.pdf');
 
-    // 4. Certificado Aptitudinal
+    // 4. Certificado Aptitudinal (GH-FO-028)
     Route::get('/certificado-aptitudinal', [DashboardController::class, 'certificadoAptitudinal'])->name('certificado_aptitudinal');
+    Route::post('/certificado-aptitudinal/{evaluacion}', [DashboardController::class, 'guardarCertificadoAptitudinal'])->name('certificado_aptitudinal.guardar');
+    Route::get('/certificado-aptitudinal/{evaluacion}/pdf', [DashboardController::class, 'verCertificadoAptitudinalPdf'])->name('certificado_aptitudinal.pdf');
+
+    // 5. Configuración de Firma Digital Oficial de Psicología
+    Route::post('/guardar-firma', [DashboardController::class, 'guardarFirmaPsicologia'])->name('firma.guardar');
+    Route::post('/eliminar-firma', [DashboardController::class, 'eliminarFirmaPsicologia'])->name('firma.eliminar');
 });

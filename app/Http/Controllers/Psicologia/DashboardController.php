@@ -11,11 +11,13 @@ use App\Models\RespuestaValanti;
 use App\Models\Usuario;
 use App\Services\Psicologia\CalificadorPacaService;
 use App\Services\Psicologia\CalificadorValantiService;
+use App\Services\Psicologia\ReporteExcelPsicologiaService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -223,13 +225,15 @@ class DashboardController extends Controller
             }
         }
 
+        $edadCalculada = \Carbon\Carbon::parse($validados['fecha_nacimiento'])->age;
+
         $evaluacion = EvaluacionCandidato::create([
             'codigo_sesion' => $codigo,
             'nombre_completo' => mb_strtoupper(trim($validados['nombre_completo']), 'UTF-8'),
             'identificacion' => trim($validados['identificacion']),
             'lugar_expedicion' => mb_convert_case(trim($validados['lugar_expedicion']), MB_CASE_TITLE, 'UTF-8'),
             'fecha_nacimiento' => $validados['fecha_nacimiento'],
-            'edad' => (int) $validados['edad'],
+            'edad' => $edadCalculada > 0 ? $edadCalculada : (int) $validados['edad'],
             'cargo_aspira' => mb_convert_case(trim($validados['cargo_aspira']), MB_CASE_TITLE, 'UTF-8'),
             'firma_digital' => $rutaFirma,
             'acepta_terminos' => true,
@@ -554,14 +558,79 @@ class DashboardController extends Controller
     }
 
     /**
-     * Módulo 2: Reportes.
+     * Módulo 2: Reportes (Filtro por año y vista previa del listado de aplicación de pruebas psicotécnicas).
      */
-    public function reportes()
+    public function reportes(Request $request)
     {
         /** @var Usuario $usuario */
         $usuario = Auth::user();
 
-        return view('psicologia.reportes', compact('usuario'));
+        $anioActual = (int) now()->format('Y');
+
+        $aniosEnBd = EvaluacionCandidato::selectRaw('YEAR(COALESCE(fecha_hora_aceptacion, created_at)) as anio')
+            ->whereNotNull('created_at')
+            ->distinct()
+            ->pluck('anio')
+            ->map(fn ($y) => (int) $y)
+            ->filter(fn ($y) => $y >= 2020 && $y <= 2100)
+            ->toArray();
+
+        $aniosDisponibles = array_values(array_unique(array_merge([$anioActual], $aniosEnBd)));
+        rsort($aniosDisponibles);
+
+        $anioSeleccionado = (int) $request->input('anio', $anioActual);
+        if (!in_array($anioSeleccionado, $aniosDisponibles, true)) {
+            $aniosDisponibles[] = $anioSeleccionado;
+            rsort($aniosDisponibles);
+        }
+
+        $evaluaciones = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+            ->whereRaw('YEAR(COALESCE(fecha_hora_aceptacion, created_at)) = ?', [$anioSeleccionado])
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $totalAnio = $evaluaciones->count();
+        $totalCumple = $evaluaciones->where('certificado_concepto', 'CUMPLE_SIN_INDICE')->count();
+        $totalRecomendaciones = $evaluaciones->where('certificado_concepto', 'CUMPLE_CON_RECOMENDACIONES')->count();
+        $totalNoCumple = $evaluaciones->where('certificado_concepto', 'NO_CUMPLE')->count();
+        $totalPendientesCert = $totalAnio - ($totalCumple + $totalRecomendaciones + $totalNoCumple);
+
+        return view('psicologia.reportes', compact(
+            'usuario',
+            'anioSeleccionado',
+            'aniosDisponibles',
+            'evaluaciones',
+            'totalAnio',
+            'totalCumple',
+            'totalRecomendaciones',
+            'totalNoCumple',
+            'totalPendientesCert'
+        ));
+    }
+
+    /**
+     * Descarga el archivo Excel (.xlsx) filtrado únicamente por año con la estructura exacta
+     * de PRUEBAS APLICADAS {AÑO}.xlsx.
+     */
+    public function descargarReporteExcel(Request $request, ReporteExcelPsicologiaService $excelService)
+    {
+        $anioActual = (int) now()->format('Y');
+        $anioSeleccionado = (int) $request->input('anio', $anioActual);
+        if ($anioSeleccionado < 2000 || $anioSeleccionado > 2100) {
+            $anioSeleccionado = $anioActual;
+        }
+
+        $evaluaciones = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+            ->whereRaw('YEAR(COALESCE(fecha_hora_aceptacion, created_at)) = ?', [$anioSeleccionado])
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $rutaTemporal = $excelService->generarArchivoXlsx($evaluaciones, $anioSeleccionado);
+        $nombreDescarga = "PRUEBAS APLICADAS {$anioSeleccionado}.xlsx";
+
+        return response()->download($rutaTemporal, $nombreDescarga, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     /**
@@ -796,13 +865,218 @@ class DashboardController extends Controller
     }
 
     /**
-     * Módulo 4: Certificado Aptitudinal.
+     * Módulo 4: Certificado Aptitudinal (GH-FO-028).
+     * Lista únicamente los candidatos que ya presentaron las 2 pruebas completas (PAC-A y VALANTI).
      */
-    public function certificadoAptitudinal()
+    public function certificadoAptitudinal(Request $request)
     {
         /** @var Usuario $usuario */
         $usuario = Auth::user();
 
-        return view('psicologia.certificado_aptitudinal', compact('usuario'));
+        $evaluacionesCompletas = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+            ->whereHas('resultadoPaca')
+            ->whereHas('resultadoValanti')
+            ->latest('id')
+            ->get();
+
+        $totalCompletas = $evaluacionesCompletas->count();
+        $totalEmitidos = $evaluacionesCompletas->filter(fn (EvaluacionCandidato $e) => $e->certificadoEmitido())->count();
+        $totalPendientes = $totalCompletas - $totalEmitidos;
+
+        return view('psicologia.certificado_aptitudinal', compact(
+            'usuario',
+            'evaluacionesCompletas',
+            'totalCompletas',
+            'totalEmitidos',
+            'totalPendientes'
+        ));
+    }
+
+    /**
+     * Guarda el diligenciamiento del Certificado de Aptitud Psicológica (GH-FO-028).
+     */
+    public function guardarCertificadoAptitudinal(Request $request, EvaluacionCandidato $evaluacion)
+    {
+        $evaluacion->load(['resultadoPaca', 'resultadoValanti']);
+
+        if (!$evaluacion->pacaFinalizada() || !$evaluacion->valantiFinalizada()) {
+            return redirect()->route('psicologia.certificado_aptitudinal')
+                ->with('error', 'El candidato aún no ha completado las dos pruebas psicotécnicas (PAC-A y VALANTI).');
+        }
+
+        $validados = $request->validate([
+            'certificado_ciudad_fecha' => ['nullable', 'string', 'max:180'],
+            'certificado_concepto' => ['required', 'string', 'in:CUMPLE_SIN_INDICE,CUMPLE_CON_RECOMENDACIONES,NO_CUMPLE'],
+            'certificado_observaciones' => ['nullable', 'string', 'max:2000'],
+        ], [
+            'certificado_concepto.required' => 'Debes marcar con la flechita uno de los tres cuadritos de concepto aptitudinal.',
+            'certificado_concepto.in' => 'El concepto seleccionado no es válido.',
+        ]);
+
+        $ciudadFecha = trim((string) ($validados['certificado_ciudad_fecha'] ?? ''));
+        if ($ciudadFecha === '') {
+            $ciudadFecha = 'Rivera-Huila, ' . now()->format('d/m/Y');
+        }
+
+        $evaluacion->update([
+            'certificado_ciudad_fecha' => $ciudadFecha,
+            'certificado_concepto' => $validados['certificado_concepto'],
+            'certificado_observaciones' => trim((string) ($validados['certificado_observaciones'] ?? '')),
+            'certificado_emitido_at' => now(),
+            'certificado_emitido_por' => Auth::id(),
+        ]);
+
+        if ($request->boolean('descargar_pdf')) {
+            return $this->verCertificadoAptitudinalPdf($request, $evaluacion);
+        }
+
+        return redirect()->route('psicologia.certificado_aptitudinal')
+            ->with('success', "Certificado de Aptitud Psicológica (GH-FO-028) guardado para {$evaluacion->nombre_completo}.");
+    }
+
+    /**
+     * Genera y muestra o descarga el PDF oficial del Certificado de Aptitud Psicológica (GH-FO-028)
+     * incorporando automáticamente la firma digital de la psicóloga registrada en el sistema.
+     */
+    public function verCertificadoAptitudinalPdf(Request $request, EvaluacionCandidato $evaluacion)
+    {
+        $evaluacion->load(['resultadoPaca', 'resultadoValanti']);
+
+        if (!$evaluacion->certificadoEmitido()) {
+            return redirect()->route('psicologia.certificado_aptitudinal')
+                ->with('error', 'Primero debes diligenciar el certificado aptitudinal de este candidato.');
+        }
+
+        $logoBase64 = null;
+        $rutaLogo = public_path('images/Logo.png');
+        if (file_exists($rutaLogo)) {
+            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($rutaLogo));
+        }
+
+        // Obtener la firma digital de la psicóloga (quien emitió, el usuario actual o rol PSICOLOGIA registrado)
+        $firmaPsicologaBase64 = null;
+        $psicologo = ($evaluacion->certificado_emitido_por ? Usuario::find($evaluacion->certificado_emitido_por) : null)
+            ?: Auth::user()
+            ?: Usuario::where('rol', 'PSICOLOGIA')->whereNotNull('firma_digital')->first();
+
+        if ($psicologo && !empty($psicologo->firma_digital)) {
+            if (str_starts_with($psicologo->firma_digital, 'data:image')) {
+                $firmaPsicologaBase64 = $psicologo->firma_digital;
+            } elseif (Storage::disk('public')->exists($psicologo->firma_digital)) {
+                $firmaPsicologaBase64 = 'data:image/png;base64,' . base64_encode(Storage::disk('public')->get($psicologo->firma_digital));
+            }
+        }
+
+        $pdf = Pdf::loadView('psicologia.certificado.pdf', compact(
+            'evaluacion',
+            'logoBase64',
+            'firmaPsicologaBase64'
+        ))->setPaper('letter', 'portrait');
+
+        $nombreArchivo = "Certificado_Aptitud_GH-FO-028_{$evaluacion->identificacion}.pdf";
+
+        if ($request->boolean('inline')) {
+            return $pdf->stream($nombreArchivo);
+        }
+
+        return $pdf->download($nombreArchivo);
+    }
+
+    /**
+     * Guarda o actualiza la firma digital oficial de la profesional de Psicología
+     * para estamparla automáticamente en todos los Certificados Aptitudinales (GH-FO-028).
+     */
+    public function guardarFirmaPsicologia(Request $request)
+    {
+        /** @var Usuario $usuario */
+        $usuario = Auth::user();
+
+        $request->validate([
+            'modo_firma' => ['required', 'string', 'in:dibujar,archivo'],
+            'firma_canvas' => ['nullable', 'string'],
+            'firma_archivo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:4096'],
+        ], [
+            'firma_archivo.image' => 'El archivo debe ser una imagen válida (PNG, JPG, WEBP).',
+            'firma_archivo.max' => 'El peso de la imagen no puede exceder 4MB.',
+        ]);
+
+        $modo = $request->input('modo_firma');
+        $rutaFirma = null;
+
+        if ($modo === 'dibujar') {
+            $canvasData = (string) $request->input('firma_canvas', '');
+            if (empty($canvasData) || !str_starts_with($canvasData, 'data:image')) {
+                return back()->with('error', 'Debes dibujar tu firma en el recuadro digital antes de guardar.');
+            }
+
+            if ($usuario->firma_digital && Storage::disk('public')->exists($usuario->firma_digital)) {
+                Storage::disk('public')->delete($usuario->firma_digital);
+            }
+
+            $rutaFirma = $this->guardarFirmaBase64($canvasData);
+        } else {
+            if (!$request->hasFile('firma_archivo')) {
+                return back()->with('error', 'Debes seleccionar o arrastrar un archivo de imagen con tu firma.');
+            }
+
+            if ($usuario->firma_digital && Storage::disk('public')->exists($usuario->firma_digital)) {
+                Storage::disk('public')->delete($usuario->firma_digital);
+            }
+
+            $rutaFirma = $request->file('firma_archivo')->store('firmas_usuarios', 'public');
+        }
+
+        if (!$rutaFirma) {
+            return back()->with('error', 'Ocurrió un error al procesar la firma digital. Intenta nuevamente.');
+        }
+
+        $usuario->update([
+            'firma_digital' => $rutaFirma,
+            'firma_actualizada_el' => now(),
+        ]);
+
+        return back()->with('success', '¡Firma digital guardada exitosamente! A partir de ahora se estampará de forma automática en los Certificados de Aptitud Psicológica (GH-FO-028).');
+    }
+
+    /**
+     * Elimina la firma digital registrada del usuario de psicología.
+     */
+    public function eliminarFirmaPsicologia(Request $request)
+    {
+        /** @var Usuario $usuario */
+        $usuario = Auth::user();
+
+        if ($usuario->firma_digital && Storage::disk('public')->exists($usuario->firma_digital)) {
+            Storage::disk('public')->delete($usuario->firma_digital);
+        }
+
+        $usuario->update([
+            'firma_digital' => null,
+            'firma_actualizada_el' => now(),
+        ]);
+
+        return back()->with('success', 'Tu firma digital ha sido eliminada. Podrás registrar una nueva cuando lo desees.');
+    }
+
+    /**
+     * Auxiliar para guardar firma generada desde canvas HTML5 (base64 data URL).
+     */
+    private function guardarFirmaBase64(string $dataUrl): ?string
+    {
+        if (!preg_match('/^data:image\/(\w+);base64,/', $dataUrl, $type)) {
+            return null;
+        }
+
+        $data = substr($dataUrl, strpos($dataUrl, ',') + 1);
+        $data = base64_decode($data);
+
+        if ($data === false) {
+            return null;
+        }
+
+        $nombreArchivo = 'firmas_usuarios/firma_psicologa_' . Str::random(24) . '.png';
+        Storage::disk('public')->put($nombreArchivo, $data);
+
+        return $nombreArchivo;
     }
 }

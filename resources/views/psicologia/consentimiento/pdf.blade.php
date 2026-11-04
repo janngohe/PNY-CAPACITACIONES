@@ -159,7 +159,7 @@
         </div>
         <div class="campo-linea">
             <span class="campo-label">Edad:</span>
-            <span class="campo-valor">{{ $evaluacion->edad }} años (Fecha Nac.: {{ $evaluacion->fecha_nacimiento?->format('d/m/Y') }})</span>
+            <span class="campo-valor">{{ $evaluacion->edad }} años</span>
         </div>
         <div class="campo-linea">
             <span class="campo-label">Fecha y Hora de Aceptación:</span>
