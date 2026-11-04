@@ -285,8 +285,8 @@
 
         ctxPsicologa = canvasPsicologa.getContext('2d');
         ctxPsicologa.scale(2, 2);
-        ctxPsicologa.strokeStyle = '#002d5e';
-        ctxPsicologa.lineWidth = 2.6;
+        ctxPsicologa.strokeStyle = '#000000';
+        ctxPsicologa.lineWidth = 3.6;
         ctxPsicologa.lineCap = 'round';
         ctxPsicologa.lineJoin = 'round';
 
@@ -364,6 +364,7 @@
         errorDiv.classList.add('hidden');
 
         if (modoFirmaActual === 'dibujar') {
+            document.getElementById('input-psicologa-firma-canvas').value = canvasPsicologa.toDataURL('image/png');
             const dataCanvas = document.getElementById('input-psicologa-firma-canvas').value;
             if (!tieneTrazoPsicologa || !dataCanvas) {
                 errorText.textContent = 'Por favor dibuja tu firma en el recuadro antes de guardar.';

@@ -477,8 +477,8 @@
                 canvas.width = rect.width * 2;
                 canvas.height = rect.height * 2;
                 ctx.scale(2, 2);
-                ctx.strokeStyle = '#002d5e'; // Tinta azul marino oficial
-                ctx.lineWidth = 2.5;
+                ctx.strokeStyle = '#000000'; // Color negro bien marcado
+                ctx.lineWidth = 3.6;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
 

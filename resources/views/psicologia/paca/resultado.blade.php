@@ -151,29 +151,17 @@
                 </div>
             </div>
 
-            <!-- Desglose de preguntas desplegable -->
+            <!-- Botón de acción rápida hacia el desglose -->
             <div class="mt-6 pt-4 border-t border-slate-100">
-                <details class="text-xs">
-                    <summary class="font-bold text-brand-blue cursor-pointer hover:underline flex items-center justify-between">
-                        <span>Ver desglose de las 12 preguntas que componen este indicador</span>
-                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                    </summary>
-                    <div class="mt-3 space-y-2 max-h-60 overflow-y-auto pr-1">
-                        @foreach($preguntasAccidentogena as $num)
-                            @php
-                                $r = $respuestasPorId[$num] ?? null;
-                            @endphp
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-between gap-2 text-[11px]">
-                                <span class="font-medium text-slate-700">
-                                    <strong>#{{ $num }}:</strong> {{ $afirmaciones[$num] }}
-                                </span>
-                                <span class="shrink-0 font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-900">
-                                    {{ $r ? $r->textoOpcion() : '—' }} ({{ $r ? $r->puntaje : 0 }} pts)
-                                </span>
-                            </div>
-                        @endforeach
-                    </div>
-                </details>
+                <button type="button"
+                        onclick="seleccionarFiltroDesglose('accidentogena')"
+                        class="w-full py-2.5 px-3.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-800 text-xs font-bold transition-all flex items-center justify-between cursor-pointer shadow-2xs group">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-rose-600"></i>
+                        <span>Ver desglose de las 12 preguntas</span>
+                    </span>
+                    <i class="fa-solid fa-arrow-down text-rose-500 text-xs transition-transform group-hover:translate-y-0.5"></i>
+                </button>
             </div>
         </div>
 
@@ -223,31 +211,384 @@
                 </div>
             </div>
 
-            <!-- Desglose de preguntas desplegable -->
+            <!-- Botón de acción rápida hacia el desglose -->
             <div class="mt-6 pt-4 border-t border-slate-100">
-                <details class="text-xs">
-                    <summary class="font-bold text-brand-blue cursor-pointer hover:underline flex items-center justify-between">
-                        <span>Ver desglose de las 20 preguntas que componen este indicador</span>
-                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                    </summary>
-                    <div class="mt-3 space-y-2 max-h-60 overflow-y-auto pr-1">
-                        @foreach($preguntasTipoA as $num)
-                            @php
-                                $r = $respuestasPorId[$num] ?? null;
-                            @endphp
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-between gap-2 text-[11px]">
-                                <span class="font-medium text-slate-700">
-                                    <strong>#{{ $num }}:</strong> {{ $afirmaciones[$num] }}
-                                </span>
-                                <span class="shrink-0 font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-900">
-                                    {{ $r ? $r->textoOpcion() : '—' }} ({{ $r ? $r->puntaje : 0 }} pts)
-                                </span>
-                            </div>
-                        @endforeach
-                    </div>
-                </details>
+                <button type="button"
+                        onclick="seleccionarFiltroDesglose('tipo_a')"
+                        class="w-full py-2.5 px-3.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 text-indigo-800 text-xs font-bold transition-all flex items-center justify-between cursor-pointer shadow-2xs group">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-indigo-600"></i>
+                        <span>Ver desglose de las 20 preguntas</span>
+                    </span>
+                    <i class="fa-solid fa-arrow-down text-indigo-500 text-xs transition-transform group-hover:translate-y-0.5"></i>
+                </button>
             </div>
         </div>
+
+    </div>
+
+    <!-- TARJETA RESUMEN DE COBERTURA TOTAL DE LA BATERÍA (40 PREGUNTAS) -->
+    <div class="rounded-2xl bg-white border border-slate-200/90 p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-start sm:items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center font-bold text-base shrink-0 shadow-xs border border-brand-blue/20">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h3 class="font-extrabold text-sm text-slate-900">Totalidad del Cuestionario PAC-A (40 de 40 Preguntas)</h3>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">100% Completas</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    12 ítems componen Tendencia Accidentógena, 20 ítems Patrón Tipo A y 8 ítems complementan el perfil de consistencia y control.
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            <button type="button"
+                    onclick="seleccionarFiltroDesglose('accidentogena')"
+                    class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                <span>12 Accidentógena</span>
+            </button>
+            <button type="button"
+                    onclick="seleccionarFiltroDesglose('tipo_a')"
+                    class="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                <span>20 Tipo A</span>
+            </button>
+            <button type="button"
+                    onclick="seleccionarFiltroDesglose('control')"
+                    class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                <span>8 Control</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- SECCIÓN MAESTRA: DESGLOSE COMPLETO DE LAS 40 PREGUNTAS (UNA POR UNA O LISTA COMPLETA) -->
+    <div id="seccionDesglosePaca" class="rounded-3xl border border-slate-200 bg-white p-5 sm:p-7 shadow-2xs space-y-6 scroll-mt-20">
+        
+        <!-- Cabecera de la sección -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2.5 py-0.5 rounded-md bg-brand-light text-brand-blue font-bold text-[11px] tracking-wide uppercase border border-brand-blue/20">
+                        <i class="fa-solid fa-list-check mr-1"></i> Auditoría Detallada
+                    </span>
+                    <span class="text-xs text-slate-400 font-semibold">Las 40 afirmaciones del instrumento</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                    Desglose Completo de las 40 Preguntas PAC-A
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    Revise cada afirmación, la respuesta marcada por el candidato, su ponderación y el indicador institucional al que aporta.
+                </p>
+            </div>
+
+            <!-- Selector de Modos de Vista (Visor 1 por 1 vs Lista Completa) -->
+            <div class="flex items-center gap-1.5 shrink-0 self-start md:self-auto bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80">
+                <button type="button"
+                        id="btnModoVisor"
+                        onclick="cambiarModoVista('visor')"
+                        class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-white text-slate-900 shadow-xs cursor-pointer">
+                    <i class="fa-solid fa-sliders text-brand-blue"></i>
+                    <span>Visor 1 por 1</span>
+                </button>
+                <button type="button"
+                        id="btnModoLista"
+                        onclick="cambiarModoVista('lista')"
+                        class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900 cursor-pointer">
+                    <i class="fa-solid fa-table-list text-slate-400"></i>
+                    <span>Ver Todas (Lista)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Barra de Filtros por Categoría y Buscador en Tiempo Real -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <!-- Pestañas de Filtro -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-thin">
+                <button type="button"
+                        id="tab-filtro-todas"
+                        onclick="seleccionarFiltroDesglose('todas')"
+                        class="tab-filtro-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer bg-brand-blue text-white shadow-2xs border border-brand-blue">
+                    Todas (40)
+                </button>
+                <button type="button"
+                        id="tab-filtro-accidentogena"
+                        onclick="seleccionarFiltroDesglose('accidentogena')"
+                        class="tab-filtro-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200">
+                    <span class="inline-block w-2 h-2 rounded-full bg-rose-500 mr-1"></span>
+                    Tendencia Accidentógena (12)
+                </button>
+                <button type="button"
+                        id="tab-filtro-tipo_a"
+                        onclick="seleccionarFiltroDesglose('tipo_a')"
+                        class="tab-filtro-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200">
+                    <span class="inline-block w-2 h-2 rounded-full bg-indigo-500 mr-1"></span>
+                    Patrón Tipo A (20)
+                </button>
+                <button type="button"
+                        id="tab-filtro-control"
+                        onclick="seleccionarFiltroDesglose('control')"
+                        class="tab-filtro-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200">
+                    <span class="inline-block w-2 h-2 rounded-full bg-slate-400 mr-1"></span>
+                    Complementarias / Control (8)
+                </button>
+            </div>
+
+            <!-- Buscador en tiempo real -->
+            <div class="relative min-w-[240px]">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text"
+                       id="inputBuscarDesglose"
+                       oninput="filtrarTextoDesglose(this.value)"
+                       placeholder="Buscar afirmación o palabra..."
+                       class="w-full pl-8 pr-8 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all">
+                <button type="button"
+                        id="btnLimpiarBusqueda"
+                        onclick="limpiarBusquedaDesglose()"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden text-xs cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- CONTENEDOR 1: MODO VISOR PASO A PASO (1 a 1) -->
+        <div id="contenedorModoVisor" class="space-y-5">
+            <!-- Píldoras de Preguntas (1 a 40) en cuadrícula responsiva -->
+            <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[11px] text-slate-500 font-semibold px-0.5">
+                    <span>Haga clic en cualquier píldora para inspeccionar su respuesta:</span>
+                    <span id="labelVisorCategoriaActiva" class="font-bold text-brand-blue">Mostrando: Todas las 40 Preguntas</span>
+                </div>
+
+                <div class="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-20 gap-1.5">
+                    @for($num = 1; $num <= 40; $num++)
+                        @php
+                            $cat = \App\Constants\PacaPreguntas::categoriaDePregunta($num);
+                            $r = $respuestasPorId[$num] ?? null;
+                            $opc = $r ? $r->opcion_seleccionada : '-';
+                        @endphp
+                        <button type="button"
+                                id="btn-pill-paca-{{ $num }}"
+                                data-categoria="{{ $cat['clave'] }}"
+                                onclick="irAPreguntaPaca({{ $num }})"
+                                title="#{{ $num }}: {{ $cat['nombre'] }} · Marcó: {{ $opc }}"
+                                class="pill-pregunta-paca h-8 sm:h-9 rounded-xl font-mono text-xs font-extrabold border transition-all cursor-pointer flex flex-col items-center justify-center relative {{ $num === 1 ? 'bg-brand-blue text-white border-brand-blue shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100' }}">
+                            <span>{{ $num }}</span>
+                            <span class="w-1.5 h-1.5 rounded-full {{ $cat['dot_color'] }} absolute bottom-1 {{ $num === 1 ? 'bg-white' : '' }}"></span>
+                        </button>
+                    @endfor
+                </div>
+
+                <!-- Leyenda de colores de las píldoras -->
+                <div class="flex items-center gap-4 pt-1 text-[11px] text-slate-400 justify-end">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span> Tendencia Accidentógena
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Patrón Tipo A
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-slate-400"></span> Control / Complementaria
+                    </span>
+                </div>
+            </div>
+
+            <!-- Visor de la Pregunta Activa (Slides 1..40) -->
+            <div class="relative">
+                @for($num = 1; $num <= 40; $num++)
+                    @php
+                        $cat = \App\Constants\PacaPreguntas::categoriaDePregunta($num);
+                        $r = $respuestasPorId[$num] ?? null;
+                        $opcionMarcada = $r ? $r->opcion_seleccionada : null;
+                        $ptsObtenidos = $r ? (float)$r->puntaje : 0.0;
+                        $textoAfirmacion = $afirmaciones[$num] ?? '';
+                    @endphp
+
+                    <div id="slide-paca-{{ $num }}"
+                         data-categoria="{{ $cat['clave'] }}"
+                         data-texto="{{ mb_strtolower($textoAfirmacion . ' ' . $num . ' ' . ($r ? $r->textoOpcion() : '')) }}"
+                         class="slide-paca {{ $num === 1 ? '' : 'hidden' }} rounded-2xl bg-slate-50/70 border border-slate-200/90 p-5 sm:p-7 space-y-6 transition-all">
+
+                        <!-- Cabecera de la Pregunta -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80">
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <span class="px-3 py-1 rounded-xl bg-brand-dark text-white font-mono text-xs sm:text-sm font-black shadow-2xs">
+                                    Pregunta #{{ $num }} de 40
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border {{ $cat['badge_class'] }}">
+                                    <i class="{{ $cat['icono'] }}"></i>
+                                    <span>{{ $cat['indicador'] }}: {{ $cat['nombre'] }}</span>
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-2 self-start sm:self-auto">
+                                <span class="text-xs text-slate-500 font-medium">Puntos obtenidos:</span>
+                                <span class="px-3 py-1 rounded-xl bg-white border border-slate-200 font-mono text-xs font-extrabold text-slate-900 shadow-2xs">
+                                    @if($cat['puntua'])
+                                        {{ number_format($ptsObtenidos, 1) }} / {{ number_format($cat['max_pts'], 1) }} pts
+                                    @else
+                                        0.0 pts (Ítem de control)
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Afirmación en Texto Destacado -->
+                        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-2xs space-y-2">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Afirmación evaluada en el cuestionario:</span>
+                            <blockquote class="text-base sm:text-lg font-bold text-slate-800 leading-relaxed italic">
+                                “{{ $textoAfirmacion }}”
+                            </blockquote>
+                        </div>
+
+                        <!-- Las 4 Opciones de Respuesta con la marcada destacada -->
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+                                <span>Opciones de respuesta institucional:</span>
+                                <span class="text-[11px] text-brand-blue font-semibold">Respuesta elegida por el evaluado destacada</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                @foreach($opciones as $cod => $infoOpc)
+                                    @php
+                                        $esSeleccionada = ($opcionMarcada === $cod);
+                                        $ptsOpcion = $cat['puntua'] ? $infoOpc['puntaje'] : 0.0;
+                                    @endphp
+                                    <div class="relative rounded-2xl p-4 border transition-all {{ $esSeleccionada ? 'bg-blue-50/90 border-2 border-brand-blue shadow-xs ring-4 ring-blue-50/50' : 'bg-white border-slate-200 opacity-60' }}">
+                                        @if($esSeleccionada)
+                                            <span class="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-brand-blue text-white text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs">
+                                                <i class="fa-solid fa-check text-[9px]"></i> Marcó el candidato
+                                            </span>
+                                        @endif
+
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-7 h-7 rounded-lg font-mono font-black text-xs flex items-center justify-center {{ $esSeleccionada ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-600' }}">
+                                                    {{ $cod }}
+                                                </span>
+                                                <span class="font-bold text-xs sm:text-sm {{ $esSeleccionada ? 'text-slate-900' : 'text-slate-600' }}">
+                                                    {{ $infoOpc['nombre'] }}
+                                                </span>
+                                            </div>
+                                            <span class="font-mono text-xs font-bold {{ $esSeleccionada ? 'text-brand-blue' : 'text-slate-400' }}">
+                                                {{ number_format($ptsOpcion, 1) }} pts
+                                            </span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Explicación de aportación al factor -->
+                        <div class="p-3.5 rounded-xl bg-white border border-slate-200/80 text-xs text-slate-600 flex items-start gap-2.5">
+                            <i class="fa-solid fa-circle-info text-slate-400 mt-0.5 shrink-0"></i>
+                            <div>
+                                @if($cat['clave'] === 'accidentogena')
+                                    <span>Esta afirmación aporta al <strong>Indicador I: Tendencia Accidentógena</strong>. Una respuesta de mayor frecuencia refleja conductas o actitudes de vulnerabilidad ante riesgos y normas en el trabajo.</span>
+                                @elseif($cat['clave'] === 'tipo_a')
+                                    <span>Esta afirmación aporta al <strong>Indicador II: Patrón de Comportamiento Tipo A</strong>. Una respuesta de mayor frecuencia indica premura temporal, competitividad intensa y autoexigencia constante.</span>
+                                @else
+                                    <span>Esta afirmación actúa como <strong>Ítem de Control / Complementario</strong>. Permite validar la consistencia global del evaluado y no suma puntos de riesgo a los indicadores de alerta.</span>
+                                @endif
+                            </div>
+                        </div>
+
+                    </div>
+                @endfor
+            </div>
+
+            <!-- Botones de Navegación Anterior / Siguiente -->
+            <div class="flex items-center justify-between pt-2">
+                <button type="button"
+                        id="btnAnteriorPaca"
+                        onclick="cambiarPreguntaPaca(-1)"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                    <span>Pregunta Anterior</span>
+                </button>
+
+                <div class="text-xs text-slate-500 font-semibold text-center">
+                    <span id="contadorPacaVisor" class="font-mono font-extrabold text-sm text-slate-800">1</span> de 40 preguntas
+                    <span class="hidden sm:inline text-slate-400 font-normal"> · (Use las flechas &larr; &rarr; del teclado)</span>
+                </div>
+
+                <button type="button"
+                        id="btnSiguientePaca"
+                        onclick="cambiarPreguntaPaca(1)"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                    <span>Siguiente Pregunta</span>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- CONTENEDOR 2: MODO LISTA COMPLETA (40 Preguntas en Tarjetas Ejecutivas) -->
+        <div id="contenedorModoLista" class="hidden space-y-4">
+            <div class="flex items-center justify-between text-xs text-slate-500 font-medium pb-1">
+                <span id="labelContadorLista">Mostrando las 40 preguntas del cuestionario:</span>
+                <span class="text-[11px] text-slate-400">Orden del 1 al 40</span>
+            </div>
+
+            <div id="gridPreguntasLista" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                @for($num = 1; $num <= 40; $num++)
+                    @php
+                        $cat = \App\Constants\PacaPreguntas::categoriaDePregunta($num);
+                        $r = $respuestasPorId[$num] ?? null;
+                        $opcionMarcada = $r ? $r->opcion_seleccionada : '-';
+                        $ptsObtenidos = $r ? (float)$r->puntaje : 0.0;
+                        $textoAfirmacion = $afirmaciones[$num] ?? '';
+                        $textoOpcion = $r ? $r->textoOpcion() : 'Sin respuesta';
+                    @endphp
+                    <div class="item-tarjeta-paca rounded-2xl bg-white border border-slate-200/90 p-4 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between gap-3"
+                         data-numero="{{ $num }}"
+                         data-categoria="{{ $cat['clave'] }}"
+                         data-texto="{{ mb_strtolower($textoAfirmacion . ' ' . $num . ' ' . $textoOpcion . ' ' . $opcionMarcada) }}">
+
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="w-6 h-6 rounded-lg bg-brand-dark text-white font-mono text-[11px] font-black flex items-center justify-center shrink-0">
+                                        {{ $num }}
+                                    </span>
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $cat['badge_class'] }}">
+                                        {{ $cat['nombre'] }}
+                                    </span>
+                                </div>
+                                <span class="font-mono text-xs font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200 shrink-0">
+                                    {{ $cat['puntua'] ? number_format($ptsObtenidos, 1) . ' pts' : 'Control' }}
+                                </span>
+                            </div>
+
+                            <p class="text-xs font-medium text-slate-800 leading-snug">
+                                {{ $textoAfirmacion }}
+                            </p>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px]">
+                            <span class="text-slate-400 font-medium">Marcó el evaluado:</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 border border-brand-blue/30 text-brand-dark font-extrabold">
+                                <i class="fa-solid fa-check text-[10px] text-brand-blue"></i>
+                                <span>{{ $textoOpcion }} ({{ $opcionMarcada }})</span>
+                            </span>
+                        </div>
+                    </div>
+                @endfor
+            </div>
+
+            <!-- Alerta si ninguna coincide con la búsqueda -->
+            <div id="alertaSinResultadosBusqueda" class="hidden text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-6 space-y-2">
+                <i class="fa-solid fa-magnifying-glass text-2xl text-slate-400"></i>
+                <p class="text-xs font-bold text-slate-700">No se encontraron preguntas que coincidan con la búsqueda o filtro.</p>
+                <button type="button" onclick="limpiarBusquedaDesglose()" class="text-xs text-brand-blue hover:underline font-semibold cursor-pointer">
+                    Restablecer filtros y ver las 40 preguntas
+                </button>
+            </div>
+        </div>
+    </div>
 
     </div>
 
@@ -346,5 +687,192 @@
         iframe.src = 'about:blank';
         document.body.classList.remove('overflow-hidden');
     }
+
+    /* ============================================================
+     * LÓGICA INTERACTIVA DEL DESGLOSE DE LAS 40 PREGUNTAS (PAC-A)
+     * ============================================================ */
+    let preguntaPacaActual = 1;
+    let filtroPacaActual = 'todas';
+    let modoPacaActual = 'visor';
+    let queryBusquedaPaca = '';
+
+    function irAPreguntaPaca(num) {
+        if (num < 1 || num > 40) return;
+        preguntaPacaActual = num;
+
+        // Ocultar todos los slides y mostrar el seleccionado
+        document.querySelectorAll('.slide-paca').forEach(el => el.classList.add('hidden'));
+        const slide = document.getElementById('slide-paca-' + num);
+        if (slide) slide.classList.remove('hidden');
+
+        // Actualizar píldoras interactivas
+        document.querySelectorAll('.pill-pregunta-paca').forEach(btn => {
+            btn.className = 'pill-pregunta-paca h-8 sm:h-9 rounded-xl font-mono text-xs font-extrabold border transition-all cursor-pointer flex flex-col items-center justify-center relative bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100';
+            const dot = btn.querySelector('span:last-child');
+            if (dot) dot.classList.remove('bg-white');
+        });
+
+        const pillActiva = document.getElementById('btn-pill-paca-' + num);
+        if (pillActiva) {
+            pillActiva.className = 'pill-pregunta-paca h-8 sm:h-9 rounded-xl font-mono text-xs font-extrabold border transition-all cursor-pointer flex flex-col items-center justify-center relative bg-brand-blue text-white border-brand-blue shadow-xs';
+            const dot = pillActiva.querySelector('span:last-child');
+            if (dot) dot.classList.add('bg-white');
+        }
+
+        // Actualizar contador y estado de botones
+        const contador = document.getElementById('contadorPacaVisor');
+        if (contador) contador.textContent = num;
+
+        const btnAnt = document.getElementById('btnAnteriorPaca');
+        const btnSig = document.getElementById('btnSiguientePaca');
+        if (btnAnt) btnAnt.disabled = (num <= 1);
+        if (btnSig) btnSig.disabled = (num >= 40);
+    }
+
+    function cambiarPreguntaPaca(delta) {
+        irAPreguntaPaca(preguntaPacaActual + delta);
+    }
+
+    function cambiarModoVista(modo) {
+        modoPacaActual = modo;
+        const visor = document.getElementById('contenedorModoVisor');
+        const lista = document.getElementById('contenedorModoLista');
+        const btnVisor = document.getElementById('btnModoVisor');
+        const btnLista = document.getElementById('btnModoLista');
+
+        if (modo === 'visor') {
+            visor.classList.remove('hidden');
+            lista.classList.add('hidden');
+            btnVisor.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-white text-slate-900 shadow-xs cursor-pointer';
+            btnLista.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900 cursor-pointer';
+        } else {
+            visor.classList.add('hidden');
+            lista.classList.remove('hidden');
+            btnLista.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-white text-slate-900 shadow-xs cursor-pointer';
+            btnVisor.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900 cursor-pointer';
+            aplicarFiltrosLista();
+        }
+    }
+
+    function seleccionarFiltroDesglose(categoria) {
+        filtroPacaActual = categoria;
+
+        // Actualizar pestañas activas
+        document.querySelectorAll('.tab-filtro-btn').forEach(btn => {
+            btn.className = 'tab-filtro-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200';
+        });
+
+        const tabActivo = document.getElementById('tab-filtro-' + categoria);
+        if (tabActivo) {
+            tabActivo.className = 'tab-filtro-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer bg-brand-blue text-white shadow-2xs border border-brand-blue';
+        }
+
+        // Si estamos en visor, saltar a la 1ª pregunta de esa categoría
+        if (categoria === 'accidentogena') {
+            irAPreguntaPaca(3);
+        } else if (categoria === 'tipo_a') {
+            irAPreguntaPaca(1);
+        } else if (categoria === 'control') {
+            irAPreguntaPaca(5);
+        }
+
+        // Actualizar indicador de categoría en visor
+        const labelVisor = document.getElementById('labelVisorCategoriaActiva');
+        if (labelVisor) {
+            const titulos = {
+                'todas': 'Mostrando: Todas las 40 Preguntas',
+                'accidentogena': 'Filtrado: 12 Preguntas de Tendencia Accidentógena',
+                'tipo_a': 'Filtrado: 20 Preguntas de Patrón Tipo A',
+                'control': 'Filtrado: 8 Preguntas Complementarias / Control'
+            };
+            labelVisor.textContent = titulos[categoria] || 'Mostrando preguntas';
+        }
+
+        // Resaltar u opacar píldoras según la categoría
+        document.querySelectorAll('.pill-pregunta-paca').forEach(pill => {
+            const cat = pill.getAttribute('data-categoria');
+            if (categoria === 'todas' || cat === categoria) {
+                pill.style.opacity = '1';
+                pill.classList.remove('grayscale');
+            } else {
+                pill.style.opacity = '0.35';
+                pill.classList.add('grayscale');
+            }
+        });
+
+        aplicarFiltrosLista();
+
+        // Desplazamiento suave hacia la sección de desglose
+        const seccion = document.getElementById('seccionDesglosePaca');
+        if (seccion) {
+            seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    function filtrarTextoDesglose(val) {
+        queryBusquedaPaca = (val || '').toLowerCase().trim();
+        const btnLimpiar = document.getElementById('btnLimpiarBusqueda');
+        if (btnLimpiar) {
+            btnLimpiar.classList.toggle('hidden', queryBusquedaPaca.length === 0);
+        }
+
+        // Si el usuario escribe una búsqueda, conmutar a lista para que vea todas las coincidencias
+        if (queryBusquedaPaca.length > 0 && modoPacaActual !== 'lista') {
+            cambiarModoVista('lista');
+        }
+
+        aplicarFiltrosLista();
+    }
+
+    function limpiarBusquedaDesglose() {
+        const input = document.getElementById('inputBuscarDesglose');
+        if (input) input.value = '';
+        queryBusquedaPaca = '';
+        const btnLimpiar = document.getElementById('btnLimpiarBusqueda');
+        if (btnLimpiar) btnLimpiar.classList.add('hidden');
+        seleccionarFiltroDesglose('todas');
+    }
+
+    function aplicarFiltrosLista() {
+        let visibles = 0;
+        const items = document.querySelectorAll('.item-tarjeta-paca');
+
+        items.forEach(card => {
+            const cat = card.getAttribute('data-categoria');
+            const texto = card.getAttribute('data-texto') || '';
+            const coincideCat = (filtroPacaActual === 'todas' || cat === filtroPacaActual);
+            const coincideQuery = (queryBusquedaPaca === '' || texto.includes(queryBusquedaPaca));
+
+            if (coincideCat && coincideQuery) {
+                card.classList.remove('hidden');
+                visibles++;
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+
+        const labelContador = document.getElementById('labelContadorLista');
+        if (labelContador) {
+            labelContador.textContent = `Mostrando ${visibles} de 40 preguntas:`;
+        }
+
+        const alertaSin = document.getElementById('alertaSinResultadosBusqueda');
+        if (alertaSin) {
+            alertaSin.classList.toggle('hidden', visibles > 0);
+        }
+    }
+
+    // Atajos de teclado para el visor interactivo (Flechas izquierda / derecha)
+    document.addEventListener('keydown', function(e) {
+        if (modoPacaActual === 'visor' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+            if (e.key === 'ArrowRight') cambiarPreguntaPaca(1);
+            if (e.key === 'ArrowLeft') cambiarPreguntaPaca(-1);
+        }
+    });
+
+    // Iniciar con la primera pregunta activa
+    document.addEventListener('DOMContentLoaded', function() {
+        irAPreguntaPaca(1);
+    });
 </script>
 @endsection

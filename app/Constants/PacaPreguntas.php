@@ -81,6 +81,61 @@ class PacaPreguntas
     ];
 
     /**
+     * Preguntas de Control / Complementarias (8 ítems).
+     * Ítems institucionales del instrumento que no computan puntaje de riesgo directo
+     * pero complementan el perfil de respuesta del evaluado (ítems de amortiguación / validez).
+     */
+    public const PREGUNTAS_CONTROL = [
+        5, 7, 10, 15, 20, 25, 30, 36
+    ];
+
+    /**
+     * Retorna los metadatos de categoría / indicador para una pregunta (1 a 40).
+     */
+    public static function categoriaDePregunta(int $numero): array
+    {
+        if (in_array($numero, self::PREGUNTAS_TENDENCIA_ACCIDENTOGENA, true)) {
+            return [
+                'clave' => 'accidentogena',
+                'nombre' => 'Tendencia Accidentógena',
+                'indicador' => 'Indicador I',
+                'badge_class' => 'bg-rose-50 text-rose-700 border-rose-200',
+                'pill_border' => 'border-rose-300',
+                'dot_color' => 'bg-rose-500',
+                'icono' => 'fa-solid fa-triangle-exclamation',
+                'puntua' => true,
+                'max_pts' => 2.0,
+            ];
+        }
+
+        if (in_array($numero, self::PREGUNTAS_PATRON_TIPO_A, true)) {
+            return [
+                'clave' => 'tipo_a',
+                'nombre' => 'Patrón Tipo A',
+                'indicador' => 'Indicador II',
+                'badge_class' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                'pill_border' => 'border-indigo-300',
+                'dot_color' => 'bg-indigo-500',
+                'icono' => 'fa-solid fa-bolt',
+                'puntua' => true,
+                'max_pts' => 2.0,
+            ];
+        }
+
+        return [
+            'clave' => 'control',
+            'nombre' => 'Complementaria / Control',
+            'indicador' => 'Control',
+            'badge_class' => 'bg-slate-100 text-slate-700 border-slate-200',
+            'pill_border' => 'border-slate-300',
+            'dot_color' => 'bg-slate-400',
+            'icono' => 'fa-solid fa-shield-halved',
+            'puntua' => false,
+            'max_pts' => 0.0,
+        ];
+    }
+
+    /**
      * Obtiene el valor numérico para una opción de respuesta.
      */
     public static function puntajeDeOpcion(string $opcion): float

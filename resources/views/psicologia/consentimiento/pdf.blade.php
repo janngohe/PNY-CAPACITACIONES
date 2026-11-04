@@ -83,12 +83,12 @@
             font-size: 11.5pt;
         }
         .seccion-firma {
-            margin-top: 35px;
-            margin-bottom: 50px;
+            margin-top: 25px;
+            margin-bottom: 30px;
         }
         .linea-firma {
             width: 320px;
-            border-bottom: 1px solid #000;
+            border-bottom: 1.5px solid #000;
             margin-bottom: 8px;
         }
         .firma-texto {
@@ -183,9 +183,11 @@
 
     <div class="seccion-firma">
         @if(!empty($firmaBase64))
-            <div style="margin-bottom: -8px;">
-                <img src="{{ $firmaBase64 }}" style="max-height: 65px; max-width: 260px;" alt="Firma Digital">
+            <div style="margin-bottom: 6px; height: 55px;">
+                <img src="{{ $firmaBase64 }}" style="max-height: 52px; max-width: 260px;" alt="Firma Digital">
             </div>
+        @else
+            <div style="height: 55px;"></div>
         @endif
         <div class="linea-firma"></div>
         <div class="firma-texto">

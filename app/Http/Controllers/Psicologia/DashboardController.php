@@ -744,6 +744,8 @@ class DashboardController extends Controller
         $respuestasPorId = $evaluacion->respuestasPaca->keyBy('numero_pregunta');
         $preguntasAccidentogena = PacaPreguntas::PREGUNTAS_TENDENCIA_ACCIDENTOGENA;
         $preguntasTipoA = PacaPreguntas::PREGUNTAS_PATRON_TIPO_A;
+        $preguntasControl = PacaPreguntas::PREGUNTAS_CONTROL;
+        $opciones = PacaPreguntas::OPCIONES;
 
         return view('psicologia.paca.resultado', compact(
             'aplicacion',
@@ -751,7 +753,9 @@ class DashboardController extends Controller
             'afirmaciones',
             'respuestasPorId',
             'preguntasAccidentogena',
-            'preguntasTipoA'
+            'preguntasTipoA',
+            'preguntasControl',
+            'opciones'
         ));
     }
 
@@ -843,9 +847,9 @@ class DashboardController extends Controller
         $firmaBase64 = null;
         if (!empty($evaluacion->firma_digital)) {
             if (str_starts_with($evaluacion->firma_digital, 'data:image')) {
-                $firmaBase64 = $evaluacion->firma_digital;
+                $firmaBase64 = $this->convertirTintaFirmaANegro($evaluacion->firma_digital);
             } elseif (Storage::disk('public')->exists($evaluacion->firma_digital)) {
-                $firmaBase64 = 'data:image/png;base64,' . base64_encode(Storage::disk('public')->get($evaluacion->firma_digital));
+                $firmaBase64 = $this->convertirTintaFirmaANegro(Storage::disk('public')->get($evaluacion->firma_digital));
             }
         }
 
@@ -961,9 +965,9 @@ class DashboardController extends Controller
 
         if ($psicologo && !empty($psicologo->firma_digital)) {
             if (str_starts_with($psicologo->firma_digital, 'data:image')) {
-                $firmaPsicologaBase64 = $psicologo->firma_digital;
+                $firmaPsicologaBase64 = $this->convertirTintaFirmaANegro($psicologo->firma_digital);
             } elseif (Storage::disk('public')->exists($psicologo->firma_digital)) {
-                $firmaPsicologaBase64 = 'data:image/png;base64,' . base64_encode(Storage::disk('public')->get($psicologo->firma_digital));
+                $firmaPsicologaBase64 = $this->convertirTintaFirmaANegro(Storage::disk('public')->get($psicologo->firma_digital));
             }
         }
 
@@ -1035,7 +1039,7 @@ class DashboardController extends Controller
             'firma_actualizada_el' => now(),
         ]);
 
-        return back()->with('success', '¡Firma digital guardada exitosamente! A partir de ahora se estampará de forma automática en los Certificados de Aptitud Psicológica (GH-FO-028).');
+        return back()->with('success', '¡Firma digital guardada exitosamente! Se estampará de forma automática en los Certificados de Aptitud Psicológica (GH-FO-028).');
     }
 
     /**
@@ -1078,5 +1082,71 @@ class DashboardController extends Controller
         Storage::disk('public')->put($nombreArchivo, $data);
 
         return $nombreArchivo;
+    }
+
+    /**
+     * Convierte el trazo de tinta de la firma a un color negro nítido (#000000),
+     * preservando 100% la transparencia del fondo para evitar fondos negros o artefactos en DomPDF.
+     */
+    private function convertirTintaFirmaANegro(?string $rawImage): ?string
+    {
+        if (empty($rawImage)) {
+            return null;
+        }
+
+        if (str_starts_with($rawImage, 'data:image')) {
+            $bin = substr($rawImage, strpos($rawImage, ',') + 1);
+            $bin = base64_decode($bin);
+        } else {
+            $bin = $rawImage;
+        }
+
+        if ($bin === false || empty($bin)) {
+            return null;
+        }
+
+        if (!extension_loaded('gd')) {
+            return 'data:image/png;base64,' . base64_encode($bin);
+        }
+
+        $source = @imagecreatefromstring($bin);
+        if (!$source) {
+            return 'data:image/png;base64,' . base64_encode($bin);
+        }
+
+        $w = imagesx($source);
+        $h = imagesy($source);
+
+        $dest = imagecreatetruecolor($w, $h);
+        imagealphablending($dest, false);
+        imagesavealpha($dest, true);
+        $transparente = imagecolorallocatealpha($dest, 0, 0, 0, 127);
+        imagefill($dest, 0, 0, $transparente);
+
+        for ($x = 0; $x < $w; $x++) {
+            for ($y = 0; $y < $h; $y++) {
+                $rgba = imagecolorat($source, $x, $y);
+                $alpha = ($rgba >> 24) & 0x7F;
+
+                // Si el píxel es transparente o casi transparente, lo dejamos transparente intacto
+                if ($alpha >= 118) {
+                    continue;
+                }
+
+                // Convertir trazo a negro intenso (#000000) ajustando la opacidad para que resalte nítido
+                $nuevoAlpha = (int) max(0, round($alpha * 0.7));
+                $colorNegro = imagecolorallocatealpha($dest, 0, 0, 0, $nuevoAlpha);
+                imagesetpixel($dest, $x, $y, $colorNegro);
+            }
+        }
+
+        imagedestroy($source);
+
+        ob_start();
+        imagepng($dest);
+        $pngData = ob_get_clean();
+        imagedestroy($dest);
+
+        return 'data:image/png;base64,' . base64_encode($pngData ?: $bin);
     }
 }

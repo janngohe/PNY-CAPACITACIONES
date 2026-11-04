@@ -150,18 +150,18 @@
             text-align: center;
         }
         .firma-contenedor-img {
-            height: 46px;
-            margin-bottom: -6px;
+            height: 48px;
+            margin-bottom: 3px;
             text-align: center;
         }
         .firma-img {
-            max-height: 44px;
-            max-width: 190px;
+            max-height: 48px;
+            max-width: 210px;
             display: inline-block;
         }
         .linea-firma {
             width: 230px;
-            border-top: 1.2px solid #000;
+            border-top: 1.5px solid #000;
             margin: 0 auto 5px auto;
         }
         .texto-psicologa {

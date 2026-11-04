@@ -191,47 +191,39 @@
         <div class="flex-1 flex flex-col min-w-0 lg:h-full lg:overflow-hidden">
 
             <!-- TOPBAR HEADER -->
-            <header class="bg-white border-b border-line/70 px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0 z-30">
-                <!-- Izquierda: Botón Menú Móvil y Título -->
-                <div class="flex items-center gap-3">
+            <header class="bg-white/95 backdrop-blur-md border-b border-line/70 px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between sticky top-0 shrink-0 z-30 shadow-2xs gap-2 sm:gap-3">
+                <!-- Izquierda: Botón Menú Móvil y Título Adaptativo -->
+                <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                     <button type="button"
                             onclick="toggleSidebar(true)"
-                            class="p-2 -ml-2 text-slate-600 hover:text-brand-blue hover:bg-slate-100 rounded-lg lg:hidden"
+                            class="p-2 -ml-1 text-slate-600 hover:text-brand-blue hover:bg-slate-100 rounded-xl lg:hidden shrink-0 transition-colors"
                             aria-label="Abrir menú lateral">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
                     </button>
 
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-semibold text-muted hidden sm:inline">Psicología /</span>
-                        <h1 class="font-heading font-bold text-sm sm:text-base text-brand-dark">
-                            @yield('page_title', 'Panel')
-                        </h1>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <span class="text-[11px] font-semibold text-muted hidden sm:inline shrink-0">Psicología /</span>
+                            <h1 class="font-heading font-extrabold text-xs sm:text-base text-brand-dark truncate leading-tight">
+                                @yield('page_title', 'Panel')
+                            </h1>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Derecha: Switcher Rápido a Modo Colaborador & Perfil -->
-                <div class="flex items-center gap-2.5 sm:gap-3">
+                <!-- Derecha: Firma Digital, Fecha & Perfil de Usuario -->
+                <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
 
                     <!-- Botón de Firma Digital Oficial -->
                     <button type="button"
                             onclick="abrirModalFirmaPsicologa()"
                             title="{{ $usuario->tieneFirmaRegistrada() ? 'Firma digital oficial activa. Clic para verla o cambiarla.' : 'Registra tu firma digital oficial para los certificados.' }}"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition shadow-2xs border cursor-pointer {{ $usuario->tieneFirmaRegistrada() ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 animate-pulse' }}">
-                        <i class="fa-solid {{ $usuario->tieneFirmaRegistrada() ? 'fa-signature text-emerald-600' : 'fa-pen-nib text-amber-600' }}"></i>
-                        <span class="hidden sm:inline">{{ $usuario->tieneFirmaRegistrada() ? 'Firma Oficial' : 'Registrar Firma' }}</span>
+                            class="inline-flex items-center justify-center gap-1.5 h-8 sm:h-auto px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-bold transition shadow-2xs border cursor-pointer {{ $usuario->tieneFirmaRegistrada() ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 animate-pulse' }}">
+                        <i class="fa-solid {{ $usuario->tieneFirmaRegistrada() ? 'fa-signature text-emerald-600' : 'fa-pen-nib text-amber-600' }} text-xs"></i>
+                        <span class="hidden md:inline">{{ $usuario->tieneFirmaRegistrada() ? 'Firma Oficial' : 'Registrar Firma' }}</span>
                     </button>
-
-                    <!-- Switcher Button a Capacitaciones -->
-                    <a href="{{ route('empleado.capacitaciones') }}"
-                       title="Ir a realizar mis capacitaciones como colaboradora"
-                       class="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-brand-light hover:bg-brand-blue/15 text-brand-blue border border-brand-blue/30 font-heading font-bold text-xs transition shadow-2xs hover:shadow-xs group">
-                        <i class="fa-solid fa-graduation-cap text-brand-blue group-hover:scale-110 transition-transform"></i>
-                        <span class="hidden md:inline">Modo Colaborador</span>
-                        <span class="md:hidden">Capacitaciones</span>
-                        <i class="fa-solid fa-arrow-right text-[10px] text-brand-blue/70"></i>
-                    </a>
 
                     <!-- Fecha actual -->
                     <span class="hidden xl:inline-flex items-center gap-1.5 text-xs text-muted font-medium bg-slate-50 px-3 py-1.5 rounded-full border border-line/60">
@@ -240,16 +232,17 @@
                     </span>
 
                     <!-- Usuario -->
-                    <div class="flex items-center gap-2 pl-2 border-l border-line/60">
-                        <div class="text-right hidden sm:block">
-                            <p class="text-xs font-bold text-brand-dark leading-tight">
+                    <div class="flex items-center gap-2 pl-1 sm:pl-2 border-l border-line/60">
+                        <div class="text-right hidden md:block">
+                            <p class="text-xs font-bold text-brand-dark leading-tight max-w-[130px] truncate" title="{{ $usuario->nombre_completo ?? 'Psicología' }}">
                                 {{ $usuario->nombre_completo ?? 'Psicología' }}
                             </p>
-                            <p class="text-[10px] text-brand-blue font-semibold">
+                            <p class="text-[10px] text-brand-blue font-semibold truncate">
                                 {{ $usuario->sede->nombre ?? 'Sede Central' }}
                             </p>
                         </div>
-                        <div class="w-8 h-8 rounded-lg bg-brand-light text-brand-blue font-heading font-bold text-xs flex items-center justify-center border border-brand-blue/20">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-deep to-brand-cyan text-white font-heading font-extrabold text-xs flex items-center justify-center shadow-2xs shrink-0"
+                             title="{{ $usuario->nombre_completo ?? 'Psicología' }}">
                             {{ strtoupper(substr($usuario->nombre_completo ?? 'P', 0, 1)) }}
                         </div>
                     </div>
