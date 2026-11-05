@@ -21,61 +21,91 @@
 <body class="min-h-full font-sans text-ink bg-[#f8fafc] antialiased flex flex-col justify-between selection:bg-brand-blue/20 selection:text-brand-dark">
 
     <!-- CABECERA INSTITUCIONAL CORPORATIVA -->
-    <header class="w-full bg-white border-b border-line/80 shadow-2xs sticky top-0 z-30">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 p-1 bg-white rounded-xl shadow-xs border border-line/60 flex items-center justify-center shrink-0">
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-line/80 shadow-2xs sticky top-0 z-30">
+        <div class="max-w-4xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div class="h-9 w-9 sm:h-10 sm:w-10 p-1 bg-white rounded-xl shadow-xs border border-line/60 flex items-center justify-center shrink-0">
                     <img src="{{ asset('images/Logo.png') }}" alt="Logo C.I. Piscícola New York" class="h-full w-full object-contain">
                 </div>
-                <div>
-                    <span class="block font-heading font-extrabold text-xs sm:text-sm tracking-wider uppercase text-brand-dark leading-tight">
+                <div class="min-w-0">
+                    <span class="block font-heading font-extrabold text-xs sm:text-sm tracking-wider uppercase text-brand-dark leading-tight truncate">
                         C.I. Piscícola New York S.A.
                     </span>
-                    <span class="block text-[10px] sm:text-[11px] font-semibold text-brand-blue tracking-wide uppercase">
+                    <span class="hidden sm:block text-[10px] sm:text-[11px] font-semibold text-brand-blue tracking-wide uppercase truncate">
                         Gestión Humana & Psicología Organizacional
                     </span>
                 </div>
             </div>
 
-            <!-- Código de sesión activa -->
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-light text-brand-blue font-mono font-bold text-xs border border-brand-blue/20">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Sesión: {{ $codigo }}</span>
-            </span>
+            <!-- Estado del Proceso en Header -->
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <span class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-brand-light text-brand-blue font-heading font-bold text-[11px] sm:text-xs border border-brand-blue/20 shadow-2xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="sm:hidden font-extrabold">Paso 3/3</span>
+                    <span class="hidden sm:inline">Paso 3 de 3 · Prueba 2 (VALANTI)</span>
+                </span>
+                <span class="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-mono text-[11px] border border-slate-200" title="Sesión activa">
+                    <i class="fa-solid fa-qrcode text-[10px] text-slate-400"></i>
+                    <span>{{ $codigo }}</span>
+                </span>
+            </div>
         </div>
     </header>
 
     <!-- CONTENEDOR PRINCIPAL -->
-    <main class="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-32 sm:pb-28 space-y-5">
+    <main class="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-5 sm:py-8 pb-32 sm:pb-28 space-y-4 sm:space-y-5">
 
-        <!-- STEPPER DE 3 PASOS: INDICADOR DE PROGRESO -->
+        <!-- STEPPER DE 3 PASOS: INDICADOR DE PROGRESO ADAPTATIVO -->
         <div class="w-full bg-white rounded-2xl p-4 sm:p-5 border border-line/80 shadow-2xs">
             <div class="flex items-center justify-between text-center relative max-w-md mx-auto">
                 <!-- Línea conectora de fondo -->
-                <div class="absolute top-4 left-8 right-8 h-0.5 bg-emerald-300 -z-0"></div>
+                <div class="absolute top-3.5 sm:top-4 left-6 right-6 sm:left-8 sm:right-8 h-0.5 bg-emerald-400 -z-0"></div>
 
                 <!-- Paso 1: Autorización (Completado) -->
                 <div class="relative z-10 flex flex-col items-center">
-                    <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow-xs ring-4 ring-emerald-50">
+                    <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] sm:text-xs font-bold shadow-xs ring-4 ring-emerald-50">
                         <i class="fa-solid fa-check"></i>
                     </div>
-                    <span class="text-[11px] font-bold text-emerald-700 mt-1.5">1. Autorizado</span>
+                    <span class="text-[10px] sm:text-[11px] font-bold text-emerald-700 mt-1 sm:mt-1.5">
+                        <span class="sm:hidden">1. Datos</span>
+                        <span class="hidden sm:inline">1. Autorizado</span>
+                    </span>
                 </div>
 
                 <!-- Paso 2: 1ª Prueba PAC-A (Completado) -->
                 <div class="relative z-10 flex flex-col items-center">
-                    <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow-xs ring-4 ring-emerald-50">
+                    <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] sm:text-xs font-bold shadow-xs ring-4 ring-emerald-50">
                         <i class="fa-solid fa-check"></i>
                     </div>
-                    <span class="text-[11px] font-bold text-emerald-700 mt-1.5">2. Prueba 1 (PAC-A)</span>
+                    <span class="text-[10px] sm:text-[11px] font-bold text-emerald-700 mt-1 sm:mt-1.5">
+                        <span class="sm:hidden">2. PAC-A</span>
+                        <span class="hidden sm:inline">2. Prueba 1 (PAC-A)</span>
+                    </span>
                 </div>
 
                 <!-- Paso 3: 2ª Prueba VALANTI (Activo) -->
                 <div class="relative z-10 flex flex-col items-center">
-                    <div class="w-9 h-9 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold shadow-xs ring-4 ring-brand-light">
+                    <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-brand-blue text-white flex items-center justify-center text-[11px] sm:text-xs font-bold shadow-xs ring-4 ring-brand-light">
                         3
                     </div>
-                    <span class="text-[11px] font-bold text-brand-blue mt-1.5">3. Prueba 2 (VALANTI)</span>
+                    <span class="text-[10px] sm:text-[11px] font-bold text-brand-blue mt-1 sm:mt-1.5">
+                        <span class="sm:hidden">3. VALANTI</span>
+                        <span class="hidden sm:inline">3. Prueba 2 (VALANTI)</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Barra de progreso visual compacta para móvil -->
+            <div class="sm:hidden mt-3 pt-3 border-t border-slate-100">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-600 mb-1.5">
+                    <span class="text-brand-blue flex items-center gap-1.5">
+                        <i class="fa-solid fa-bars-progress text-[10px]"></i>
+                        <span>Estado: Prueba 2 (VALANTI)</span>
+                    </span>
+                    <span class="text-slate-400 font-mono">Paso 3 de 3 (Final)</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="h-full bg-brand-blue rounded-full transition-all duration-300" style="width: 100%;"></div>
                 </div>
             </div>
         </div>

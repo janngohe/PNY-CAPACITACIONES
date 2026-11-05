@@ -485,8 +485,10 @@
                         <textarea name="certificado_observaciones"
                                   id="textareaObservacionesModal"
                                   rows="4"
-                                  placeholder="Escribe aquí las observaciones psicológicas o recomendaciones para el evaluado (opcional)..."
-                                  class="w-full rounded-xl border border-slate-300 bg-slate-50/60 p-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/20 leading-relaxed"></textarea>
+                                  oninput="this.value = this.value.toUpperCase()"
+                                  style="text-transform: uppercase;"
+                                  placeholder="ESCRIBE AQUÍ LAS OBSERVACIONES PSICOLÓGICAS O RECOMENDACIONES (EN MAYÚSCULAS)..."
+                                  class="w-full uppercase rounded-xl border border-slate-300 bg-slate-50/60 p-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/20 leading-relaxed font-sans"></textarea>
                     </div>
 
                     <!-- 6. FIRMA PSICÓLOGA (Vista previa fiel al PDF) -->
@@ -600,7 +602,7 @@
         document.getElementById('modalFechaNacEvaluado').textContent = datos.fecha_nacimiento || '';
         document.getElementById('modalEdadEvaluado').textContent = datos.edad || '';
         document.getElementById('modalCargoEvaluado').textContent = datos.cargo || '';
-        document.getElementById('textareaObservacionesModal').value = datos.observaciones || '';
+        document.getElementById('textareaObservacionesModal').value = (datos.observaciones || '').toUpperCase();
         document.getElementById('alertaErrorConcepto').classList.add('hidden');
 
         seleccionarCuadritoConcepto(datos.concepto || '');

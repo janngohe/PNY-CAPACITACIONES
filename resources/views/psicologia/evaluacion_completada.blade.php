@@ -20,59 +20,89 @@
 <body class="min-h-full font-sans text-ink bg-[#f8fafc] antialiased flex flex-col justify-between selection:bg-brand-blue/20 selection:text-brand-dark">
 
     <!-- CABECERA INSTITUCIONAL CORPORATIVA -->
-    <header class="w-full bg-white border-b border-line/80 shadow-2xs sticky top-0 z-30">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 p-1 bg-white rounded-xl shadow-xs border border-line/60 flex items-center justify-center shrink-0">
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-line/80 shadow-2xs sticky top-0 z-30">
+        <div class="max-w-4xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div class="h-9 w-9 sm:h-10 sm:w-10 p-1 bg-white rounded-xl shadow-xs border border-line/60 flex items-center justify-center shrink-0">
                     <img src="{{ asset('images/Logo.png') }}" alt="Logo C.I. Piscícola New York" class="h-full w-full object-contain">
                 </div>
-                <div>
-                    <span class="block font-heading font-extrabold text-xs sm:text-sm tracking-wider uppercase text-brand-dark leading-tight">
+                <div class="min-w-0">
+                    <span class="block font-heading font-extrabold text-xs sm:text-sm tracking-wider uppercase text-brand-dark leading-tight truncate">
                         C.I. Piscícola New York S.A.
                     </span>
-                    <span class="block text-[10px] sm:text-[11px] font-semibold text-brand-blue tracking-wide uppercase">
+                    <span class="hidden sm:block text-[10px] sm:text-[11px] font-semibold text-brand-blue tracking-wide uppercase truncate">
                         Gestión Humana & Psicología Organizacional
                     </span>
                 </div>
             </div>
 
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-mono font-bold text-xs border border-emerald-200">
-                <i class="fa-solid fa-circle-check"></i>
-                <span>Proceso Finalizado</span>
-            </span>
+            <!-- Estado del Proceso en Header -->
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <span class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-heading font-bold text-[11px] sm:text-xs border border-emerald-200 shadow-2xs">
+                    <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                    <span class="sm:hidden font-extrabold">Finalizado</span>
+                    <span class="hidden sm:inline">Proceso Completado</span>
+                </span>
+            </div>
         </div>
     </header>
 
     <!-- CONTENEDOR PRINCIPAL -->
-    <main class="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col items-center justify-center">
+    <main class="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-12 flex flex-col items-center justify-center">
 
         <!-- STEPPER DE 3 PASOS: TODOS COMPLETADOS -->
         <div class="w-full bg-white rounded-2xl p-4 sm:p-5 border border-line/80 shadow-2xs mb-6 sm:mb-8">
             <div class="flex items-center justify-between text-center relative max-w-md mx-auto">
-                <div class="absolute top-4 left-8 right-8 h-0.5 bg-emerald-500 -z-0"></div>
+                <div class="absolute top-3.5 sm:top-4 left-6 right-6 sm:left-8 sm:right-8 h-0.5 bg-emerald-500 -z-0"></div>
 
                 <!-- Paso 1 -->
                 <div class="relative z-10 flex flex-col items-center">
-                    <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow-xs ring-4 ring-emerald-50">
+                    <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] sm:text-xs font-bold shadow-xs ring-4 ring-emerald-50">
                         <i class="fa-solid fa-check"></i>
                     </div>
-                    <span class="text-[11px] font-bold text-emerald-700 mt-1.5">1. Autorizado</span>
+                    <span class="text-[10px] sm:text-[11px] font-bold text-emerald-700 mt-1 sm:mt-1.5">
+                        <span class="sm:hidden">1. Datos</span>
+                        <span class="hidden sm:inline">1. Autorizado</span>
+                    </span>
                 </div>
 
                 <!-- Paso 2 -->
                 <div class="relative z-10 flex flex-col items-center">
-                    <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow-xs ring-4 ring-emerald-50">
+                    <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] sm:text-xs font-bold shadow-xs ring-4 ring-emerald-50">
                         <i class="fa-solid fa-check"></i>
                     </div>
-                    <span class="text-[11px] font-bold text-emerald-700 mt-1.5">2. Prueba 1 (PAC-A)</span>
+                    <span class="text-[10px] sm:text-[11px] font-bold text-emerald-700 mt-1 sm:mt-1.5">
+                        <span class="sm:hidden">2. PAC-A</span>
+                        <span class="hidden sm:inline">2. Prueba 1 (PAC-A)</span>
+                    </span>
                 </div>
 
                 <!-- Paso 3 -->
                 <div class="relative z-10 flex flex-col items-center">
-                    <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow-xs ring-4 ring-emerald-50">
+                    <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] sm:text-xs font-bold shadow-xs ring-4 ring-emerald-50">
                         <i class="fa-solid fa-check"></i>
                     </div>
-                    <span class="text-[11px] font-bold text-emerald-700 mt-1.5">3. Prueba 2 (VALANTI)</span>
+                    <span class="text-[10px] sm:text-[11px] font-bold text-emerald-700 mt-1 sm:mt-1.5">
+                        <span class="sm:hidden">3. VALANTI</span>
+                        <span class="hidden sm:inline">3. Prueba 2 (VALANTI)</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Barra de progreso visual compacta para móvil -->
+            <div class="sm:hidden mt-3 pt-3 border-t border-slate-100">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-600 mb-1.5">
+                    <span class="text-emerald-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-[10px]"></i>
+                        <span>Evaluaciones Concluidas</span>
+                    </span>
+                    <span class="text-slate-400 font-mono">100% Completado</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
                 </div>
             </div>
         </div>

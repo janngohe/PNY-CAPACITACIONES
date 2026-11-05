@@ -922,10 +922,13 @@ class DashboardController extends Controller
             $ciudadFecha = 'Rivera-Huila, ' . now()->format('d/m/Y');
         }
 
+        $observaciones = trim((string) ($validados['certificado_observaciones'] ?? ''));
+        $observacionesMayus = $observaciones !== '' ? mb_strtoupper($observaciones, 'UTF-8') : null;
+
         $evaluacion->update([
             'certificado_ciudad_fecha' => $ciudadFecha,
             'certificado_concepto' => $validados['certificado_concepto'],
-            'certificado_observaciones' => trim((string) ($validados['certificado_observaciones'] ?? '')),
+            'certificado_observaciones' => $observacionesMayus,
             'certificado_emitido_at' => now(),
             'certificado_emitido_por' => Auth::id(),
         ]);

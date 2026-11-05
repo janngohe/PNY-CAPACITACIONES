@@ -132,6 +132,7 @@
             line-height: 22px;
             font-size: 9.5pt;
             text-align: justify;
+            text-transform: uppercase;
             border-bottom: 1px solid #000;
             padding-bottom: 2px;
             min-height: 22px;
@@ -209,7 +210,7 @@
         $ciudadFecha = $evaluacion->certificado_ciudad_fecha
             ?: ('Rivera-Huila, ' . ($evaluacion->certificado_emitido_at ?? now())->format('d/m/Y'));
         $concepto = $evaluacion->certificado_concepto;
-        $observaciones = trim((string) ($evaluacion->certificado_observaciones ?? ''));
+        $observaciones = mb_strtoupper(trim((string) ($evaluacion->certificado_observaciones ?? '')), 'UTF-8');
     @endphp
 
     <!-- ENCABEZADO INSTITUCIONAL GH-FO-028 -->
