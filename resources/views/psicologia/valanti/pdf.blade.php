@@ -149,7 +149,7 @@
                         <td style="border: none; border-bottom: 1px solid #000; padding: 2px 5px;"><strong>PRUEBA:</strong> VALANTI</td>
                     </tr>
                     <tr>
-                        <td style="border: none; border-bottom: 1px solid #000; padding: 2px 5px;"><strong>BAREMO:</strong> Nacional 1997 (n=730)</td>
+                        <td style="border: none; border-bottom: 1px solid #000; padding: 2px 5px;"><strong>FORMATO:</strong> GH-FO-VAL</td>
                     </tr>
                     <tr>
                         <td style="border: none; border-bottom: 1px solid #000; padding: 2px 5px;"><strong>FECHA:</strong> {{ ($resultado->finalizada_at ?? $evaluacion->created_at)->format('d/m/Y') }}</td>

@@ -218,8 +218,10 @@
                                    value="{{ old('identificacion') }}"
                                    placeholder="Ej. 1075284910"
                                    oninput="actualizarDocumento()"
+                                   onblur="verificarCedulaDuplicada(this.value)"
                                    class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-line focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue text-xs font-mono text-slate-800 placeholder:text-slate-400">
                         </div>
+                        <div id="alertaCedulaDuplicada" class="hidden"></div>
                     </div>
 
                     <!-- Lugar de Expedición -->
@@ -281,8 +283,30 @@
                         </div>
                     </div>
 
+                    <!-- Sede a la que aplica -->
+                    <div>
+                        <label for="sede_id" class="block font-heading font-bold text-slate-700 mb-1.5">
+                            Sede <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fa-solid fa-location-dot absolute left-3.5 top-3.5 text-slate-400 text-xs pointer-events-none"></i>
+                            <select id="sede_id"
+                                    name="sede_id"
+                                    required
+                                    class="w-full pl-9 pr-9 py-2.5 rounded-xl border border-line focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue text-xs text-slate-800 bg-white cursor-pointer appearance-none">
+                                <option value="" disabled {{ old('sede_id') ? '' : 'selected' }}>-- Selecciona tu sede --</option>
+                                @foreach($sedes as $sede)
+                                    <option value="{{ $sede->id }}" {{ (string) old('sede_id') === (string) $sede->id ? 'selected' : '' }}>
+                                        {{ $sede->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3.5 top-3.5 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+
                     <!-- Área / Cargo al que aspira (Selección obligatoria entre las áreas registradas) -->
-                    <div class="sm:col-span-2">
+                    <div>
                         <label for="cargo_aspira" class="block font-heading font-bold text-slate-700 mb-1.5">
                             Área a la que Aspira <span class="text-rose-500">*</span>
                         </label>
@@ -664,6 +688,14 @@
                 return false;
             }
 
+            const sedeId = document.getElementById('sede_id').value.trim();
+            if (!sedeId) {
+                e.preventDefault();
+                mostrarError('Por favor selecciona la sede a la que aplicas.');
+                document.getElementById('sede_id').focus();
+                return false;
+            }
+
             const cargo = document.getElementById('cargo_aspira').value.trim();
             if (!cargo) {
                 e.preventDefault();
@@ -677,6 +709,13 @@
                 e.preventDefault();
                 mostrarError('Debes marcar la casilla de aceptación expresa de la autorización para continuar.');
                 document.getElementById('acepta_terminos').focus();
+                return false;
+            }
+
+            if (cedulaYaCompletada) {
+                e.preventDefault();
+                mostrarError('Esta cédula ya presentó y completó sus pruebas psicotécnicas. Esta evaluación solo puede presentarse una vez por usuario.');
+                document.getElementById('identificacion').focus();
                 return false;
             }
 
@@ -699,9 +738,75 @@
             return true;
         }
 
+        let cedulaYaCompletada = false;
+
+        async function verificarCedulaDuplicada(cedula) {
+            const alerta = document.getElementById('alertaCedulaDuplicada');
+            if (!alerta) return;
+            const cedulaLimpia = (cedula || '').trim();
+            if (cedulaLimpia.length < 4) {
+                alerta.classList.add('hidden');
+                alerta.innerHTML = '';
+                cedulaYaCompletada = false;
+                return;
+            }
+
+            try {
+                const url = `{{ url('/evaluacion-psicologica/verificar-cedula') }}/${encodeURIComponent(cedulaLimpia)}`;
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) return;
+                const data = await res.json();
+
+                if (data.estado === 'completada') {
+                    cedulaYaCompletada = true;
+                    alerta.className = 'mt-2.5 p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs shadow-2xs space-y-1.5';
+                    alerta.innerHTML = `
+                        <div class="flex items-start gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm mt-0.5 shrink-0"></i>
+                            <div>
+                                <strong class="font-bold text-amber-950 block">Evaluación ya presentada</strong>
+                                <p class="leading-relaxed text-[11px] text-amber-900">${data.mensaje}</p>
+                                <a href="${data.url_completada}" class="inline-flex items-center gap-1 font-bold text-amber-900 underline hover:text-amber-950 mt-1.5 text-xs">
+                                    <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                                    <span>Ver comprobante de evaluación completada &rarr;</span>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    alerta.classList.remove('hidden');
+                } else if (data.estado === 'en_progreso') {
+                    cedulaYaCompletada = false;
+                    alerta.className = 'mt-2.5 p-3.5 rounded-2xl bg-sky-50 border border-sky-300 text-sky-900 text-xs shadow-2xs space-y-1.5';
+                    alerta.innerHTML = `
+                        <div class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-info text-sky-600 text-sm mt-0.5 shrink-0"></i>
+                            <div>
+                                <strong class="font-bold text-sky-950 block">Evaluación en progreso</strong>
+                                <p class="leading-relaxed text-[11px] text-sky-900">${data.mensaje}</p>
+                                <a href="${data.url_continuar}" class="inline-flex items-center gap-1 font-bold text-brand-blue underline hover:text-blue-800 mt-1.5 text-xs">
+                                    <span>Continuar prueba donde quedaste &rarr;</span>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    alerta.classList.remove('hidden');
+                } else {
+                    cedulaYaCompletada = false;
+                    alerta.classList.add('hidden');
+                    alerta.innerHTML = '';
+                }
+            } catch (err) {
+                // Silently ignore network check errors
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             actualizarDocumento();
             calcularEdad();
+            const inputCedula = document.getElementById('identificacion');
+            if (inputCedula && inputCedula.value) {
+                verificarCedulaDuplicada(inputCedula.value);
+            }
         });
     </script>
 </body>

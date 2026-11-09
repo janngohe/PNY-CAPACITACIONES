@@ -111,6 +111,16 @@
         <div class="w-full bg-white rounded-3xl p-6 sm:p-8 border border-line/80 shadow-sm text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-brand-blue"></div>
 
+            @if(session('aviso_ya_presentada'))
+                <div class="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs sm:text-sm text-left flex items-start gap-3 shadow-2xs">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-lg shrink-0 mt-0.5"></i>
+                    <div>
+                        <strong class="font-bold block text-amber-950 mb-0.5">Prueba ya realizada</strong>
+                        <p class="leading-relaxed">{{ session('aviso_ya_presentada') }}</p>
+                    </div>
+                </div>
+            @endif
+
             <div class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center text-2xl mx-auto mb-4 shadow-2xs">
                 <i class="fa-solid fa-award"></i>
             </div>

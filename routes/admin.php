@@ -120,6 +120,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
     Route::prefix('psicologia')->name('psicologia.')->group(function () {
         Route::get('/reportes', [\App\Http\Controllers\Psicologia\DashboardController::class, 'reportes'])->name('reportes');
         Route::get('/reportes/excel', [\App\Http\Controllers\Psicologia\DashboardController::class, 'descargarReporteExcel'])->name('reportes.excel');
+        Route::get('/reportes/{evaluacion}/exportar-resultados', [\App\Http\Controllers\Psicologia\DashboardController::class, 'exportarPaqueteResultados'])->name('reportes.exportar_resultados');
         Route::get('/historial-pruebas', [\App\Http\Controllers\Psicologia\DashboardController::class, 'historialPruebas'])->name('historial');
         Route::get('/pruebas/{evaluacion}/resultado', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verResultadoPaca'])->name('paca.resultado');
         Route::get('/pruebas/{evaluacion}/paca-pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verPacaPdf'])->name('paca.pdf');

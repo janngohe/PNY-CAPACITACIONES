@@ -154,9 +154,15 @@
     <!-- DATOS GENERALES -->
     <div class="datos-generales">
         <div class="campo-linea">
-            <span class="campo-label">Cargo al que aspira:</span>
+            <span class="campo-label">Cargo / Área a la que aspira:</span>
             <span class="campo-valor">{{ $evaluacion->cargo_aspira }}</span>
         </div>
+        @if($evaluacion->sede)
+        <div class="campo-linea">
+            <span class="campo-label">Sede:</span>
+            <span class="campo-valor">{{ $evaluacion->sede->nombre }}</span>
+        </div>
+        @endif
         <div class="campo-linea">
             <span class="campo-label">Edad:</span>
             <span class="campo-valor">{{ $evaluacion->edad }} años</span>

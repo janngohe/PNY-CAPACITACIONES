@@ -9,6 +9,7 @@ use App\Models\Area;
 use App\Models\EvaluacionCandidato;
 use App\Models\RespuestaPaca;
 use App\Models\RespuestaValanti;
+use App\Models\Sede;
 use App\Models\Usuario;
 use App\Services\Psicologia\CalificadorPacaService;
 use App\Services\Psicologia\CalificadorValantiService;
@@ -113,10 +114,87 @@ class DashboardController extends Controller
     public function evaluacionPublica(Request $request, ?string $codigo = null)
     {
         $codigo = $codigo ?? 'PSI-PNY';
+
+        // Si el usuario en este navegador ya tiene una evaluación registrada en sesión
+        if (session('evaluacion_candidato_id')) {
+            $candidatoSesion = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+                ->find(session('evaluacion_candidato_id'));
+
+            if ($candidatoSesion) {
+                // Si ya completó ambas pruebas, bloquear ingreso y mostrar comprobante de finalización
+                if ($candidatoSesion->valantiFinalizada() && $candidatoSesion->pacaFinalizada()) {
+                    return redirect()->route('psicologia.evaluacion.completada', [
+                        'codigo' => $candidatoSesion->codigo_sesion ?: $codigo,
+                        'evaluacion' => $candidatoSesion->id,
+                    ])->with('aviso_ya_presentada', 'Ya has completado satisfactoriamente tus pruebas psicotécnicas para este proceso de selección. Recuerda que la prueba se presenta una sola vez por usuario.');
+                }
+
+                // Si está en curso, redirigir al paso donde quedó
+                if (!$candidatoSesion->valantiFinalizada()) {
+                    return redirect()->route('psicologia.evaluacion.paso2', [
+                        'codigo' => $candidatoSesion->codigo_sesion ?: $codigo,
+                        'evaluacion' => $candidatoSesion->id,
+                    ]);
+                }
+
+                if (!$candidatoSesion->pacaFinalizada()) {
+                    return redirect()->route('psicologia.evaluacion.paso3', [
+                        'codigo' => $candidatoSesion->codigo_sesion ?: $codigo,
+                        'evaluacion' => $candidatoSesion->id,
+                    ]);
+                }
+            }
+        }
+
         $fechaHoraActual = now();
+        $sedes = Sede::where('estado', true)->orderBy('nombre')->get();
         $areas = Area::where('estado', true)->orderBy('nombre')->get()->unique('nombre');
 
-        return view('psicologia.evaluacion_candidato', compact('codigo', 'fechaHoraActual', 'areas'));
+        return view('psicologia.evaluacion_candidato', compact('codigo', 'fechaHoraActual', 'sedes', 'areas'));
+    }
+
+    /**
+     * Consulta en tiempo real si una cédula ya fue evaluada o tiene una prueba en curso.
+     * Evita que un candidato complete el formulario innecesariamente si ya presentó la prueba.
+     */
+    public function verificarCedulaPublica(Request $request, string $identificacion)
+    {
+        $identificacion = trim($identificacion);
+        if (strlen($identificacion) < 4) {
+            return response()->json(['estado' => 'disponible']);
+        }
+
+        $evaluacion = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+            ->where('identificacion', $identificacion)
+            ->latest('id')
+            ->first();
+
+        if (!$evaluacion) {
+            return response()->json(['estado' => 'disponible']);
+        }
+
+        if ($evaluacion->valantiFinalizada() && $evaluacion->pacaFinalizada()) {
+            return response()->json([
+                'estado' => 'completada',
+                'mensaje' => 'Esta cédula ya presentó y completó las pruebas psicotécnicas (VALANTI y PAC-A). Esta evaluación es de presentación única por usuario.',
+                'url_completada' => route('psicologia.evaluacion.completada', [
+                    'codigo' => $evaluacion->codigo_sesion ?: 'PSI-PNY',
+                    'evaluacion' => $evaluacion->id,
+                ]),
+                'candidato' => $evaluacion->nombre_completo,
+            ]);
+        }
+
+        $siguienteUrl = !$evaluacion->valantiFinalizada()
+            ? route('psicologia.evaluacion.paso2', ['codigo' => $evaluacion->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $evaluacion->id])
+            : route('psicologia.evaluacion.paso3', ['codigo' => $evaluacion->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $evaluacion->id]);
+
+        return response()->json([
+            'estado' => 'en_progreso',
+            'mensaje' => 'Esta cédula tiene una evaluación en curso. Puedes continuar donde quedaste.',
+            'url_continuar' => $siguienteUrl,
+            'candidato' => $evaluacion->nombre_completo,
+        ]);
     }
 
     /**
@@ -160,7 +238,7 @@ class DashboardController extends Controller
         return redirect()->route('psicologia.evaluacion.completada', [
             'codigo' => $evaluacion->codigo_sesion ?: $codigo,
             'evaluacion' => $evaluacion->id,
-        ]);
+        ])->with('aviso_ya_presentada', 'Ya has completado satisfactoriamente tus pruebas psicotécnicas. Esta evaluación es de presentación única por usuario.');
     }
 
     /**
@@ -177,6 +255,7 @@ class DashboardController extends Controller
             'lugar_expedicion' => ['required', 'string', 'min:2', 'max:100'],
             'fecha_nacimiento' => ['required', 'date'],
             'edad' => ['required', 'integer', 'min:16', 'max:99'],
+            'sede_id' => ['required', 'integer', 'exists:sedes,id'],
             'cargo_aspira' => ['required', 'string', 'min:2', 'max:120'],
             'firma_digital' => ['required', 'string'],
             'acepta_terminos' => ['required', 'accepted'],
@@ -187,39 +266,46 @@ class DashboardController extends Controller
             'fecha_nacimiento.required' => 'La fecha de nacimiento es obligatoria.',
             'edad.required' => 'La edad es obligatoria.',
             'edad.min' => 'La edad mínima permitida es 16 años.',
+            'sede_id.required' => 'Debes seleccionar la sede a la que aplicas.',
+            'sede_id.exists' => 'La sede seleccionada no es válida.',
             'cargo_aspira.required' => 'Debes seleccionar el área a la que aspiras.',
             'firma_digital.required' => 'Debes dibujar tu firma digital en el recuadro.',
             'acepta_terminos.accepted' => 'Debes marcar la casilla de aceptación para continuar.',
         ]);
 
-        // Si ya tiene una evaluación en progreso (incompleta) con esta cédula, retomarla sin duplicar
-        $enCurso = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
-            ->where('identificacion', trim($validados['identificacion']))
-            ->where(function ($q) {
-                $q->whereDoesntHave('resultadoValanti')
-                  ->orWhereDoesntHave('resultadoPaca');
-            })
+        $identificacion = trim((string) $validados['identificacion']);
+
+        // 1. REGLA DE PRESENTACIÓN ÚNICA: Verificar si ya existe una evaluación con este número de cédula
+        $existente = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+            ->where('identificacion', $identificacion)
             ->latest('id')
             ->first();
 
-        if ($enCurso) {
-            session(['evaluacion_candidato_id' => $enCurso->id]);
-            if (!$enCurso->valantiFinalizada()) {
+        if ($existente) {
+            session(['evaluacion_candidato_id' => $existente->id]);
+
+            // Si ya completó ambas pruebas (VALANTI y PAC-A), BLOQUEAR: no puede volver a presentar la prueba
+            if ($existente->valantiFinalizada() && $existente->pacaFinalizada()) {
+                return redirect()->route('psicologia.evaluacion.completada', [
+                    'codigo' => $existente->codigo_sesion ?: $codigo,
+                    'evaluacion' => $existente->id,
+                ])->with('aviso_ya_presentada', 'Ya has presentado y completado previamente tus pruebas psicotécnicas para este proceso de selección. Esta evaluación es de presentación única por usuario.');
+            }
+
+            // Si la evaluación está incompleta, reanudarla en el paso donde quedó (sin duplicar registro)
+            if (!$existente->valantiFinalizada()) {
                 return redirect()->route('psicologia.evaluacion.paso2', [
-                    'codigo' => $enCurso->codigo_sesion ?: $codigo,
-                    'evaluacion' => $enCurso->id,
+                    'codigo' => $existente->codigo_sesion ?: $codigo,
+                    'evaluacion' => $existente->id,
                 ]);
             }
-            if (!$enCurso->pacaFinalizada()) {
+
+            if (!$existente->pacaFinalizada()) {
                 return redirect()->route('psicologia.evaluacion.paso3', [
-                    'codigo' => $enCurso->codigo_sesion ?: $codigo,
-                    'evaluacion' => $enCurso->id,
+                    'codigo' => $existente->codigo_sesion ?: $codigo,
+                    'evaluacion' => $existente->id,
                 ]);
             }
-            return redirect()->route('psicologia.evaluacion.completada', [
-                'codigo' => $enCurso->codigo_sesion ?: $codigo,
-                'evaluacion' => $enCurso->id,
-            ]);
         }
 
         $firmaData = $validados['firma_digital'];
@@ -245,6 +331,7 @@ class DashboardController extends Controller
             'lugar_expedicion' => mb_convert_case(trim($validados['lugar_expedicion']), MB_CASE_TITLE, 'UTF-8'),
             'fecha_nacimiento' => $validados['fecha_nacimiento'],
             'edad' => $edadCalculada > 0 ? $edadCalculada : (int) $validados['edad'],
+            'sede_id' => (int) $validados['sede_id'],
             'cargo_aspira' => mb_convert_case(trim($validados['cargo_aspira']), MB_CASE_TITLE, 'UTF-8'),
             'firma_digital' => $rutaFirma,
             'acepta_terminos' => true,
@@ -572,6 +659,9 @@ class DashboardController extends Controller
     /**
      * Módulo 2: Reportes (Filtro por año y vista previa del listado de aplicación de pruebas psicotécnicas).
      */
+    /**
+     * Módulo 2: Reportes (Filtros por año, mes, sede y área con vista previa y consolidado Excel).
+     */
     public function reportes(Request $request)
     {
         /** @var Usuario $usuario */
@@ -596,10 +686,69 @@ class DashboardController extends Controller
             rsort($aniosDisponibles);
         }
 
-        $evaluaciones = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
-            ->whereRaw('YEAR(COALESCE(fecha_hora_aceptacion, created_at)) = ?', [$anioSeleccionado])
-            ->orderBy('id', 'asc')
-            ->get();
+        $mesesDisponibles = [
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre',
+        ];
+
+        $mesSeleccionado = $request->filled('mes') ? (int) $request->input('mes') : null;
+        if ($mesSeleccionado !== null && ($mesSeleccionado < 1 || $mesSeleccionado > 12)) {
+            $mesSeleccionado = null;
+        }
+
+        $sedesDisponibles = Sede::orderBy('nombre')->get();
+        $sedeIdSeleccionada = $request->filled('sede_id') ? (int) $request->input('sede_id') : null;
+        if ($sedeIdSeleccionada !== null && !$sedesDisponibles->contains('id', $sedeIdSeleccionada)) {
+            $sedeIdSeleccionada = null;
+        }
+
+        $areasRegistradas = EvaluacionCandidato::whereNotNull('cargo_aspira')
+            ->distinct()
+            ->pluck('cargo_aspira')
+            ->toArray();
+        $areasBase = Area::where('estado', true)->pluck('nombre')->toArray();
+        $areasDisponibles = array_values(array_unique(array_filter(array_merge($areasBase, $areasRegistradas))));
+        sort($areasDisponibles);
+
+        $areaSeleccionada = $request->filled('area') ? trim((string) $request->input('area')) : null;
+        if ($areaSeleccionada !== null && !in_array($areaSeleccionada, $areasDisponibles, true)) {
+            $areaSeleccionada = null;
+        }
+
+        $query = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti', 'sede'])
+            ->whereRaw('YEAR(COALESCE(fecha_hora_aceptacion, created_at)) = ?', [$anioSeleccionado]);
+
+        $buscar = trim((string) $request->input('buscar', ''));
+        if ($buscar !== '') {
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombre_completo', 'like', "%{$buscar}%")
+                  ->orWhere('identificacion', 'like', "%{$buscar}%");
+            });
+        }
+
+        if ($mesSeleccionado !== null) {
+            $query->whereRaw('MONTH(COALESCE(fecha_hora_aceptacion, created_at)) = ?', [$mesSeleccionado]);
+        }
+
+        if ($sedeIdSeleccionada !== null) {
+            $query->where('sede_id', $sedeIdSeleccionada);
+        }
+
+        if ($areaSeleccionada !== null) {
+            $query->where('cargo_aspira', $areaSeleccionada);
+        }
+
+        $evaluaciones = $query->orderBy('id', 'asc')->get();
 
         $totalAnio = $evaluaciones->count();
         $totalCumple = $evaluaciones->where('certificado_concepto', 'CUMPLE_SIN_INDICE')->count();
@@ -611,18 +760,25 @@ class DashboardController extends Controller
             'usuario',
             'anioSeleccionado',
             'aniosDisponibles',
+            'mesSeleccionado',
+            'mesesDisponibles',
+            'sedeIdSeleccionada',
+            'sedesDisponibles',
+            'areaSeleccionada',
+            'areasDisponibles',
             'evaluaciones',
             'totalAnio',
             'totalCumple',
             'totalRecomendaciones',
             'totalNoCumple',
-            'totalPendientesCert'
+            'totalPendientesCert',
+            'buscar'
         ));
     }
 
     /**
-     * Descarga el archivo Excel (.xlsx) filtrado únicamente por año con la estructura exacta
-     * de PRUEBAS APLICADAS {AÑO}.xlsx.
+     * Descarga el archivo Excel (.xlsx) filtrado por año, mes, sede y área con la estructura
+     * del consolidado oficial PRUEBAS APLICADAS.
      */
     public function descargarReporteExcel(Request $request, ReporteExcelPsicologiaService $excelService)
     {
@@ -632,16 +788,241 @@ class DashboardController extends Controller
             $anioSeleccionado = $anioActual;
         }
 
-        $evaluaciones = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
-            ->whereRaw('YEAR(COALESCE(fecha_hora_aceptacion, created_at)) = ?', [$anioSeleccionado])
-            ->orderBy('id', 'asc')
-            ->get();
+        $mesSeleccionado = $request->filled('mes') ? (int) $request->input('mes') : null;
+        if ($mesSeleccionado !== null && ($mesSeleccionado < 1 || $mesSeleccionado > 12)) {
+            $mesSeleccionado = null;
+        }
+
+        $sedeIdSeleccionada = $request->filled('sede_id') ? (int) $request->input('sede_id') : null;
+        $areaSeleccionada = $request->filled('area') ? trim((string) $request->input('area')) : null;
+
+        $query = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti', 'sede'])
+            ->whereRaw('YEAR(COALESCE(fecha_hora_aceptacion, created_at)) = ?', [$anioSeleccionado]);
+
+        $buscar = trim((string) $request->input('buscar', ''));
+        if ($buscar !== '') {
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombre_completo', 'like', "%{$buscar}%")
+                  ->orWhere('identificacion', 'like', "%{$buscar}%");
+            });
+        }
+
+        if ($mesSeleccionado !== null) {
+            $query->whereRaw('MONTH(COALESCE(fecha_hora_aceptacion, created_at)) = ?', [$mesSeleccionado]);
+        }
+
+        if ($sedeIdSeleccionada !== null) {
+            $query->where('sede_id', $sedeIdSeleccionada);
+        }
+
+        if ($areaSeleccionada !== null) {
+            $query->where('cargo_aspira', $areaSeleccionada);
+        }
+
+        $evaluaciones = $query->orderBy('id', 'asc')->get();
 
         $rutaTemporal = $excelService->generarArchivoXlsx($evaluaciones, $anioSeleccionado);
-        $nombreDescarga = "PRUEBAS APLICADAS {$anioSeleccionado}.xlsx";
+
+        $partesNombre = ["PRUEBAS APLICADAS {$anioSeleccionado}"];
+        if ($mesSeleccionado) {
+            $meses = [1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'];
+            $partesNombre[] = $meses[$mesSeleccionado] ?? "Mes-{$mesSeleccionado}";
+        }
+        if ($sedeIdSeleccionada) {
+            $sede = Sede::find($sedeIdSeleccionada);
+            if ($sede) {
+                $partesNombre[] = Str::slug($sede->nombre);
+            }
+        }
+        if ($areaSeleccionada) {
+            $partesNombre[] = Str::slug($areaSeleccionada);
+        }
+
+        $nombreDescarga = implode(' - ', $partesNombre) . '.xlsx';
 
         return response()->download($rutaTemporal, $nombreDescarga, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Exporta en un archivo ZIP la carpeta completa de resultados del usuario evaluado con:
+     * 1. Consentimiento Informado (GH-FO-025)
+     * 2. Resultados de la prueba VALANTI (Gráfico radial + informe psicotécnico)
+     * 3. Resultados de la prueba PAC-A (GH-FO-PAC)
+     * 4. Certificado de Aptitud Psicológica (GH-FO-028)
+     */
+    public function exportarPaqueteResultados(
+        Request $request,
+        EvaluacionCandidato $evaluacion,
+        CalificadorValantiService $calificadorValanti,
+        CalificadorPacaService $calificadorPaca
+    ) {
+        $evaluacion->load(['respuestasPaca', 'resultadoPaca', 'respuestasValanti', 'resultadoValanti', 'sede']);
+
+        // Logo institucional común
+        $logoBase64 = null;
+        $rutaLogo = public_path('images/Logo.png');
+        if (file_exists($rutaLogo)) {
+            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($rutaLogo));
+        }
+
+        // Psicóloga oficial y su firma
+        $psicologo = null;
+        if (Auth::user() && !empty(Auth::user()->firma_digital)) {
+            $psicologo = Auth::user();
+        } else {
+            $psicologo = Usuario::where('rol', 'PSICOLOGIA')->whereNotNull('firma_digital')->first();
+        }
+
+        $firmaPsicologaBase64 = null;
+        if ($psicologo && !empty($psicologo->firma_digital)) {
+            if (str_starts_with($psicologo->firma_digital, 'data:image')) {
+                $firmaPsicologaBase64 = $this->convertirTintaFirmaANegro($psicologo->firma_digital);
+            } elseif (Storage::disk('public')->exists($psicologo->firma_digital)) {
+                $firmaPsicologaBase64 = $this->convertirTintaFirmaANegro(Storage::disk('public')->get($psicologo->firma_digital));
+            }
+        }
+
+        // 1. Consentimiento Informado (GH-FO-025)
+        $firmaCandidatoBase64 = null;
+        if (!empty($evaluacion->firma_digital)) {
+            if (str_starts_with($evaluacion->firma_digital, 'data:image')) {
+                $firmaCandidatoBase64 = $this->convertirTintaFirmaANegro($evaluacion->firma_digital);
+            } elseif (Storage::disk('public')->exists($evaluacion->firma_digital)) {
+                $firmaCandidatoBase64 = $this->convertirTintaFirmaANegro(Storage::disk('public')->get($evaluacion->firma_digital));
+            }
+        }
+
+        $pdfConsentimiento = Pdf::loadView('psicologia.consentimiento.pdf', [
+            'evaluacion' => $evaluacion,
+            'logoBase64' => $logoBase64,
+            'firmaBase64' => $firmaCandidatoBase64,
+        ])->setPaper('letter', 'portrait');
+        $contenidoConsentimiento = $pdfConsentimiento->output();
+
+        // 2. Resultados de la prueba VALANTI
+        $contenidoValanti = null;
+        if (!$evaluacion->resultadoValanti && $evaluacion->respuestasValanti->count() === 30) {
+            $calificadorValanti->calificarYAplicar($evaluacion);
+            $evaluacion->load('resultadoValanti');
+        }
+
+        if ($evaluacion->resultadoValanti) {
+            $rutaRelativa = $calificadorValanti->rutaArchivoPdf($evaluacion);
+            $calificadorValanti->generarYGuardarPdfReporte($evaluacion, $evaluacion->resultadoValanti);
+            $rutaAbsoluta = Storage::disk('public')->path($rutaRelativa);
+            if (file_exists($rutaAbsoluta)) {
+                $contenidoValanti = file_get_contents($rutaAbsoluta);
+            }
+        }
+
+        // 3. Resultados de la prueba PAC-A
+        $contenidoPaca = null;
+        if (!$evaluacion->resultadoPaca && $evaluacion->respuestasPaca->count() === 40) {
+            $calificadorPaca->calificarYAplicar($evaluacion);
+            $evaluacion->load('resultadoPaca');
+        }
+
+        if ($evaluacion->resultadoPaca) {
+            $resultado = $evaluacion->resultadoPaca;
+            $afirmaciones = PacaPreguntas::AFIRMACIONES;
+            $respuestasPorId = $evaluacion->respuestasPaca->keyBy('numero_pregunta');
+            $preguntasAccidentogena = PacaPreguntas::PREGUNTAS_TENDENCIA_ACCIDENTOGENA;
+            $preguntasTipoA = PacaPreguntas::PREGUNTAS_PATRON_TIPO_A;
+            $preguntasControl = PacaPreguntas::PREGUNTAS_CONTROL;
+            $opciones = PacaPreguntas::OPCIONES;
+
+            $pdfPaca = Pdf::loadView('psicologia.paca.pdf', compact(
+                'evaluacion',
+                'resultado',
+                'afirmaciones',
+                'respuestasPorId',
+                'preguntasAccidentogena',
+                'preguntasTipoA',
+                'preguntasControl',
+                'opciones',
+                'logoBase64',
+                'firmaPsicologaBase64',
+                'psicologo'
+            ))->setPaper('letter', 'portrait');
+
+            $contenidoPaca = $pdfPaca->output();
+        }
+
+        // 4. Certificado de Aptitud Psicológica (GH-FO-028)
+        $contenidoCertificado = null;
+        if ($evaluacion->valantiFinalizada() && $evaluacion->pacaFinalizada()) {
+            if (!$evaluacion->certificadoEmitido()) {
+                $evaluacion->update([
+                    'certificado_concepto' => $evaluacion->calcularConceptoAptitudinal(),
+                    'certificado_observaciones' => $evaluacion->generarObservacionSugerida(),
+                    'certificado_ciudad_fecha' => 'Rivera-Huila, ' . now()->format('d/m/Y'),
+                    'certificado_emitido_at' => now(),
+                    'certificado_emitido_por' => Auth::id(),
+                ]);
+                $evaluacion->refresh();
+            }
+
+            $firmaCertificadoBase64 = $firmaPsicologaBase64;
+            if ($evaluacion->certificado_emitido_por) {
+                $emisor = Usuario::find($evaluacion->certificado_emitido_por);
+                if ($emisor && !empty($emisor->firma_digital)) {
+                    if (str_starts_with($emisor->firma_digital, 'data:image')) {
+                        $firmaCertificadoBase64 = $this->convertirTintaFirmaANegro($emisor->firma_digital);
+                    } elseif (Storage::disk('public')->exists($emisor->firma_digital)) {
+                        $firmaCertificadoBase64 = $this->convertirTintaFirmaANegro(Storage::disk('public')->get($emisor->firma_digital));
+                    }
+                }
+            }
+
+            $pdfCertificado = Pdf::loadView('psicologia.certificado.pdf', [
+                'evaluacion' => $evaluacion,
+                'logoBase64' => $logoBase64,
+                'firmaPsicologaBase64' => $firmaCertificadoBase64,
+            ])->setPaper('letter', 'portrait');
+
+            $contenidoCertificado = $pdfCertificado->output();
+        }
+
+        // Crear archivo ZIP temporal
+        $tempZip = tempnam(sys_get_temp_dir(), 'resultados_pny_') . '.zip';
+        $zip = new \ZipArchive();
+
+        if ($zip->open($tempZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            abort(500, 'No fue posible crear el archivo ZIP de resultados.');
+        }
+
+        $nombreLimpio = Str::slug($evaluacion->nombre_completo, '_');
+        $cedula = preg_replace('/[^0-9A-Za-z_-]/', '', $evaluacion->identificacion);
+        $carpetaInterna = "Resultados_{$cedula}_{$nombreLimpio}/";
+
+        // 1. Consentimiento
+        if ($contenidoConsentimiento) {
+            $zip->addFromString($carpetaInterna . "1_Consentimiento_GH-FO-025_{$cedula}.pdf", $contenidoConsentimiento);
+        }
+
+        // 2. Resultados de la prueba VALANTI
+        if ($contenidoValanti) {
+            $zip->addFromString($carpetaInterna . "2_Resultados_Prueba_VALANTI_{$cedula}.pdf", $contenidoValanti);
+        }
+
+        // 3. Resultados de la prueba PAC-A
+        if ($contenidoPaca) {
+            $zip->addFromString($carpetaInterna . "3_Resultados_Prueba_PAC-A_{$cedula}.pdf", $contenidoPaca);
+        }
+
+        // 4. Certificado de Aptitud Psicológica
+        if ($contenidoCertificado) {
+            $zip->addFromString($carpetaInterna . "4_Certificado_Aptitud_GH-FO-028_{$cedula}.pdf", $contenidoCertificado);
+        }
+
+        $zip->close();
+
+        $nombreDescarga = "Resultados_{$cedula}_{$nombreLimpio}.zip";
+
+        return response()->download($tempZip, $nombreDescarga, [
+            'Content-Type' => 'application/zip',
         ])->deleteFileAfterSend(true);
     }
 

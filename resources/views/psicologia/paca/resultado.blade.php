@@ -108,7 +108,7 @@
             <i class="fa-solid fa-id-card-clip text-brand-blue"></i> Datos de la Aplicación y Custodia
         </h2>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
             <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
                 <span class="text-slate-400 block font-medium">Fecha de Aplicación:</span>
                 <span class="font-bold text-slate-800 text-sm">{{ ($aplicacion->fecha_hora_aceptacion ?? $aplicacion->created_at)->format('d/m/Y') }}</span>
@@ -118,12 +118,16 @@
                 <span class="font-bold text-slate-800 text-sm">{{ $aplicacion->edad }} años</span>
             </div>
             <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <span class="text-slate-400 block font-medium">Sede:</span>
+                <span class="font-bold text-slate-800 truncate block">{{ $aplicacion->sede?->nombre ?? 'Principal' }}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
                 <span class="text-slate-400 block font-medium">Cargo al que aspira:</span>
                 <span class="font-bold text-slate-800 truncate block">{{ $aplicacion->cargo_aspira }}</span>
             </div>
-            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span class="text-slate-400 block font-medium">Consentimiento Vinculado:</span>
-                <span class="font-bold text-emerald-700">GH-FO-025 Ver 01 (Firmado)</span>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 col-span-2 sm:col-span-1">
+                <span class="text-slate-400 block font-medium">Consentimiento:</span>
+                <span class="font-bold text-emerald-700">GH-FO-025 (Firmado)</span>
             </div>
         </div>
     </div>

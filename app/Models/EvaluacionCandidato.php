@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -18,6 +19,7 @@ class EvaluacionCandidato extends Model
         'fecha_nacimiento',
         'edad',
         'cargo_aspira',
+        'sede_id',
         'firma_digital',
         'acepta_terminos',
         'fecha_hora_aceptacion',
@@ -233,6 +235,11 @@ class EvaluacionCandidato extends Model
         }
 
         return $info;
+    }
+
+    public function sede(): BelongsTo
+    {
+        return $this->belongsTo(Sede::class, 'sede_id');
     }
 
     public function respuestasPaca(): HasMany

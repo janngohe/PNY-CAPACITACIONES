@@ -5,7 +5,7 @@
 @section('page_subtitle', $aplicacion->nombre_completo)
 
 @section('content')
-<div class="space-y-6 w-full max-w-none pb-16">
+<div class="space-y-6 w-full max-w-7xl mx-auto pb-16">
 
     @php
         $urlPdfConsentimientoInline = route('psicologia.consentimientos.pdf', $aplicacion) . '?inline=1';
@@ -47,51 +47,63 @@
         ]);
     @endphp
 
-    <!-- Encabezado con Botones de Acción y Exportación PDF Automática -->
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-6 shadow-2xs">
-        <div>
-            <h1 class="text-xl md:text-2xl font-extrabold text-slate-900">
-                Resultados Cuestionario VALANTI
-            </h1>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">
-                Evaluado: <strong class="text-slate-800">{{ $aplicacion->nombre_completo }}</strong> (CC {{ $aplicacion->identificacion }}) · Baremos Nacionales 1997 (n=730)
-            </p>
-        </div>
+    <!-- Encabezado con Botones de Acción (En móvil: opciones en columna; en PC: diseño horizontal ajustado) -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div class="space-y-2 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="rounded-lg bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200">
+                        <i class="fa-solid fa-circle-check"></i> Prueba Calificada
+                    </span>
+                    <span class="text-xs text-slate-400 font-medium">Sesión #{{ $aplicacion->id }} ({{ $aplicacion->codigo_sesion }})</span>
+                </div>
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                    Resultados Cuestionario VALANTI
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-600 font-medium flex items-center gap-1.5 flex-wrap pt-0.5">
+                    <span class="text-slate-400 font-normal">Evaluado:</span>
+                    <strong class="text-slate-900 font-bold">{{ $aplicacion->nombre_completo }}</strong>
+                    <span class="text-slate-400 font-normal">&bull;</span>
+                    <span class="text-slate-500 font-mono text-xs">C.C. {{ $aplicacion->identificacion }}</span>
+                </p>
+            </div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-2 w-full lg:w-auto shrink-0 print:hidden">
-            <!-- Exportar PDF del Gráfico y Reporte VALANTI -->
-            <a href="{{ $urlPdfValantiDescarga }}"
-               class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white transition-all shadow-2xs">
-                <i class="fa-solid fa-file-arrow-down text-xs"></i>
-                <span>Exportar</span>
-            </a>
-
-            <button type="button"
-               onclick="abrirModalPdf('{{ $urlPdfValantiInline }}', '{{ $urlPdfValantiDescarga }}', 'Cuestionario VALANTI · {{ addslashes($aplicacion->nombre_completo) }}', 'Reporte Cuestionario VALANTI')"
-               class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 transition-colors shadow-2xs cursor-pointer">
-                <i class="fa-solid fa-eye text-xs text-brand-blue"></i>
-                <span>Ver</span>
-            </button>
-
-            @if($aplicacion->pacaFinalizada())
-                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $aplicacion) : route('psicologia.paca.resultado', $aplicacion) }}"
-                   class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 text-xs font-bold text-indigo-700 transition-colors shadow-2xs">
-                    <i class="fa-solid fa-chart-simple text-xs"></i>
-                    <span>Prueba 2 (PAC-A)</span>
+            <!-- Botones de Acción: En móvil en columna (flex-col w-full), en PC en fila adaptada (sm:flex-row sm:w-auto sm:flex-wrap) -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-2 w-full lg:w-auto print:hidden">
+                <!-- Exportar PDF del Gráfico y Reporte VALANTI -->
+                <a href="{{ $urlPdfValantiDescarga }}"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white transition-all shadow-2xs">
+                    <i class="fa-solid fa-file-arrow-down text-xs"></i>
+                    <span>Exportar</span>
                 </a>
-            @endif
 
-            <button type="button"
-               onclick="abrirModalPdf('{{ $urlPdfConsentimientoInline }}', '{{ $urlPdfConsentimientoDescarga }}', 'Consentimiento Informado · {{ addslashes($aplicacion->nombre_completo) }}', 'Formato Oficial GH-FO-025')"
-               class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 text-xs font-bold text-rose-700 transition-colors shadow-2xs cursor-pointer">
-                <i class="fa-solid fa-file-pdf text-xs text-rose-600"></i>
-                <span>Consentimiento</span>
-            </button>
+                <button type="button"
+                   onclick="abrirModalPdf('{{ $urlPdfValantiInline }}', '{{ $urlPdfValantiDescarga }}', 'Cuestionario VALANTI · {{ addslashes($aplicacion->nombre_completo) }}', 'Reporte Cuestionario VALANTI')"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 transition-colors shadow-2xs cursor-pointer">
+                    <i class="fa-solid fa-eye text-xs text-brand-blue"></i>
+                    <span>Ver</span>
+                </button>
 
-            <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-2xs transition-all">
-                <i class="fa-solid fa-arrow-left text-xs"></i>
-                <span>Historial</span>
-            </a>
+                @if($aplicacion->pacaFinalizada())
+                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $aplicacion) : route('psicologia.paca.resultado', $aplicacion) }}"
+                       class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 text-xs font-bold text-indigo-700 transition-colors shadow-2xs">
+                        <i class="fa-solid fa-chart-simple text-xs"></i>
+                        <span>Prueba 2 (PAC-A)</span>
+                    </a>
+                @endif
+
+                <button type="button"
+                   onclick="abrirModalPdf('{{ $urlPdfConsentimientoInline }}', '{{ $urlPdfConsentimientoDescarga }}', 'Consentimiento Informado · {{ addslashes($aplicacion->nombre_completo) }}', 'Formato Oficial GH-FO-025')"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 text-xs font-bold text-rose-700 transition-colors shadow-2xs cursor-pointer">
+                    <i class="fa-solid fa-file-pdf text-xs text-rose-600"></i>
+                    <span>Consentimiento</span>
+                </button>
+
+                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-2xs transition-all">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                    <span>Volver al Historial</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -125,7 +137,7 @@
             <i class="fa-solid fa-id-card-clip text-brand-blue"></i> Datos de la Aplicación y Custodia
         </h2>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 text-xs">
             <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span class="text-slate-400 block font-medium">Fecha de Aplicación:</span>
                 <span class="font-bold text-slate-800 text-sm mt-0.5 block">{{ ($aplicacion->fecha_hora_aceptacion ?? $aplicacion->created_at)->format('d/m/Y') }}</span>
@@ -135,10 +147,14 @@
                 <span class="font-bold text-slate-800 text-sm mt-0.5 block">{{ $aplicacion->edad }} años</span>
             </div>
             <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span class="text-slate-400 block font-medium">Sede:</span>
+                <span class="font-bold text-slate-800 text-sm mt-0.5 truncate block">{{ $aplicacion->sede?->nombre ?? 'Principal' }}</span>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span class="text-slate-400 block font-medium">Cargo al que aspira:</span>
                 <span class="font-bold text-slate-800 text-sm mt-0.5 truncate block">{{ $aplicacion->cargo_aspira }}</span>
             </div>
-            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 col-span-1 sm:col-span-2 lg:col-span-1">
                 <span class="text-slate-400 block font-medium">Valor Predominante:</span>
                 @php
                     $pred = $resultado->dimensionPredominante();
@@ -260,7 +276,7 @@
         <div class="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
                 <h2 class="text-base font-extrabold text-slate-900">
-                    Tabla Estadística y Comparación con Norma Nacional (Baremos 1997, n=730)
+                    Tabla Estadística de Puntuaciones y Valores
                 </h2>
                 <p class="text-xs text-slate-500 mt-0.5">
                     Fórmula: <code class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">PE = round(50 + 10 * ((PD - Media) / D.S.))</code> · <code class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">Distancia = PE - Perfil_Ideal</code>

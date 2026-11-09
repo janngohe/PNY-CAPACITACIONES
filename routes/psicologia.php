@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Rutas públicas de evaluación para la persona que escanea el QR desde su celular (sin auth)
+Route::get('/evaluacion-psicologica/verificar-cedula/{identificacion}', [DashboardController::class, 'verificarCedulaPublica'])
+    ->name('psicologia.evaluacion.verificar_cedula');
+
 Route::get('/evaluacion-psicologica/{codigo?}', [DashboardController::class, 'evaluacionPublica'])
     ->name('psicologia.evaluacion.publica');
 
@@ -57,6 +60,7 @@ Route::prefix('psicologia')->name('psicologia.')->middleware(['auth', 'rol:PSICO
     // 2. Reportes y Descarga de Excel Anual
     Route::get('/reportes', [DashboardController::class, 'reportes'])->name('reportes');
     Route::get('/reportes/excel', [DashboardController::class, 'descargarReporteExcel'])->name('reportes.excel');
+    Route::get('/reportes/{evaluacion}/exportar-resultados', [DashboardController::class, 'exportarPaqueteResultados'])->name('reportes.exportar_resultados');
 
     // 3. Historial de Pruebas y Resultados (PAC-A + VALANTI) + Custodia GH-FO-025 + PDF Gráfico VALANTI
     Route::get('/historial-pruebas', [DashboardController::class, 'historialPruebas'])->name('pruebas.historial');
