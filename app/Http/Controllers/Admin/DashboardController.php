@@ -7,6 +7,7 @@ use App\Models\Area;
 use App\Models\Capacitacion;
 use App\Models\Certificado;
 use App\Models\Evaluacion;
+use App\Models\EvaluacionCandidato;
 use App\Models\IntentoEvaluacion;
 use App\Models\Sede;
 use App\Models\Usuario;
@@ -338,12 +339,22 @@ class DashboardController extends Controller
             'proximas' => $proximasCaps->values(),
         ];
 
+        // Métricas de Psicología Organizacional y Selección
+        $kpisPsicologia = [
+            'total_evaluaciones' => EvaluacionCandidato::count(),
+            'completadas' => EvaluacionCandidato::where('estado', 'COMPLETADA')->count(),
+            'certificados_emitidos' => EvaluacionCandidato::whereNotNull('certificado_emitido_at')->count(),
+            'en_progreso' => EvaluacionCandidato::where('estado', 'EN_PROGRESO')->count(),
+            'anio_actual' => (int) now()->format('Y'),
+        ];
+
         $usuario = auth()->user();
 
         return view('admin.dashboard', compact(
             'usuario',
             'usuarios',
             'kpis',
+            'kpisPsicologia',
             'porSede',
             'porArea',
             'porCapacitacion',

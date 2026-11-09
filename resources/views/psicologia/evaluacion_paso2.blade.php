@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Paso 2: Prueba 1 (Cuestionario PAC-A) · C.I. Piscícola New York</title>
+    <title>Paso 2: Prueba 1 (Cuestionario VALANTI) · C.I. Piscícola New York</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
@@ -42,7 +42,7 @@
                 <span class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-brand-light text-brand-blue font-heading font-bold text-[11px] sm:text-xs border border-brand-blue/20 shadow-2xs">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span class="sm:hidden font-extrabold">Paso 2/3</span>
-                    <span class="hidden sm:inline">Paso 2 de 3 · Prueba 1 (PAC-A)</span>
+                    <span class="hidden sm:inline">Paso 2 de 3 · Prueba 1 (VALANTI)</span>
                 </span>
                 <span class="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-mono text-[11px] border border-slate-200" title="Sesión activa">
                     <i class="fa-solid fa-qrcode text-[10px] text-slate-400"></i>
@@ -72,25 +72,25 @@
                     </span>
                 </div>
 
-                <!-- Paso 2: 1ª Prueba PAC-A (Activo) -->
+                <!-- Paso 2: 1ª Prueba VALANTI (Activo) -->
                 <div class="relative z-10 flex flex-col items-center">
                     <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-brand-blue text-white flex items-center justify-center text-[11px] sm:text-xs font-bold shadow-xs ring-4 ring-brand-light">
                         2
                     </div>
                     <span class="text-[10px] sm:text-[11px] font-bold text-brand-blue mt-1 sm:mt-1.5">
-                        <span class="sm:hidden">2. PAC-A</span>
-                        <span class="hidden sm:inline">2. Prueba 1 (PAC-A)</span>
+                        <span class="sm:hidden">2. VALANTI</span>
+                        <span class="hidden sm:inline">2. Prueba 1 (VALANTI)</span>
                     </span>
                 </div>
 
-                <!-- Paso 3: 2ª Prueba VALANTI (Pendiente) -->
+                <!-- Paso 3: 2ª Prueba PAC-A (Pendiente) -->
                 <div class="relative z-10 flex flex-col items-center opacity-60">
                     <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-slate-100 text-slate-500 border border-slate-300 flex items-center justify-center text-[11px] sm:text-xs font-bold">
                         3
                     </div>
                     <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 mt-1 sm:mt-1.5">
-                        <span class="sm:hidden">3. VALANTI</span>
-                        <span class="hidden sm:inline">3. Prueba 2 (VALANTI)</span>
+                        <span class="sm:hidden">3. PAC-A</span>
+                        <span class="hidden sm:inline">3. Prueba 2 (PAC-A)</span>
                     </span>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                 <div class="flex items-center justify-between text-[11px] font-bold text-slate-600 mb-1.5">
                     <span class="text-brand-blue flex items-center gap-1.5">
                         <i class="fa-solid fa-bars-progress text-[10px]"></i>
-                        <span>Estado: Prueba 1 (PAC-A)</span>
+                        <span>Estado: Prueba 1 (VALANTI)</span>
                     </span>
                     <span class="text-slate-400 font-mono">Paso 2 de 3 (66%)</span>
                 </div>
@@ -122,7 +122,7 @@
         </div>
 
         @if(session('error_validacion'))
-            <div id="alertaServidorPaca" class="rounded-2xl border border-rose-300 bg-rose-50 p-4 text-xs font-semibold text-rose-800 flex items-center justify-between gap-2.5 shadow-2xs transition-all duration-500">
+            <div id="alertaServidorValanti" class="rounded-2xl border border-rose-300 bg-rose-50 p-4 text-xs font-semibold text-rose-800 flex items-center justify-between gap-2.5 shadow-2xs transition-all duration-500">
                 <div class="flex items-start gap-2.5">
                     <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm mt-0.5"></i>
                     <div>{{ session('error_validacion') }}</div>
@@ -135,16 +135,17 @@
 
         @php
             $totalRespondidasInicial = count($respuestasGuardadas ?? []);
-            $porcentajeInicial = round(($totalRespondidasInicial / 40) * 100);
+            $porcentajeInicial = round(($totalRespondidasInicial / 30) * 100);
+            $puntosTotalesInicial = $totalRespondidasInicial * 3;
         @endphp
 
-        <!-- Tarjeta de Instrucciones Oficiales -->
+        <!-- Tarjeta de Instrucciones Oficiales VALANTI -->
         <div class="bg-white border border-slate-200 rounded-3xl p-4 sm:p-6 shadow-xs">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 border-b border-slate-100 pb-3">
                 <div>
                     <span class="text-[10px] font-bold uppercase tracking-wider text-brand-blue block">Instrumento Psicotécnico · Primera Prueba</span>
                     <h1 class="text-base sm:text-lg font-extrabold text-slate-900 font-heading">
-                        Cuestionario PAC-A
+                        Cuestionario de Valores y Antivalores (VALANTI)
                     </h1>
                     <p class="text-xs text-slate-500 mt-0.5">
                         Aspirante: <strong class="text-slate-800">{{ $candidato->nombre_completo }}</strong>
@@ -154,9 +155,9 @@
 
                 <!-- Progreso en Vivo -->
                 <div class="bg-blue-50/70 border border-blue-100 rounded-2xl p-2.5 sm:p-3 text-right flex sm:flex-col items-center sm:items-end justify-between sm:justify-center">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Avance Total</span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Avance VALANTI</span>
                     <span class="text-sm sm:text-lg font-black text-brand-blue font-mono" id="txtProgresoHeader">
-                        {{ $porcentajeInicial }}% ({{ $totalRespondidasInicial }}/40)
+                        {{ $porcentajeInicial }}% ({{ $totalRespondidasInicial }}/30 · {{ $puntosTotalesInicial }}/90 pts)
                     </span>
                 </div>
             </div>
@@ -168,90 +169,178 @@
                      style="width: {{ $porcentajeInicial }}%;"></div>
             </div>
 
-            <!-- Instrucciones Claras y Resumen de Opciones -->
-            <div class="p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed space-y-2">
+            <!-- Instrucciones Claras y Ejemplo de Puntuación -->
+            <div class="p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed space-y-2.5">
                 <p class="font-bold text-slate-900 flex items-center gap-1.5">
-                    <i class="fa-solid fa-circle-info text-brand-blue"></i> Instrucciones para responder:
+                    <i class="fa-solid fa-circle-info text-brand-blue"></i> Instrucciones de Diligenciamiento:
                 </p>
                 <p class="text-[11px] sm:text-xs">
-                    A continuación encontrará <strong>40 afirmaciones</strong> sobre situaciones y actitudes cotidianas. Seleccione en cada una la opción que mejor describa su forma habitual de actuar o pensar:
+                    El cuestionario consta de <strong>30 preguntas</strong>, cada una con un par de afirmaciones (<strong>A</strong> y <strong>B</strong>).
+                    En cada fila usted debe distribuir <strong>exactamente 3 puntos</strong> entre las opciones A y B según su preferencia:
                 </p>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 pt-1 font-bold text-[11px]">
-                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center gap-1.5">
-                        <span class="w-5 h-5 rounded-md bg-blue-100 text-brand-blue flex items-center justify-center font-black text-xs">S</span>
-                        <span>Siempre</span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 pt-1 font-mono font-bold text-[11px]">
+                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center justify-between">
+                        <span>Opción 3 - 0</span>
+                        <span class="text-[10px] font-sans font-normal text-slate-500">A todo / B nada</span>
                     </div>
-                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center gap-1.5">
-                        <span class="w-5 h-5 rounded-md bg-cyan-100 text-cyan-800 flex items-center justify-center font-black text-xs">F</span>
-                        <span>Frecuentemente</span>
+                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center justify-between">
+                        <span>Opción 0 - 3</span>
+                        <span class="text-[10px] font-sans font-normal text-slate-500">A nada / B todo</span>
                     </div>
-                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center gap-1.5">
-                        <span class="w-5 h-5 rounded-md bg-amber-100 text-amber-800 flex items-center justify-center font-black text-xs">R</span>
-                        <span>Rara vez</span>
+                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center justify-between">
+                        <span>Opción 2 - 1</span>
+                        <span class="text-[10px] font-sans font-normal text-slate-500">A más / B menos</span>
                     </div>
-                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center gap-1.5">
-                        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center font-black text-xs">N</span>
-                        <span>Nunca</span>
+                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center justify-between">
+                        <span>Opción 1 - 2</span>
+                        <span class="text-[10px] font-sans font-normal text-slate-500">A menos / B más</span>
                     </div>
                 </div>
-                <p class="text-[10px] text-slate-400 italic pt-0.5">
-                    No hay respuestas correctas ni incorrectas. Sea lo más sincero posible.
+                <p class="text-[10px] text-amber-700 font-semibold bg-amber-50 p-2 rounded-xl border border-amber-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>La suma de cada fila siempre debe ser 3 puntos. Al finalizar los 30 ítems habrá distribuido un total exacto de 90 puntos.</span>
                 </p>
             </div>
         </div>
 
-        <!-- Formulario de las 40 Afirmaciones -->
-        <form action="{{ route('psicologia.evaluacion.paca.finalizar', ['codigo' => $codigo, 'evaluacion' => $candidato->id]) }}"
+        <!-- Formulario de las 30 Preguntas VALANTI -->
+        <form action="{{ route('psicologia.evaluacion.valanti.finalizar', ['codigo' => $codigo, 'evaluacion' => $candidato->id]) }}"
               method="POST"
-              id="formPaca"
-              class="space-y-3 sm:space-y-4">
+              id="formValanti"
+              class="space-y-4">
             @csrf
 
             @php
                 $faltantes = session('preguntas_faltantes', []);
             @endphp
 
-            @foreach($afirmaciones as $numero => $texto)
-                @php
-                    $esFaltante = in_array($numero, $faltantes, true);
-                    $seleccionada = old("respuestas.{$numero}", $respuestasGuardadas[$numero] ?? null);
-                @endphp
-
-                <div id="pregunta-box-{{ $numero }}"
-                     class="bg-white border {{ $esFaltante ? 'border-rose-400 ring-2 ring-rose-200' : 'border-slate-200' }} rounded-3xl p-3.5 sm:p-5 shadow-xs transition-all hover:border-slate-300">
-                    
-                    <div class="flex items-start gap-2.5 sm:gap-3 mb-2.5 sm:mb-3">
-                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-xs font-black shrink-0 border border-slate-200">
-                            {{ $numero }}
-                        </span>
-                        <p class="text-xs sm:text-sm font-semibold text-slate-900 leading-snug pt-0.5 sm:pt-1">
-                            {{ $texto }}
+            @foreach($preguntas as $numero => $item)
+                {{-- Encabezado de Sección Parte 1 (Pregunta 1) --}}
+                @if($numero === 1)
+                    <div class="rounded-2xl bg-gradient-to-r from-brand-dark to-brand-blue p-4 sm:p-5 text-white shadow-xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-white/15 font-mono text-xs font-extrabold uppercase tracking-wider">
+                                Parte 1 · Ítems 1 al 9
+                            </span>
+                            <h2 class="font-heading font-extrabold text-sm sm:text-base">
+                                Selección de Valores por Importancia
+                            </h2>
+                        </div>
+                        <p class="text-xs text-blue-100 mt-1.5 leading-relaxed">
+                            Marque <strong>3-0, 0-3, 2-1 o 1-2</strong> según la importancia que cada afirmación tiene en su vida personal (otorgue mayor puntaje a la frase más importante para usted).
                         </p>
                     </div>
+                @endif
 
-                    <!-- 4 Alternativas de Respuesta (2x2 en móvil, 4 columnas en desktop) -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                        @foreach($opciones as $clave => $op)
+                {{-- Encabezado de Sección Parte 2 (Pregunta 10) --}}
+                @if($numero === 10)
+                    <div class="rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 p-4 sm:p-5 text-white shadow-xs mt-6">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-1 rounded-lg bg-amber-400/20 text-amber-300 border border-amber-400/30 font-mono text-xs font-extrabold uppercase tracking-wider">
+                                Parte 2 · Ítems 10 al 30
+                            </span>
+                            <h2 class="font-heading font-extrabold text-sm sm:text-base">
+                                Juicio de Inaceptabilidad (Antivalores)
+                            </h2>
+                        </div>
+                        <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                            En las siguientes preguntas se juzga el nivel de <strong>inaceptabilidad</strong> de una conducta. Otorgue el mayor puntaje a la acción que considere <strong>peor o más condenable</strong>.
+                        </p>
+                    </div>
+                @endif
+
+                @php
+                    $respGuardada = $respuestasGuardadas[$numero] ?? null;
+                    $esFaltante = in_array($numero, $faltantes, true);
+                    $partes = $respGuardada ? explode('-', $respGuardada) : [null, null];
+                    $ptsAActual = $partes[0];
+                    $ptsBActual = $partes[1];
+                @endphp
+
+                <!-- Tarjeta de Pregunta Par (A y B) -->
+                <div id="pregunta-box-{{ $numero }}"
+                     class="bg-white border {{ $esFaltante ? 'border-rose-400 ring-2 ring-rose-200' : 'border-slate-200' }} rounded-3xl p-4 sm:p-5 shadow-xs transition-all duration-200 hover:border-slate-300">
+                    
+                    <!-- Encabezado de la Fila -->
+                    <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center font-bold text-xs shrink-0 font-mono">
+                                #{{ $numero }}
+                            </span>
+                            <span class="text-xs font-bold text-slate-700">
+                                Comparación de Afirmaciones
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span id="badge-suma-{{ $numero }}"
+                                  class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border {{ $respGuardada ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200' }}">
+                                @if($respGuardada)
+                                    A={{ $ptsAActual }} | B={{ $ptsBActual }} (Suma: 3)
+                                @else
+                                    Sin responder
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Enunciados A y B con sus insignias de puntos en vivo -->
+                    <div class="space-y-2 mb-3.5 text-xs sm:text-sm">
+                        <!-- Frase A -->
+                        <div class="p-3 rounded-2xl bg-blue-50/40 border border-blue-100/80 flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-2.5 min-w-0">
+                                <span class="w-6 h-6 rounded-lg bg-brand-blue text-white font-black text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                    A
+                                </span>
+                                <span class="text-slate-800 leading-snug">
+                                    {{ $item['a'] }}
+                                </span>
+                            </div>
+                            <span id="pts-a-{{ $numero }}"
+                                  class="shrink-0 px-2 py-1 rounded-lg font-mono text-xs font-black {{ $respGuardada ? 'bg-brand-blue text-white' : 'bg-slate-200 text-slate-500' }}">
+                                {{ $ptsAActual !== null ? $ptsAActual . ' pts' : '—' }}
+                            </span>
+                        </div>
+
+                        <!-- Frase B -->
+                        <div class="p-3 rounded-2xl bg-sky-50/40 border border-sky-100/80 flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-2.5 min-w-0">
+                                <span class="w-6 h-6 rounded-lg bg-sky-700 text-white font-black text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                    B
+                                </span>
+                                <span class="text-slate-800 leading-snug">
+                                    {{ $item['b'] }}
+                                </span>
+                            </div>
+                            <span id="pts-b-{{ $numero }}"
+                                  class="shrink-0 px-2 py-1 rounded-lg font-mono text-xs font-black {{ $respGuardada ? 'bg-sky-700 text-white' : 'bg-slate-200 text-slate-500' }}">
+                                {{ $ptsBActual !== null ? $ptsBActual . ' pts' : '—' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Selector Táctil de las 4 Combinaciones Válidas (Suma 3) -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        @foreach($combinaciones as $clavePar => $infoPar)
                             @php
-                                $checked = ($seleccionada === $clave);
+                                $checked = ($respGuardada === $clavePar);
                             @endphp
-                            <label class="cursor-pointer select-none block">
+                            <label class="relative cursor-pointer">
                                 <input type="radio"
                                        name="respuestas[{{ $numero }}]"
-                                       value="{{ $clave }}"
+                                       value="{{ $clavePar }}"
                                        data-pregunta="{{ $numero }}"
+                                       data-a="{{ $infoPar['a'] }}"
+                                       data-b="{{ $infoPar['b'] }}"
                                        {{ $checked ? 'checked' : '' }}
-                                       class="peer sr-only radio-paca"
-                                       onchange="alCambiarOpcion({{ $numero }})">
-                                <div class="flex items-center gap-2 p-2.5 sm:p-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 transition-all duration-150 active:scale-95 hover:bg-slate-100 hover:border-slate-300
+                                       class="peer sr-only radio-valanti"
+                                       onchange="alCambiarCombinacion({{ $numero }}, {{ $infoPar['a'] }}, {{ $infoPar['b'] }})">
+                                <div class="flex flex-col items-center justify-center p-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 transition-all duration-150 active:scale-95 hover:bg-slate-100 hover:border-slate-300
                                             peer-checked:bg-brand-blue peer-checked:text-white peer-checked:border-brand-blue peer-checked:shadow-sm">
-                                    <span class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black shrink-0 transition-colors
-                                                 bg-white text-slate-800 border border-slate-200
-                                                 peer-checked:bg-white/20 peer-checked:text-white peer-checked:border-white/30">
-                                        {{ $clave }}
+                                    <span class="font-mono text-sm font-black tracking-tight">
+                                        {{ $infoPar['etiqueta'] }}
                                     </span>
-                                    <span class="text-xs font-bold leading-tight truncate">
-                                        {{ $op['nombre'] }}
+                                    <span class="text-[10px] font-semibold opacity-80 mt-0.5">
+                                        A: {{ $infoPar['a'] }} · B: {{ $infoPar['b'] }}
                                     </span>
                                 </div>
                             </label>
@@ -260,18 +349,18 @@
                 </div>
             @endforeach
 
-            <!-- Barra Inferior Fija de Control y Avance en Vivo (Ultra responsiva en móvil) -->
+            <!-- Barra Inferior Fija de Control y Avance en Vivo -->
             <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg px-3 py-2.5 sm:py-3.5">
                 <div class="max-w-3xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
                     
-                    <!-- Indicador de Avance y Estado -->
+                    <!-- Indicador de Avance y Suma de 90 Puntos -->
                     <div class="flex items-center gap-2 min-w-0">
-                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-brand-blue/10 text-brand-blue flex items-center justify-center text-xs font-black shrink-0 border border-brand-blue/20">
-                            <span id="txtRespondidasNum">{{ $totalRespondidasInicial }}</span>/40
+                        <div class="w-10 h-10 rounded-2xl bg-brand-blue/10 text-brand-blue flex items-center justify-center text-xs font-black shrink-0 border border-brand-blue/20">
+                            <span id="txtRespondidasNum">{{ $totalRespondidasInicial }}</span>/30
                         </div>
                         <div class="min-w-0">
                             <span class="text-xs sm:text-sm font-extrabold text-slate-900 block truncate" id="txtProgresoResumen">
-                                {{ $porcentajeInicial }}% respondido
+                                {{ $puntosTotalesInicial }}/90 pts asignados ({{ $porcentajeInicial }}%)
                             </span>
                             <span class="text-[10px] text-slate-400 flex items-center gap-1 truncate" id="txtEstadoGuardado">
                                 <i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i>
@@ -281,7 +370,7 @@
                         </div>
                     </div>
 
-                    <!-- Botones de Acción Móviles -->
+                    <!-- Botones de Acción -->
                     <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                         <button type="button"
                                 id="btnSaltarSiguiente"
@@ -296,8 +385,8 @@
                         <button type="submit"
                                 id="btnFinalizar"
                                 class="py-2.5 px-3.5 sm:px-5 rounded-2xl bg-brand-blue hover:bg-brand-dark active:scale-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
-                            <span>Finalizar</span>
-                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                            <span>Continuar a PAC-A</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
                     </div>
 
@@ -308,15 +397,33 @@
     </main>
 
     <script>
-        const URL_BORRADOR = "{{ route('psicologia.evaluacion.paca.borrador', ['codigo' => $codigo, 'evaluacion' => $candidato->id]) }}";
+        const URL_BORRADOR = "{{ route('psicologia.evaluacion.valanti.borrador', ['codigo' => $codigo, 'evaluacion' => $candidato->id]) }}";
         const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         let debounceTimer = null;
 
-        function alCambiarOpcion(numeroPregunta) {
+        function alCambiarCombinacion(numeroPregunta, ptsA, ptsB) {
             const box = document.getElementById(`pregunta-box-${numeroPregunta}`);
             if (box) {
                 box.classList.remove('border-rose-400', 'ring-2', 'ring-rose-200');
+            }
+
+            // Actualizar etiquetas visuales de puntos en A y B
+            const badgeSuma = document.getElementById(`badge-suma-${numeroPregunta}`);
+            const elPtsA = document.getElementById(`pts-a-${numeroPregunta}`);
+            const elPtsB = document.getElementById(`pts-b-${numeroPregunta}`);
+
+            if (badgeSuma) {
+                badgeSuma.textContent = `A=${ptsA} | B=${ptsB} (Suma: 3)`;
+                badgeSuma.className = 'text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200';
+            }
+            if (elPtsA) {
+                elPtsA.textContent = `${ptsA} pts`;
+                elPtsA.className = 'shrink-0 px-2 py-1 rounded-lg font-mono text-xs font-black bg-brand-blue text-white';
+            }
+            if (elPtsB) {
+                elPtsB.textContent = `${ptsB} pts`;
+                elPtsB.className = 'shrink-0 px-2 py-1 rounded-lg font-mono text-xs font-black bg-sky-700 text-white';
             }
 
             actualizarProgresoEnVivo();
@@ -333,8 +440,9 @@
         }
 
         function actualizarProgresoEnVivo() {
-            const respondidas = document.querySelectorAll('#formPaca input[type="radio"]:checked').length;
-            const porcentaje = Math.round((respondidas / 40) * 100);
+            const respondidas = document.querySelectorAll('#formValanti input[type="radio"]:checked').length;
+            const puntosTotales = respondidas * 3;
+            const porcentaje = Math.round((respondidas / 30) * 100);
 
             const txtHeader = document.getElementById('txtProgresoHeader');
             const txtNum = document.getElementById('txtRespondidasNum');
@@ -342,20 +450,20 @@
             const barra = document.getElementById('barraProgreso');
             const btnFinalizar = document.getElementById('btnFinalizar');
 
-            if (txtHeader) txtHeader.textContent = `${porcentaje}% (${respondidas}/40)`;
+            if (txtHeader) txtHeader.textContent = `${porcentaje}% (${respondidas}/30 · ${puntosTotales}/90 pts)`;
             if (txtNum) txtNum.textContent = respondidas;
-            if (txtResumen) txtResumen.textContent = `${porcentaje}% respondido`;
+            if (txtResumen) txtResumen.textContent = `${puntosTotales}/90 pts asignados (${porcentaje}%)`;
             if (barra) barra.style.width = `${porcentaje}%`;
 
             if (btnFinalizar) {
-                if (respondidas === 40) {
+                if (respondidas === 30) {
                     btnFinalizar.classList.remove('bg-brand-blue');
                     btnFinalizar.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-                    btnFinalizar.innerHTML = '<span>¡Enviar Todo!</span> <i class="fa-solid fa-check text-xs"></i>';
+                    btnFinalizar.innerHTML = '<span>¡Avanzar a PAC-A!</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
                 } else {
                     btnFinalizar.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
                     btnFinalizar.classList.add('bg-brand-blue');
-                    btnFinalizar.innerHTML = '<span>Finalizar</span> <i class="fa-solid fa-paper-plane text-xs"></i>';
+                    btnFinalizar.innerHTML = '<span>Continuar a PAC-A</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
                 }
             }
         }
@@ -389,7 +497,7 @@
         }
 
         function saltarSiguienteIncompleta() {
-            for (let i = 1; i <= 40; i++) {
+            for (let i = 1; i <= 30; i++) {
                 const checked = document.querySelector(`input[name="respuestas[${i}]"]:checked`);
                 if (!checked) {
                     const box = document.getElementById(`pregunta-box-${i}`);
@@ -403,11 +511,11 @@
                     return;
                 }
             }
-            mostrarToast('¡Excelente! Has respondido las 40 preguntas. Puedes pulsar en "¡Enviar Todo!"', 'exito');
+            mostrarToast('¡Excelente! Has completado los 30 pares (90 puntos asignados). Puedes avanzar a la Prueba 2 (PAC-A).', 'exito');
         }
 
         function recolectarRespuestas() {
-            const formData = new FormData(document.getElementById('formPaca'));
+            const formData = new FormData(document.getElementById('formValanti'));
             const respuestas = {};
             for (let [key, val] of formData.entries()) {
                 if (key.startsWith('respuestas[')) {
@@ -438,7 +546,7 @@
                 if (resp.ok) {
                     const data = await resp.json();
                     if (txtEstado) {
-                        txtEstado.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i> <span class="hidden sm:inline">Avance auto-guardado (${data.respondidas}/40)</span><span class="sm:hidden">Guardado (${data.respondidas}/40)</span>`;
+                        txtEstado.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i> <span class="hidden sm:inline">Avance auto-guardado (${data.respondidas}/30)</span><span class="sm:hidden">Guardado (${data.respondidas}/30)</span>`;
                     }
                 } else {
                     if (txtEstado) {
@@ -452,18 +560,18 @@
             }
         }
 
-        document.getElementById('formPaca').addEventListener('submit', (e) => {
-            const respondidas = document.querySelectorAll('#formPaca input[type="radio"]:checked').length;
-            if (respondidas < 40) {
+        document.getElementById('formValanti').addEventListener('submit', (e) => {
+            const respondidas = document.querySelectorAll('#formValanti input[type="radio"]:checked').length;
+            if (respondidas < 30) {
                 e.preventDefault();
-                mostrarToast(`Aún te faltan ${40 - respondidas} preguntas por responder para finalizar la Prueba 1.`, 'error');
+                mostrarToast(`Aún te faltan ${30 - respondidas} preguntas por responder (debes completar los 90 puntos).`, 'error');
                 saltarSiguienteIncompleta();
                 return false;
             }
         });
 
         // Auto-ocultar alerta del servidor si existe
-        const alertaServ = document.getElementById('alertaServidorPaca');
+        const alertaServ = document.getElementById('alertaServidorValanti');
         if (alertaServ) {
             setTimeout(() => {
                 alertaServ.style.opacity = '0';

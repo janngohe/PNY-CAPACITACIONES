@@ -115,4 +115,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
     Route::get('/inducciones/sesiones/{sesion}/participantes-json', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'participantesJson'])->name('inducciones.sesiones.participantes_json');
     Route::get('/inducciones/{induccion}/slides-json', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'slidesJson'])->name('inducciones.slides_json');
     Route::get('/inducciones/{induccion}/visor-diapositivas', [\App\Http\Controllers\Admin\InduccionAdminController::class, 'visorDiapositivas'])->name('inducciones.visor_diapositivas');
+
+    // Psicología y Selección (Visualización de información y Reportes dentro del Panel Admin)
+    Route::prefix('psicologia')->name('psicologia.')->group(function () {
+        Route::get('/reportes', [\App\Http\Controllers\Psicologia\DashboardController::class, 'reportes'])->name('reportes');
+        Route::get('/reportes/excel', [\App\Http\Controllers\Psicologia\DashboardController::class, 'descargarReporteExcel'])->name('reportes.excel');
+        Route::get('/historial-pruebas', [\App\Http\Controllers\Psicologia\DashboardController::class, 'historialPruebas'])->name('historial');
+        Route::get('/pruebas/{evaluacion}/resultado', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verResultadoPaca'])->name('paca.resultado');
+        Route::get('/pruebas/{evaluacion}/resultado-valanti', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verResultadoValanti'])->name('valanti.resultado');
+        Route::get('/pruebas/{evaluacion}/valanti-pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verValantiPdf'])->name('valanti.pdf');
+        Route::get('/pruebas/{evaluacion}/consentimiento-pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verConsentimientoPdf'])->name('consentimientos.pdf');
+        Route::get('/certificado-aptitudinal', [\App\Http\Controllers\Psicologia\DashboardController::class, 'certificadoAptitudinal'])->name('certificados');
+        Route::post('/certificado-aptitudinal/{evaluacion}', [\App\Http\Controllers\Psicologia\DashboardController::class, 'guardarCertificadoAptitudinal'])->name('certificados.guardar');
+        Route::get('/certificado-aptitudinal/{evaluacion}/pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verCertificadoAptitudinalPdf'])->name('certificados.pdf');
+    });
 });

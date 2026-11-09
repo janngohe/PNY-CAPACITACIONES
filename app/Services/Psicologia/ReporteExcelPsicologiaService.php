@@ -259,9 +259,10 @@ XML;
             $fecha = ($ev->fecha_hora_aceptacion ?? $ev->created_at)?->format('d/m/Y') ?? '';
             $fechaEsc = $this->xmlEscape($fecha);
 
-            $marcaCumple = $ev->certificado_concepto === 'CUMPLE_SIN_INDICE' ? 'X' : '';
-            $marcaRecomendaciones = $ev->certificado_concepto === 'CUMPLE_CON_RECOMENDACIONES' ? 'X' : '';
-            $marcaNoCumple = $ev->certificado_concepto === 'NO_CUMPLE' ? 'X' : '';
+            $concepto = $ev->conceptoAptitudinalActual();
+            $marcaCumple = $concepto === 'CUMPLE_SIN_INDICE' ? 'X' : '';
+            $marcaRecomendaciones = $concepto === 'CUMPLE_CON_RECOMENDACIONES' ? 'X' : '';
+            $marcaNoCumple = $concepto === 'NO_CUMPLE' ? 'X' : '';
 
             $observacion = $this->xmlEscape($ev->observacionReporteExcel());
 

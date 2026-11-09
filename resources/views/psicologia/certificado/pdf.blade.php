@@ -209,8 +209,8 @@
     @php
         $ciudadFecha = $evaluacion->certificado_ciudad_fecha
             ?: ('Rivera-Huila, ' . ($evaluacion->certificado_emitido_at ?? now())->format('d/m/Y'));
-        $concepto = $evaluacion->certificado_concepto;
-        $observaciones = mb_strtoupper(trim((string) ($evaluacion->certificado_observaciones ?? '')), 'UTF-8');
+        $concepto = $evaluacion->conceptoAptitudinalActual();
+        $observaciones = mb_strtoupper(trim((string) ($evaluacion->certificado_observaciones ?? $evaluacion->generarObservacionSugerida())), 'UTF-8');
     @endphp
 
     <!-- ENCABEZADO INSTITUCIONAL GH-FO-028 -->

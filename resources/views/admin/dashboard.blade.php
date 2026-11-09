@@ -45,6 +45,12 @@
         <a href="{{ route('admin.reportes.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-line hover:border-brand-blue hover:text-brand-blue text-slate-700 font-heading font-bold text-xs transition-colors shadow-2xs">
             <i class="fa-solid fa-file-arrow-down"></i> Generar reportes
         </a>
+        <a href="{{ route('admin.psicologia.reportes') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-heading font-bold text-xs transition-colors shadow-2xs">
+            <i class="fa-solid fa-file-excel text-emerald-600"></i> Reporte Psicotécnico Excel
+        </a>
+        <a href="{{ route('admin.psicologia.historial') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-300 text-purple-800 font-heading font-bold text-xs transition-colors shadow-2xs">
+            <i class="fa-solid fa-list-check text-purple-600"></i> Historial de Pruebas
+        </a>
     </div>
 
     <!-- INDICADORES GENERALES -->
@@ -61,6 +67,76 @@
                 </div>
             </div>
         @endforeach
+    </section>
+
+    <!-- PANEL DE CONTROL: PSICOLOGÍA ORGANIZACIONAL Y SELECCIÓN (AUDITORÍA & REPORTES) -->
+    <section class="bg-gradient-to-br from-white via-slate-50/60 to-purple-50/30 rounded-3xl border border-purple-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-purple-100">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-600 text-white flex items-center justify-center text-xl shrink-0 shadow-xs">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
+                            Auditoría de Selección
+                        </span>
+                        <span class="text-xs text-slate-500 font-semibold">Módulo de Psicología</span>
+                    </div>
+                    <h2 class="text-base sm:text-lg font-heading font-extrabold text-slate-900 leading-tight mt-0.5">
+                        Pruebas Psicotécnicas y Certificados Aptitudinales
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Accesos rápidos ejecutivos -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{{ route('admin.psicologia.reportes.excel', ['anio' => $kpisPsicologia['anio_actual'] ?? date('Y')]) }}"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-bold text-xs shadow-xs transition-colors">
+                    <i class="fa-solid fa-file-excel text-xs"></i>
+                    <span>Descargar Excel {{ $kpisPsicologia['anio_actual'] ?? date('Y') }}</span>
+                </a>
+                <a href="{{ route('admin.psicologia.reportes') }}"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-purple-200 hover:border-purple-400 text-purple-800 font-heading font-bold text-xs shadow-2xs transition-colors">
+                    <i class="fa-solid fa-filter text-xs"></i>
+                    <span>Filtrar y Ver Reporte</span>
+                </a>
+                <a href="{{ route('admin.psicologia.historial') }}"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-line hover:border-brand-blue text-slate-700 hover:text-brand-blue font-heading font-bold text-xs shadow-2xs transition-colors">
+                    <i class="fa-solid fa-list-check text-xs"></i>
+                    <span>Historial de Pruebas</span>
+                </a>
+                <a href="{{ route('admin.psicologia.certificados') }}"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-line hover:border-brand-blue text-slate-700 hover:text-brand-blue font-heading font-bold text-xs shadow-2xs transition-colors">
+                    <i class="fa-solid fa-file-circle-check text-xs"></i>
+                    <span>Certificados (GH-FO-028)</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Métricas Resumen del Módulo -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="bg-white rounded-2xl border border-line/70 p-3.5 shadow-2xs">
+                <span class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Aspirantes Registrados</span>
+                <span class="block font-heading font-extrabold text-2xl text-slate-900 mt-1">{{ $kpisPsicologia['total_evaluaciones'] }}</span>
+                <span class="text-[10px] text-muted">En base de datos</span>
+            </div>
+            <div class="bg-white rounded-2xl border border-line/70 p-3.5 shadow-2xs">
+                <span class="block text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Pruebas Completas</span>
+                <span class="block font-heading font-extrabold text-2xl text-emerald-600 mt-1">{{ $kpisPsicologia['completadas'] }}</span>
+                <span class="text-[10px] text-emerald-700/80">PAC-A + VALANTI</span>
+            </div>
+            <div class="bg-white rounded-2xl border border-line/70 p-3.5 shadow-2xs">
+                <span class="block text-[11px] font-bold text-purple-700 uppercase tracking-wider">Certificados Emitidos</span>
+                <span class="block font-heading font-extrabold text-2xl text-purple-700 mt-1">{{ $kpisPsicologia['certificados_emitidos'] }}</span>
+                <span class="text-[10px] text-purple-700/80">Formato GH-FO-028</span>
+            </div>
+            <div class="bg-white rounded-2xl border border-line/70 p-3.5 shadow-2xs">
+                <span class="block text-[11px] font-bold text-amber-700 uppercase tracking-wider">En Progreso</span>
+                <span class="block font-heading font-extrabold text-2xl text-amber-600 mt-1">{{ $kpisPsicologia['en_progreso'] }}</span>
+                <span class="text-[10px] text-amber-700/80">Sesiones abiertas</span>
+            </div>
+        </div>
     </section>
 
     <!-- ESTADÍSTICAS: ESTADO DE ASIGNACIONES Y AVANCE PROMEDIO POR ÁREA -->

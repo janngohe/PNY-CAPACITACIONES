@@ -80,25 +80,25 @@
                     </span>
                 </div>
 
-                <!-- Paso 2: 1ª Prueba PAC-A (Pendiente) -->
+                <!-- Paso 2: 1ª Prueba VALANTI (Pendiente) -->
                 <div class="relative z-10 flex flex-col items-center opacity-60">
                     <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-slate-100 text-slate-500 border border-slate-300 flex items-center justify-center text-[11px] sm:text-xs font-bold">
                         2
                     </div>
                     <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 mt-1 sm:mt-1.5">
-                        <span class="sm:hidden">2. PAC-A</span>
-                        <span class="hidden sm:inline">2. Prueba 1 (PAC-A)</span>
+                        <span class="sm:hidden">2. VALANTI</span>
+                        <span class="hidden sm:inline">2. Prueba 1 (VALANTI)</span>
                     </span>
                 </div>
 
-                <!-- Paso 3: 2ª Prueba VALANTI (Pendiente) -->
+                <!-- Paso 3: 2ª Prueba PAC-A (Pendiente) -->
                 <div class="relative z-10 flex flex-col items-center opacity-60">
                     <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-slate-100 text-slate-500 border border-slate-300 flex items-center justify-center text-[11px] sm:text-xs font-bold">
                         3
                     </div>
                     <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 mt-1 sm:mt-1.5">
-                        <span class="sm:hidden">3. VALANTI</span>
-                        <span class="hidden sm:inline">3. Prueba 2 (VALANTI)</span>
+                        <span class="sm:hidden">3. PAC-A</span>
+                        <span class="hidden sm:inline">3. Prueba 2 (PAC-A)</span>
                     </span>
                 </div>
             </div>
@@ -418,7 +418,7 @@
                     <i class="fa-solid fa-arrow-right"></i>
                 </button>
                 <p class="text-[11px] text-muted text-center mt-2.5">
-                    Al presionar "Aceptar y continuar", tu autorización quedará formalmente registrada y avanzarás al Paso 2.
+                    Al presionar "Aceptar y continuar", tu autorización quedará formalmente registrada y avanzarás a la Prueba 1 (VALANTI).
                 </p>
             </div>
 

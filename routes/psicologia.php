@@ -19,32 +19,32 @@ Route::post('/evaluacion-psicologica/{codigo?}/retomar', [DashboardController::c
 Route::post('/evaluacion-psicologica/{codigo?}/consentimiento', [DashboardController::class, 'guardarConsentimiento'])
     ->name('psicologia.evaluacion.guardar_consentimiento');
 
-// Paso 2: Primera Prueba (PAC-A)
+// Paso 2: Primera Prueba (VALANTI)
 Route::get('/evaluacion-psicologica/{codigo}/paso-2/{evaluacion?}', [DashboardController::class, 'evaluacionPaso2'])
     ->name('psicologia.evaluacion.paso2');
 
-Route::post('/evaluacion-psicologica/{codigo}/paso-2/{evaluacion}/borrador', [DashboardController::class, 'guardarBorradorPaca'])
-    ->name('psicologia.evaluacion.paca.borrador');
+Route::post('/evaluacion-psicologica/{codigo}/paso-2/{evaluacion}/borrador', [DashboardController::class, 'guardarBorradorValanti'])
+    ->name('psicologia.evaluacion.valanti.borrador');
 
-Route::post('/evaluacion-psicologica/{codigo}/paso-2/{evaluacion}/finalizar', [DashboardController::class, 'finalizarPaca'])
-    ->name('psicologia.evaluacion.paca.finalizar');
+Route::post('/evaluacion-psicologica/{codigo}/paso-2/{evaluacion}/finalizar', [DashboardController::class, 'finalizarValanti'])
+    ->name('psicologia.evaluacion.valanti.finalizar');
 
-// Paso 3: Segunda Prueba (VALANTI)
+// Paso 3: Segunda Prueba (PAC-A)
 Route::get('/evaluacion-psicologica/{codigo}/paso-3/{evaluacion?}', [DashboardController::class, 'evaluacionPaso3'])
     ->name('psicologia.evaluacion.paso3');
 
-Route::post('/evaluacion-psicologica/{codigo}/paso-3/{evaluacion}/borrador', [DashboardController::class, 'guardarBorradorValanti'])
-    ->name('psicologia.evaluacion.valanti.borrador');
+Route::post('/evaluacion-psicologica/{codigo}/paso-3/{evaluacion}/borrador', [DashboardController::class, 'guardarBorradorPaca'])
+    ->name('psicologia.evaluacion.paca.borrador');
 
-Route::post('/evaluacion-psicologica/{codigo}/paso-3/{evaluacion}/finalizar', [DashboardController::class, 'finalizarValanti'])
-    ->name('psicologia.evaluacion.valanti.finalizar');
+Route::post('/evaluacion-psicologica/{codigo}/paso-3/{evaluacion}/finalizar', [DashboardController::class, 'finalizarPaca'])
+    ->name('psicologia.evaluacion.paca.finalizar');
 
 // Pantalla Final de Evaluación Completada
 Route::get('/evaluacion-psicologica/{codigo}/completada/{evaluacion?}', [DashboardController::class, 'evaluacionCompletada'])
     ->name('psicologia.evaluacion.completada');
 
-// Rutas protegidas para el profesional de Psicología
-Route::prefix('psicologia')->name('psicologia.')->middleware(['auth', 'rol:PSICOLOGIA'])->group(function () {
+// Rutas protegidas para el profesional de Psicología y Administradores del Sistema
+Route::prefix('psicologia')->name('psicologia.')->middleware(['auth', 'rol:PSICOLOGIA,ADMINISTRADOR'])->group(function () {
     // Selección de portal
     Route::get('/seleccionar-portal', [DashboardController::class, 'portalSeleccion'])->name('portal_seleccion');
 

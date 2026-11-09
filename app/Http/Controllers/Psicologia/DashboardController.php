@@ -141,14 +141,14 @@ class DashboardController extends Controller
 
         session(['evaluacion_candidato_id' => $evaluacion->id]);
 
-        if (!$evaluacion->pacaFinalizada()) {
+        if (!$evaluacion->valantiFinalizada()) {
             return redirect()->route('psicologia.evaluacion.paso2', [
                 'codigo' => $evaluacion->codigo_sesion ?: $codigo,
                 'evaluacion' => $evaluacion->id,
             ]);
         }
 
-        if (!$evaluacion->valantiFinalizada()) {
+        if (!$evaluacion->pacaFinalizada()) {
             return redirect()->route('psicologia.evaluacion.paso3', [
                 'codigo' => $evaluacion->codigo_sesion ?: $codigo,
                 'evaluacion' => $evaluacion->id,
@@ -162,7 +162,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Procesa y almacena la Autorización firmada por el candidato (Paso 1) y redirige a la Prueba 1 (PAC-A).
+     * Procesa y almacena la Autorización firmada por el candidato (Paso 1) y redirige a la Prueba 1 (VALANTI).
      * Si el candidato ya tenía una prueba en progreso sin finalizar con esa misma cédula, la retoma automáticamente.
      */
     public function guardarConsentimiento(Request $request, ?string $codigo = null)
@@ -193,19 +193,28 @@ class DashboardController extends Controller
         // Si ya tiene una evaluación en progreso (incompleta) con esta cédula, retomarla sin duplicar
         $enCurso = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
             ->where('identificacion', trim($validados['identificacion']))
-            ->whereDoesntHave('resultadoValanti')
+            ->where(function ($q) {
+                $q->whereDoesntHave('resultadoValanti')
+                  ->orWhereDoesntHave('resultadoPaca');
+            })
             ->latest('id')
             ->first();
 
         if ($enCurso) {
             session(['evaluacion_candidato_id' => $enCurso->id]);
-            if (!$enCurso->pacaFinalizada()) {
+            if (!$enCurso->valantiFinalizada()) {
                 return redirect()->route('psicologia.evaluacion.paso2', [
                     'codigo' => $enCurso->codigo_sesion ?: $codigo,
                     'evaluacion' => $enCurso->id,
                 ]);
             }
-            return redirect()->route('psicologia.evaluacion.paso3', [
+            if (!$enCurso->pacaFinalizada()) {
+                return redirect()->route('psicologia.evaluacion.paso3', [
+                    'codigo' => $enCurso->codigo_sesion ?: $codigo,
+                    'evaluacion' => $enCurso->id,
+                ]);
+            }
+            return redirect()->route('psicologia.evaluacion.completada', [
                 'codigo' => $enCurso->codigo_sesion ?: $codigo,
                 'evaluacion' => $enCurso->id,
             ]);
@@ -251,7 +260,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Paso 2: Primera Prueba Psicotécnica (Cuestionario PAC-A de 40 preguntas).
+     * Paso 2: Primera Prueba Psicotécnica (Cuestionario VALANTI de 30 pares).
      */
     public function evaluacionPaso2(Request $request, string $codigo, ?EvaluacionCandidato $evaluacion = null)
     {
@@ -269,154 +278,8 @@ class DashboardController extends Controller
             return redirect()->route('psicologia.evaluacion.publica', ['codigo' => $codigo]);
         }
 
-        if ($candidato->pacaFinalizada()) {
-            return redirect()->route('psicologia.evaluacion.paso3', [
-                'codigo' => $codigo,
-                'evaluacion' => $candidato->id,
-            ]);
-        }
-
-        $afirmaciones = PacaPreguntas::AFIRMACIONES;
-        $opciones = PacaPreguntas::OPCIONES;
-        $respuestasGuardadas = $candidato->respuestasPaca()
-            ->pluck('opcion_seleccionada', 'numero_pregunta')
-            ->toArray();
-
-        return view('psicologia.evaluacion_paso2', compact(
-            'codigo',
-            'candidato',
-            'afirmaciones',
-            'opciones',
-            'respuestasGuardadas'
-        ));
-    }
-
-    /**
-     * Auto-guarda el borrador de respuestas de PAC-A en tiempo real vía AJAX.
-     */
-    public function guardarBorradorPaca(Request $request, string $codigo, EvaluacionCandidato $evaluacion)
-    {
-        if ($evaluacion->pacaFinalizada()) {
-            return response()->json(['error' => 'La prueba ya ha sido finalizada.'], 403);
-        }
-
-        $respuestasInput = (array) $request->input('respuestas', []);
-
-        DB::transaction(function () use ($evaluacion, $respuestasInput) {
-            foreach ($respuestasInput as $numero => $opcion) {
-                $numero = (int) $numero;
-                $opcion = strtoupper(trim((string) $opcion));
-
-                if ($numero >= 1 && $numero <= 40 && in_array($opcion, ['S', 'F', 'R', 'N'], true)) {
-                    RespuestaPaca::updateOrCreate(
-                        [
-                            'evaluacion_candidato_id' => $evaluacion->id,
-                            'numero_pregunta' => $numero,
-                        ],
-                        [
-                            'opcion_seleccionada' => $opcion,
-                            'puntaje' => PacaPreguntas::puntajeDeOpcion($opcion),
-                        ]
-                    );
-                }
-            }
-        });
-
-        $totalRespondidas = $evaluacion->respuestasPaca()->count();
-
-        return response()->json([
-            'ok' => true,
-            'respondidas' => $totalRespondidas,
-            'porcentaje' => round(($totalRespondidas / 40) * 100),
-        ]);
-    }
-
-    /**
-     * Valida las 40 respuestas de PAC-A, califica mediante CalificadorPacaService y avanza al Paso 3 (VALANTI).
-     */
-    public function finalizarPaca(
-        Request $request,
-        string $codigo,
-        EvaluacionCandidato $evaluacion,
-        CalificadorPacaService $calificador
-    ) {
-        if ($evaluacion->pacaFinalizada()) {
-            return redirect()->route('psicologia.evaluacion.paso3', [
-                'codigo' => $codigo,
-                'evaluacion' => $evaluacion->id,
-            ]);
-        }
-
-        $respuestasInput = (array) $request->input('respuestas', []);
-
-        foreach ($respuestasInput as $num => $op) {
-            $num = (int) $num;
-            $op = strtoupper(trim((string) $op));
-            if ($num >= 1 && $num <= 40 && in_array($op, ['S', 'F', 'R', 'N'], true)) {
-                RespuestaPaca::updateOrCreate(
-                    [
-                        'evaluacion_candidato_id' => $evaluacion->id,
-                        'numero_pregunta' => $num,
-                    ],
-                    [
-                        'opcion_seleccionada' => $op,
-                        'puntaje' => PacaPreguntas::puntajeDeOpcion($op),
-                    ]
-                );
-            }
-        }
-
-        $respuestasDB = $evaluacion->respuestasPaca()
-            ->pluck('opcion_seleccionada', 'numero_pregunta')
-            ->toArray();
-
-        $faltantes = [];
-        for ($i = 1; $i <= 40; $i++) {
-            if (!isset($respuestasDB[$i]) || !in_array($respuestasDB[$i], ['S', 'F', 'R', 'N'], true)) {
-                $faltantes[] = $i;
-            }
-        }
-
-        if (!empty($faltantes)) {
-            return back()
-                ->withInput()
-                ->with('error_validacion', 'Faltan por responder las siguientes afirmaciones: ' . implode(', ', $faltantes))
-                ->with('preguntas_faltantes', $faltantes);
-        }
-
-        DB::transaction(function () use ($evaluacion, $calificador) {
-            $calificador->calificarYAplicar($evaluacion);
-            $evaluacion->update([
-                'paso_actual' => 3,
-            ]);
-        });
-
-        return redirect()->route('psicologia.evaluacion.paso3', [
-            'codigo' => $codigo,
-            'evaluacion' => $evaluacion->id,
-        ]);
-    }
-
-    /**
-     * Paso 3: Segunda Prueba Psicotécnica (Cuestionario VALANTI de 30 pares).
-     */
-    public function evaluacionPaso3(Request $request, string $codigo, ?EvaluacionCandidato $evaluacion = null)
-    {
-        $candidato = $evaluacion ?? EvaluacionCandidato::where('codigo_sesion', $codigo)->latest('id')->first();
-
-        if (!$candidato) {
-            return redirect()->route('psicologia.evaluacion.publica', ['codigo' => $codigo]);
-        }
-
-        if (!$candidato->pacaFinalizada()) {
-            return redirect()->route('psicologia.evaluacion.paso2', [
-                'codigo' => $codigo,
-                'evaluacion' => $candidato->id,
-            ]);
-        }
-
         if ($candidato->valantiFinalizada()) {
-            return redirect()->route('psicologia.evaluacion.completada', [
+            return redirect()->route('psicologia.evaluacion.paso3', [
                 'codigo' => $codigo,
                 'evaluacion' => $candidato->id,
             ]);
@@ -430,7 +293,7 @@ class DashboardController extends Controller
             $respuestasGuardadas[$resp->numero_pregunta] = "{$resp->puntos_a}-{$resp->puntos_b}";
         }
 
-        return view('psicologia.evaluacion_paso3', compact(
+        return view('psicologia.evaluacion_paso2', compact(
             'codigo',
             'candidato',
             'preguntas',
@@ -482,7 +345,7 @@ class DashboardController extends Controller
 
     /**
      * Valida los 30 pares de VALANTI (suma de cada fila = 3, suma total = 90),
-     * califica mediante CalificadorValantiService y finaliza todo el proceso.
+     * califica mediante CalificadorValantiService y avanza al Paso 3 (PAC-A).
      */
     public function finalizarValanti(
         Request $request,
@@ -491,7 +354,7 @@ class DashboardController extends Controller
         CalificadorValantiService $calificador
     ) {
         if ($evaluacion->valantiFinalizada()) {
-            return redirect()->route('psicologia.evaluacion.completada', [
+            return redirect()->route('psicologia.evaluacion.paso3', [
                 'codigo' => $codigo,
                 'evaluacion' => $evaluacion->id,
             ]);
@@ -537,6 +400,153 @@ class DashboardController extends Controller
         DB::transaction(function () use ($evaluacion, $calificador) {
             $calificador->calificarYAplicar($evaluacion);
             $evaluacion->update([
+                'paso_actual' => 3,
+            ]);
+        });
+
+        return redirect()->route('psicologia.evaluacion.paso3', [
+            'codigo' => $codigo,
+            'evaluacion' => $evaluacion->id,
+        ]);
+    }
+
+    /**
+     * Paso 3: Segunda Prueba Psicotécnica (Cuestionario PAC-A de 40 afirmaciones).
+     */
+    public function evaluacionPaso3(Request $request, string $codigo, ?EvaluacionCandidato $evaluacion = null)
+    {
+        $candidato = $evaluacion ?? EvaluacionCandidato::where('codigo_sesion', $codigo)->latest('id')->first();
+
+        if (!$candidato) {
+            return redirect()->route('psicologia.evaluacion.publica', ['codigo' => $codigo]);
+        }
+
+        if (!$candidato->valantiFinalizada()) {
+            return redirect()->route('psicologia.evaluacion.paso2', [
+                'codigo' => $codigo,
+                'evaluacion' => $candidato->id,
+            ]);
+        }
+
+        if ($candidato->pacaFinalizada()) {
+            return redirect()->route('psicologia.evaluacion.completada', [
+                'codigo' => $codigo,
+                'evaluacion' => $candidato->id,
+            ]);
+        }
+
+        $afirmaciones = PacaPreguntas::AFIRMACIONES;
+        $opciones = PacaPreguntas::OPCIONES;
+        $respuestasGuardadas = $candidato->respuestasPaca()
+            ->pluck('opcion_seleccionada', 'numero_pregunta')
+            ->toArray();
+
+        return view('psicologia.evaluacion_paso3', compact(
+            'codigo',
+            'candidato',
+            'afirmaciones',
+            'opciones',
+            'respuestasGuardadas'
+        ));
+    }
+
+    /**
+     * Auto-guarda el borrador de respuestas de PAC-A en tiempo real vía AJAX.
+     */
+    public function guardarBorradorPaca(Request $request, string $codigo, EvaluacionCandidato $evaluacion)
+    {
+        if ($evaluacion->pacaFinalizada()) {
+            return response()->json(['error' => 'La prueba PAC-A ya ha sido finalizada.'], 403);
+        }
+
+        $respuestasInput = (array) $request->input('respuestas', []);
+
+        DB::transaction(function () use ($evaluacion, $respuestasInput) {
+            foreach ($respuestasInput as $numero => $opcion) {
+                $numero = (int) $numero;
+                $opcion = strtoupper(trim((string) $opcion));
+
+                if ($numero >= 1 && $numero <= 40 && in_array($opcion, ['S', 'F', 'R', 'N'], true)) {
+                    RespuestaPaca::updateOrCreate(
+                        [
+                            'evaluacion_candidato_id' => $evaluacion->id,
+                            'numero_pregunta' => $numero,
+                        ],
+                        [
+                            'opcion_seleccionada' => $opcion,
+                            'puntaje' => PacaPreguntas::puntajeDeOpcion($opcion),
+                        ]
+                    );
+                }
+            }
+        });
+
+        $totalRespondidas = $evaluacion->respuestasPaca()->count();
+
+        return response()->json([
+            'ok' => true,
+            'respondidas' => $totalRespondidas,
+            'porcentaje' => round(($totalRespondidas / 40) * 100),
+        ]);
+    }
+
+    /**
+     * Valida las 40 respuestas de PAC-A, califica mediante CalificadorPacaService y finaliza todo el proceso.
+     */
+    public function finalizarPaca(
+        Request $request,
+        string $codigo,
+        EvaluacionCandidato $evaluacion,
+        CalificadorPacaService $calificador
+    ) {
+        if ($evaluacion->pacaFinalizada()) {
+            return redirect()->route('psicologia.evaluacion.completada', [
+                'codigo' => $codigo,
+                'evaluacion' => $evaluacion->id,
+            ]);
+        }
+
+        $respuestasInput = (array) $request->input('respuestas', []);
+
+        foreach ($respuestasInput as $num => $op) {
+            $num = (int) $num;
+            $op = strtoupper(trim((string) $op));
+            if ($num >= 1 && $num <= 40 && in_array($op, ['S', 'F', 'R', 'N'], true)) {
+                RespuestaPaca::updateOrCreate(
+                    [
+                        'evaluacion_candidato_id' => $evaluacion->id,
+                        'numero_pregunta' => $num,
+                    ],
+                    [
+                        'opcion_seleccionada' => $op,
+                        'puntaje' => PacaPreguntas::puntajeDeOpcion($op),
+                    ]
+                );
+            }
+        }
+
+        $respuestasDB = $evaluacion->respuestasPaca()
+            ->pluck('opcion_seleccionada', 'numero_pregunta')
+            ->toArray();
+
+        $faltantes = [];
+        for ($i = 1; $i <= 40; $i++) {
+            if (!isset($respuestasDB[$i]) || !in_array($respuestasDB[$i], ['S', 'F', 'R', 'N'], true)) {
+                $faltantes[] = $i;
+            }
+        }
+
+        if (!empty($faltantes)) {
+            return back()
+                ->withInput()
+                ->with('error_validacion', 'Faltan por responder las siguientes afirmaciones: ' . implode(', ', $faltantes))
+                ->with('preguntas_faltantes', $faltantes);
+        }
+
+        DB::transaction(function () use ($evaluacion, $calificador) {
+            $calificador->calificarYAplicar($evaluacion);
+            $evaluacion->update([
+                'paso_actual' => 4,
                 'estado' => 'COMPLETADA',
             ]);
         });
@@ -898,24 +908,30 @@ class DashboardController extends Controller
 
     /**
      * Guarda el diligenciamiento del Certificado de Aptitud Psicológica (GH-FO-028).
+     * El concepto aptitudinal está predeterminado con la flechita según los resultados
+     * de las pruebas PAC-A y VALANTI, permitiendo a la psicóloga registrar sus observaciones.
      */
     public function guardarCertificadoAptitudinal(Request $request, EvaluacionCandidato $evaluacion)
     {
         $evaluacion->load(['resultadoPaca', 'resultadoValanti']);
 
         if (!$evaluacion->pacaFinalizada() || !$evaluacion->valantiFinalizada()) {
-            return redirect()->route('psicologia.certificado_aptitudinal')
+            $redirectRoute = $request->routeIs('admin.*') ? 'admin.psicologia.certificados' : 'psicologia.certificado_aptitudinal';
+            return redirect()->route($redirectRoute)
                 ->with('error', 'El candidato aún no ha completado las dos pruebas psicotécnicas (PAC-A y VALANTI).');
         }
 
         $validados = $request->validate([
             'certificado_ciudad_fecha' => ['nullable', 'string', 'max:180'],
-            'certificado_concepto' => ['required', 'string', 'in:CUMPLE_SIN_INDICE,CUMPLE_CON_RECOMENDACIONES,NO_CUMPLE'],
+            'certificado_concepto' => ['nullable', 'string', 'in:CUMPLE_SIN_INDICE,CUMPLE_CON_RECOMENDACIONES,NO_CUMPLE'],
             'certificado_observaciones' => ['nullable', 'string', 'max:2000'],
-        ], [
-            'certificado_concepto.required' => 'Debes marcar con la flechita uno de los tres cuadritos de concepto aptitudinal.',
-            'certificado_concepto.in' => 'El concepto seleccionado no es válido.',
         ]);
+
+        $conceptoCalculado = $evaluacion->calcularConceptoAptitudinal();
+        $conceptoInput = $validados['certificado_concepto'] ?? null;
+        $concepto = in_array($conceptoInput, ['CUMPLE_SIN_INDICE', 'CUMPLE_CON_RECOMENDACIONES', 'NO_CUMPLE'], true)
+            ? $conceptoInput
+            : $conceptoCalculado;
 
         $ciudadFecha = trim((string) ($validados['certificado_ciudad_fecha'] ?? ''));
         if ($ciudadFecha === '') {
@@ -923,11 +939,13 @@ class DashboardController extends Controller
         }
 
         $observaciones = trim((string) ($validados['certificado_observaciones'] ?? ''));
-        $observacionesMayus = $observaciones !== '' ? mb_strtoupper($observaciones, 'UTF-8') : null;
+        $observacionesMayus = $observaciones !== '' 
+            ? mb_strtoupper($observaciones, 'UTF-8') 
+            : ($evaluacion->certificado_observaciones ?? $evaluacion->generarObservacionSugerida());
 
         $evaluacion->update([
             'certificado_ciudad_fecha' => $ciudadFecha,
-            'certificado_concepto' => $validados['certificado_concepto'],
+            'certificado_concepto' => $concepto,
             'certificado_observaciones' => $observacionesMayus,
             'certificado_emitido_at' => now(),
             'certificado_emitido_por' => Auth::id(),
@@ -937,7 +955,8 @@ class DashboardController extends Controller
             return $this->verCertificadoAptitudinalPdf($request, $evaluacion);
         }
 
-        return redirect()->route('psicologia.certificado_aptitudinal')
+        $redirectRoute = $request->routeIs('admin.*') ? 'admin.psicologia.certificados' : 'psicologia.certificado_aptitudinal';
+        return redirect()->route($redirectRoute)
             ->with('success', "Certificado de Aptitud Psicológica (GH-FO-028) guardado para {$evaluacion->nombre_completo}.");
     }
 
@@ -950,8 +969,19 @@ class DashboardController extends Controller
         $evaluacion->load(['resultadoPaca', 'resultadoValanti']);
 
         if (!$evaluacion->certificadoEmitido()) {
-            return redirect()->route('psicologia.certificado_aptitudinal')
-                ->with('error', 'Primero debes diligenciar el certificado aptitudinal de este candidato.');
+            if ($evaluacion->pacaFinalizada() && $evaluacion->valantiFinalizada()) {
+                $evaluacion->update([
+                    'certificado_concepto' => $evaluacion->calcularConceptoAptitudinal(),
+                    'certificado_observaciones' => $evaluacion->generarObservacionSugerida(),
+                    'certificado_ciudad_fecha' => 'Rivera-Huila, ' . now()->format('d/m/Y'),
+                    'certificado_emitido_at' => now(),
+                    'certificado_emitido_por' => Auth::id(),
+                ]);
+            } else {
+                $redirectRoute = $request->routeIs('admin.*') ? 'admin.psicologia.certificados' : 'psicologia.certificado_aptitudinal';
+                return redirect()->route($redirectRoute)
+                    ->with('error', 'El candidato aún no ha completado las dos pruebas psicotécnicas (PAC-A y VALANTI).');
+            }
         }
 
         $logoBase64 = null;
@@ -960,11 +990,21 @@ class DashboardController extends Controller
             $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($rutaLogo));
         }
 
-        // Obtener la firma digital de la psicóloga (quien emitió, el usuario actual o rol PSICOLOGIA registrado)
+        // Obtener la firma digital de la psicóloga oficial
         $firmaPsicologaBase64 = null;
-        $psicologo = ($evaluacion->certificado_emitido_por ? Usuario::find($evaluacion->certificado_emitido_por) : null)
-            ?: Auth::user()
-            ?: Usuario::where('rol', 'PSICOLOGIA')->whereNotNull('firma_digital')->first();
+        $psicologo = null;
+        if ($evaluacion->certificado_emitido_por) {
+            $emisor = Usuario::find($evaluacion->certificado_emitido_por);
+            if ($emisor && !empty($emisor->firma_digital)) {
+                $psicologo = $emisor;
+            }
+        }
+        if (!$psicologo && Auth::user() && !empty(Auth::user()->firma_digital)) {
+            $psicologo = Auth::user();
+        }
+        if (!$psicologo) {
+            $psicologo = Usuario::where('rol', 'PSICOLOGIA')->whereNotNull('firma_digital')->first();
+        }
 
         if ($psicologo && !empty($psicologo->firma_digital)) {
             if (str_starts_with($psicologo->firma_digital, 'data:image')) {

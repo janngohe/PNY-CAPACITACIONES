@@ -1,4 +1,4 @@
-@extends('layouts.psicologia')
+@extends(request()->routeIs('admin.*') ? 'layouts.admin' : 'layouts.psicologia')
 
 @section('title', 'Certificado Aptitudinal · Psicología')
 @section('page_title', 'Certificado Aptitudinal (GH-FO-028)')
@@ -88,20 +88,23 @@
                     $estadoFiltro = $emitido ? 'EMITIDO' : 'PENDIENTE';
                     $textoBusqueda = mb_strtolower($ev->nombre_completo . ' ' . $ev->identificacion . ' ' . ($ev->cargo_aspira ?? ''), 'UTF-8');
                     $ciudadFechaDefault = $ev->certificado_ciudad_fecha ?: ('Rivera-Huila, ' . now()->format('d/m/Y'));
-                    $urlPdfInline = route('psicologia.certificado_aptitudinal.pdf', $ev) . '?inline=1';
-                    $urlPdfDescarga = route('psicologia.certificado_aptitudinal.pdf', $ev);
+                    $urlPdfInline = (request()->routeIs('admin.*') ? route('admin.psicologia.certificados.pdf', $ev) : route('psicologia.certificado_aptitudinal.pdf', $ev)) . '?inline=1';
+                    $urlPdfDescarga = request()->routeIs('admin.*') ? route('admin.psicologia.certificados.pdf', $ev) : route('psicologia.certificado_aptitudinal.pdf', $ev);
+
+                    $conceptoDefinido = $ev->conceptoAptitudinalActual();
+                    $observacionDefinida = $ev->certificado_observaciones ?: $ev->generarObservacionSugerida();
 
                     $payloadModal = [
                         'id' => $ev->id,
-                        'actionUrl' => route('psicologia.certificado_aptitudinal.guardar', $ev),
+                        'actionUrl' => request()->routeIs('admin.*') ? route('admin.psicologia.certificados.guardar', $ev) : route('psicologia.certificado_aptitudinal.guardar', $ev),
                         'nombre' => $ev->nombre_completo,
                         'identificacion' => $ev->identificacion,
                         'fecha_nacimiento' => $ev->fecha_nacimiento ? $ev->fecha_nacimiento->format('d/m/Y') : '—',
                         'edad' => ($ev->edad ?? '—') . ' años',
                         'cargo' => $ev->cargo_aspira ?? '—',
                         'ciudad_fecha' => $ciudadFechaDefault,
-                        'concepto' => $ev->certificado_concepto ?? '',
-                        'observaciones' => $ev->certificado_observaciones ?? '',
+                        'concepto' => $conceptoDefinido,
+                        'observaciones' => $observacionDefinida,
                     ];
                 @endphp
                 <div class="item-certificado-vivo rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs space-y-3"
@@ -127,8 +130,8 @@
                         <div>
                             <span class="text-slate-400 block text-[10px] uppercase font-semibold">Pruebas Psicológicas</span>
                             <div class="flex items-center gap-1.5 mt-0.5">
-                                <a href="{{ route('psicologia.paca.resultado', $ev) }}" class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">PAC-A</a>
-                                <a href="{{ route('psicologia.valanti.resultado', $ev) }}" class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">VALANTI</a>
+                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $ev) : route('psicologia.valanti.resultado', $ev) }}" class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">VALANTI</a>
+                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $ev) : route('psicologia.paca.resultado', $ev) }}" class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">PAC-A</a>
                             </div>
                         </div>
                     </div>
@@ -141,21 +144,19 @@
                             <span>{{ $emitido ? 'Editar Certificado' : 'Diligenciar Certificado' }}</span>
                         </button>
 
-                        @if($emitido)
-                            <div class="flex items-center gap-1.5">
-                                <button type="button"
-                                        onclick="abrirModalVistaPdfCertificado('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($ev->nombre_completo) }}')"
-                                        class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 text-xs font-bold transition cursor-pointer">
-                                    <i class="fa-solid fa-eye"></i>
-                                    <span>Ver PDF</span>
-                                </button>
-                                <a href="{{ $urlPdfDescarga }}"
-                                   class="inline-flex items-center gap-1 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs font-bold transition">
-                                    <i class="fa-solid fa-download text-emerald-600"></i>
-                                    <span>PDF</span>
-                                </a>
-                            </div>
-                        @endif
+                        <div class="flex items-center gap-1.5">
+                            <button type="button"
+                                    onclick="abrirModalVistaPdfCertificado('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($ev->nombre_completo) }}')"
+                                    class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 text-xs font-bold transition cursor-pointer">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Ver PDF</span>
+                            </button>
+                            <a href="{{ $urlPdfDescarga }}"
+                               class="inline-flex items-center gap-1 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs font-bold transition">
+                                <i class="fa-solid fa-download text-emerald-600"></i>
+                                <span>PDF</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             @endforeach
@@ -182,20 +183,23 @@
                                 $estadoFiltro = $emitido ? 'EMITIDO' : 'PENDIENTE';
                                 $textoBusqueda = mb_strtolower($ev->nombre_completo . ' ' . $ev->identificacion . ' ' . ($ev->cargo_aspira ?? ''), 'UTF-8');
                                 $ciudadFechaDefault = $ev->certificado_ciudad_fecha ?: ('Rivera-Huila, ' . now()->format('d/m/Y'));
-                                $urlPdfInline = route('psicologia.certificado_aptitudinal.pdf', $ev) . '?inline=1';
-                                $urlPdfDescarga = route('psicologia.certificado_aptitudinal.pdf', $ev);
+                                $urlPdfInline = (request()->routeIs('admin.*') ? route('admin.psicologia.certificados.pdf', $ev) : route('psicologia.certificado_aptitudinal.pdf', $ev)) . '?inline=1';
+                                $urlPdfDescarga = request()->routeIs('admin.*') ? route('admin.psicologia.certificados.pdf', $ev) : route('psicologia.certificado_aptitudinal.pdf', $ev);
+
+                                $conceptoDefinido = $ev->conceptoAptitudinalActual();
+                                $observacionDefinida = $ev->certificado_observaciones ?: $ev->generarObservacionSugerida();
 
                                 $payloadModal = [
                                     'id' => $ev->id,
-                                    'actionUrl' => route('psicologia.certificado_aptitudinal.guardar', $ev),
+                                    'actionUrl' => request()->routeIs('admin.*') ? route('admin.psicologia.certificados.guardar', $ev) : route('psicologia.certificado_aptitudinal.guardar', $ev),
                                     'nombre' => $ev->nombre_completo,
                                     'identificacion' => $ev->identificacion,
                                     'fecha_nacimiento' => $ev->fecha_nacimiento ? $ev->fecha_nacimiento->format('d/m/Y') : '—',
                                     'edad' => ($ev->edad ?? '—') . ' años',
                                     'cargo' => $ev->cargo_aspira ?? '—',
                                     'ciudad_fecha' => $ciudadFechaDefault,
-                                    'concepto' => $ev->certificado_concepto ?? '',
-                                    'observaciones' => $ev->certificado_observaciones ?? '',
+                                    'concepto' => $conceptoDefinido,
+                                    'observaciones' => $observacionDefinida,
                                 ];
                             @endphp
                             <tr class="item-certificado-vivo hover:bg-slate-50/80 transition-colors"
@@ -222,17 +226,17 @@
                                 <!-- Pruebas Completas -->
                                 <td class="py-3.5 px-4 text-center">
                                     <div class="inline-flex items-center gap-1.5">
-                                        <a href="{{ route('psicologia.paca.resultado', $ev) }}"
-                                           title="Ver resultado PAC-A"
-                                           class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 text-[11px] font-bold transition-colors">
-                                            <i class="fa-solid fa-check text-[9px]"></i>
-                                            PAC-A
-                                        </a>
-                                        <a href="{{ route('psicologia.valanti.resultado', $ev) }}"
+                                        <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $ev) : route('psicologia.valanti.resultado', $ev) }}"
                                            title="Ver resultado VALANTI"
                                            class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 text-[11px] font-bold transition-colors">
                                             <i class="fa-solid fa-check text-[9px]"></i>
                                             VALANTI
+                                        </a>
+                                        <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $ev) : route('psicologia.paca.resultado', $ev) }}"
+                                           title="Ver resultado PAC-A"
+                                           class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 text-[11px] font-bold transition-colors">
+                                            <i class="fa-solid fa-check text-[9px]"></i>
+                                            PAC-A
                                         </a>
                                     </div>
                                 </td>
@@ -260,22 +264,20 @@
                                             <span>{{ $emitido ? 'Editar Formato' : 'Llenar Certificado' }}</span>
                                         </button>
 
-                                        @if($emitido)
-                                            <button type="button"
-                                                    onclick="abrirModalVistaPdfCertificado('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($ev->nombre_completo) }}')"
-                                                    title="Previsualizar Certificado GH-FO-028"
-                                                    class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 text-xs font-bold transition-colors cursor-pointer">
-                                                <i class="fa-solid fa-eye"></i>
-                                                <span>Ver PDF</span>
-                                            </button>
+                                        <button type="button"
+                                                onclick="abrirModalVistaPdfCertificado('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($ev->nombre_completo) }}')"
+                                                title="Previsualizar Certificado GH-FO-028"
+                                                class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 text-xs font-bold transition-colors cursor-pointer">
+                                            <i class="fa-solid fa-eye"></i>
+                                            <span>Ver PDF</span>
+                                        </button>
 
-                                            <a href="{{ $urlPdfDescarga }}"
-                                               title="Descargar Certificado PDF Oficial GH-FO-028"
-                                               class="inline-flex items-center gap-1 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1.5 text-xs font-bold transition-colors">
-                                                <i class="fa-solid fa-file-arrow-down text-emerald-600"></i>
-                                                <span>PDF</span>
-                                            </a>
-                                        @endif
+                                        <a href="{{ $urlPdfDescarga }}"
+                                           title="Descargar Certificado PDF Oficial GH-FO-028"
+                                           class="inline-flex items-center gap-1 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1.5 text-xs font-bold transition-colors">
+                                            <i class="fa-solid fa-file-arrow-down text-emerald-600"></i>
+                                            <span>PDF</span>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -424,10 +426,20 @@
                         Hacemos Constar que evaluamos a la persona en mención de acuerdo con los criterios dados por la empresa C.I. Piscícola New York S.A. en relación con: Batería de Pruebas.
                     </p>
 
-                    <!-- Alerta si intenta guardar sin marcar cuadrito -->
-                    <div id="alertaErrorConcepto" class="hidden rounded-xl bg-rose-50 border border-rose-200 px-3.5 py-2.5 text-xs font-bold text-rose-700 flex items-center gap-2">
-                        <i class="fa-solid fa-circle-exclamation text-rose-600"></i>
-                        <span>Por favor haz clic en uno de los tres cuadritos para marcarlo con la flechita (✓).</span>
+                    <!-- Aviso Informativo: Concepto premarcado automáticamente según pruebas -->
+                    <div class="rounded-xl bg-blue-50 border border-blue-200 p-3 flex items-start gap-3 shadow-2xs">
+                        <div class="w-8 h-8 rounded-lg bg-brand-blue text-white flex items-center justify-center shrink-0 text-xs mt-0.5">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div class="text-xs text-slate-700">
+                            <div class="flex items-center gap-2">
+                                <span class="font-extrabold text-brand-blue">CONCEPTO PREMARCADO SEGÚN RESULTADOS</span>
+                                <span class="text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full border border-blue-300">PAC-A &amp; VALANTI</span>
+                            </div>
+                            <p class="mt-0.5 leading-relaxed text-slate-600">
+                                La casilla correspondiente viene predeterminada con la flechita (<span class="font-black text-emerald-700">✓</span>) según las pruebas psicotécnicas. Puedes confirmarla o hacer clic sobre otra opción si se requiere, y registrar las <strong>Observaciones</strong> oficiales.
+                            </p>
+                        </div>
                     </div>
 
                     <!-- 4. LOS 3 CUADRITOS INTERACTIVOS CON FLECHITA (✓) -->
@@ -436,7 +448,7 @@
                         <!-- Opción 1: Cumple sin índice de accidentalidad -->
                         <div onclick="seleccionarCuadritoConcepto('CUMPLE_SIN_INDICE')"
                              id="filaConcepto_CUMPLE_SIN_INDICE"
-                             class="group flex items-center gap-3.5 p-2.5 rounded-xl border border-transparent hover:border-brand-blue/30 hover:bg-sky-50/40 transition cursor-pointer select-none">
+                             class="group flex items-center gap-3.5 p-3 rounded-xl border border-transparent hover:border-brand-blue/30 hover:bg-sky-50/40 transition cursor-pointer select-none">
                             <button type="button"
                                     aria-label="Marcar opción 1"
                                     class="cuadrito-btn w-10 h-8 shrink-0 border-2 border-[#2f5597] bg-white rounded-xs flex items-center justify-center text-xl font-extrabold text-slate-900 shadow-2xs group-hover:scale-105 transition-transform cursor-pointer">
@@ -450,7 +462,7 @@
                         <!-- Opción 2: Cumple con recomendaciones a nivel accidentógeno -->
                         <div onclick="seleccionarCuadritoConcepto('CUMPLE_CON_RECOMENDACIONES')"
                              id="filaConcepto_CUMPLE_CON_RECOMENDACIONES"
-                             class="group flex items-center gap-3.5 p-2.5 rounded-xl border border-transparent hover:border-brand-blue/30 hover:bg-sky-50/40 transition cursor-pointer select-none">
+                             class="group flex items-center gap-3.5 p-3 rounded-xl border border-transparent hover:border-brand-blue/30 hover:bg-sky-50/40 transition cursor-pointer select-none">
                             <button type="button"
                                     aria-label="Marcar opción 2"
                                     class="cuadrito-btn w-10 h-8 shrink-0 border-2 border-[#2f5597] bg-white rounded-xs flex items-center justify-center text-xl font-extrabold text-slate-900 shadow-2xs group-hover:scale-105 transition-transform cursor-pointer">
@@ -464,7 +476,7 @@
                         <!-- Opción 3: No cumple -->
                         <div onclick="seleccionarCuadritoConcepto('NO_CUMPLE')"
                              id="filaConcepto_NO_CUMPLE"
-                             class="group flex items-center gap-3.5 p-2.5 rounded-xl border border-transparent hover:border-brand-blue/30 hover:bg-sky-50/40 transition cursor-pointer select-none">
+                             class="group flex items-center gap-3.5 p-3 rounded-xl border border-transparent hover:border-brand-blue/30 hover:bg-sky-50/40 transition cursor-pointer select-none">
                             <button type="button"
                                     aria-label="Marcar opción 3"
                                     class="cuadrito-btn w-10 h-8 shrink-0 border-2 border-[#2f5597] bg-white rounded-xs flex items-center justify-center text-xl font-extrabold text-slate-900 shadow-2xs group-hover:scale-105 transition-transform cursor-pointer">
@@ -477,18 +489,30 @@
 
                     </div>
 
-                    <!-- 5. CAMPO DE OBSERVACIONES -->
+                    <!-- 5. CAMPO DE OBSERVACIONES (ÚNICO CAMPO EDITABLE) -->
                     <div class="pt-2">
-                        <label for="textareaObservacionesModal" class="block text-xs font-extrabold uppercase tracking-wide text-slate-900 mb-1.5">
-                            OBSERVACIONES:
-                        </label>
+                        <div class="flex items-center justify-between gap-2 mb-1.5">
+                            <label for="textareaObservacionesModal" class="block text-xs font-extrabold uppercase tracking-wide text-slate-900 flex items-center gap-1.5">
+                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand-blue text-white text-[10px]">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </span>
+                                <span>OBSERVACIONES:</span>
+                            </label>
+                            <span class="text-[10px] font-bold text-brand-blue bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                                Único campo editable por psicología
+                            </span>
+                        </div>
                         <textarea name="certificado_observaciones"
                                   id="textareaObservacionesModal"
                                   rows="4"
                                   oninput="this.value = this.value.toUpperCase()"
                                   style="text-transform: uppercase;"
-                                  placeholder="ESCRIBE AQUÍ LAS OBSERVACIONES PSICOLÓGICAS O RECOMENDACIONES (EN MAYÚSCULAS)..."
-                                  class="w-full uppercase rounded-xl border border-slate-300 bg-slate-50/60 p-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/20 leading-relaxed font-sans"></textarea>
+                                  placeholder="ESCRIBE AQUÍ LAS OBSERVACIONES PSICOLÓGICAS O RECOMENDACIONES (TODO EN MAYÚSCULAS)..."
+                                  class="w-full uppercase rounded-xl border-2 border-brand-blue/40 bg-white p-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/20 leading-relaxed font-sans shadow-2xs"></textarea>
+                        <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-info text-brand-blue text-xs"></i>
+                            <span>El texto se guarda automáticamente en mayúsculas y se reflejará en el certificado oficial y reporte anual.</span>
+                        </p>
                     </div>
 
                     <!-- 6. FIRMA PSICÓLOGA (Vista previa fiel al PDF) -->
@@ -602,14 +626,21 @@
         document.getElementById('modalFechaNacEvaluado').textContent = datos.fecha_nacimiento || '';
         document.getElementById('modalEdadEvaluado').textContent = datos.edad || '';
         document.getElementById('modalCargoEvaluado').textContent = datos.cargo || '';
-        document.getElementById('textareaObservacionesModal').value = (datos.observaciones || '').toUpperCase();
-        document.getElementById('alertaErrorConcepto').classList.add('hidden');
+        
+        const textareaObs = document.getElementById('textareaObservacionesModal');
+        textareaObs.value = (datos.observaciones || '').toUpperCase();
 
-        seleccionarCuadritoConcepto(datos.concepto || '');
+        // Marcar automáticamente el concepto con la flechita según resultados obtenidos en las pruebas
+        mostrarCuadritoConceptoMarcado(datos.concepto || 'CUMPLE_CON_RECOMENDACIONES');
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         document.body.classList.add('overflow-hidden');
+
+        // Enfocar el campo de observaciones (único editable por la psicóloga)
+        setTimeout(function () {
+            textareaObs.focus();
+        }, 150);
     }
 
     function cerrarModalCertificado() {
@@ -619,7 +650,7 @@
         document.body.classList.remove('overflow-hidden');
     }
 
-    function seleccionarCuadritoConcepto(codigo) {
+    function mostrarCuadritoConceptoMarcado(codigo) {
         const input = document.getElementById('inputConceptoSeleccionado');
         input.value = codigo;
 
@@ -630,29 +661,21 @@
 
             if (item === codigo) {
                 check.classList.remove('hidden');
-                fila.classList.add('bg-emerald-50/70', 'border-emerald-300');
-                fila.classList.remove('border-transparent');
+                fila.classList.add('bg-emerald-50/90', 'border-2', 'border-emerald-400', 'ring-2', 'ring-emerald-500/20');
+                fila.classList.remove('border-transparent', 'opacity-50');
             } else {
                 check.classList.add('hidden');
-                fila.classList.remove('bg-emerald-50/70', 'border-emerald-300');
-                fila.classList.add('border-transparent');
+                fila.classList.remove('bg-emerald-50/90', 'border-2', 'border-emerald-400', 'ring-2', 'ring-emerald-500/20');
+                fila.classList.add('border-transparent', 'opacity-50');
             }
         });
+    }
 
-        if (CONCEPTOS_VALIDOS.includes(codigo)) {
-            document.getElementById('alertaErrorConcepto').classList.add('hidden');
-        }
+    function seleccionarCuadritoConcepto(codigo) {
+        mostrarCuadritoConceptoMarcado(codigo);
     }
 
     function enviarFormularioCertificado(descargarPdf) {
-        const concepto = document.getElementById('inputConceptoSeleccionado').value;
-        if (!CONCEPTOS_VALIDOS.includes(concepto)) {
-            const alerta = document.getElementById('alertaErrorConcepto');
-            alerta.classList.remove('hidden');
-            alerta.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return;
-        }
-
         document.getElementById('inputDescargarPdfDirecto').value = descargarPdf ? '1' : '0';
         document.getElementById('formCertificadoAptitudinal').submit();
 

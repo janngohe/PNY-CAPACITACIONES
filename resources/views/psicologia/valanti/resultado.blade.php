@@ -1,4 +1,4 @@
-@extends('layouts.psicologia')
+@extends(request()->routeIs('admin.*') ? 'layouts.admin' : 'layouts.psicologia')
 
 @section('title', 'Resultados Cuestionario VALANTI · ' . $aplicacion->nombre_completo)
 @section('page_title', 'Cuestionario VALANTI')
@@ -74,10 +74,10 @@
             </button>
 
             @if($aplicacion->pacaFinalizada())
-                <a href="{{ route('psicologia.paca.resultado', $aplicacion) }}"
+                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $aplicacion) : route('psicologia.paca.resultado', $aplicacion) }}"
                    class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 text-xs font-bold text-indigo-700 transition-colors shadow-2xs">
                     <i class="fa-solid fa-chart-simple text-xs"></i>
-                    Ver Prueba 1 (PAC-A)
+                    Ver Prueba 2 (PAC-A)
                 </a>
             @endif
 
@@ -88,7 +88,7 @@
                 Consentimiento
             </button>
 
-            <a href="{{ route('psicologia.pruebas.historial') }}" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-all">
+            <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial') }}" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-all">
                 <i class="fa-solid fa-arrow-left text-xs"></i>
                 Historial
             </a>

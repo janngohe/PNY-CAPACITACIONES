@@ -48,6 +48,140 @@ class EvaluacionCandidato extends Model
     }
 
     /**
+     * Determina automáticamente el concepto aptitudinal oficial (GH-FO-028)
+     * a partir de los resultados cuantitativos y cualitativos de las pruebas PAC-A y VALANTI:
+     * - CUMPLE_SIN_INDICE: Sin rasgos accidentógenos (<= 8.5), sin patrón tipo A (< 18) y valores promedio/altos.
+     * - CUMPLE_CON_RECOMENDACIONES: Presencia o sospecha de tendencia accidentógena (>= 9.0),
+     *   patrón tipo A (>= 18.0) o valores en segundo plano / bajo.
+     * - NO_CUMPLE: Valores extremos negados (PE < 30) o concurrencia de alto riesgo accidentógeno y valores bajos.
+     */
+    public function calcularConceptoAptitudinal(): string
+    {
+        $paca = $this->resultadoPaca;
+        $valanti = $this->resultadoValanti;
+
+        if (!$paca || !$valanti) {
+            return 'CUMPLE_CON_RECOMENDACIONES';
+        }
+
+        $ptsAcc = (float) $paca->puntaje_tendencia_accidentogena;
+        $ptsTipoA = (float) $paca->puntaje_patron_tipo_a;
+
+        $valoresPE = [
+            'VERDAD'       => (int) $valanti->pe_verdad,
+            'RECTITUD'     => (int) $valanti->pe_rectitud,
+            'PAZ'          => (int) $valanti->pe_paz,
+            'AMOR'         => (int) $valanti->pe_amor,
+            'NO_VIOLENCIA' => (int) $valanti->pe_no_violencia,
+        ];
+
+        $bajos = 0;           // PE < 40 (Negado / Muy Bajo)
+        $promedioBajo = 0;    // PE 40..44 (Segundo Plano)
+        $muyBajos = 0;        // PE < 30 (Extremadamente bajo)
+        foreach ($valoresPE as $pe) {
+            if ($pe < 30) {
+                $muyBajos++;
+            }
+            if ($pe < 40) {
+                $bajos++;
+            } elseif ($pe <= 44) {
+                $promedioBajo++;
+            }
+        }
+
+        // 1. Criterio NO CUMPLE CON EL PERFIL:
+        if ($muyBajos > 0 || ($ptsAcc >= 11.0 && $ptsTipoA >= 20.0 && $bajos > 0) || ($bajos >= 2 && ($ptsAcc >= 11.0 || $ptsTipoA >= 20.0))) {
+            return 'NO_CUMPLE';
+        }
+
+        // 2. Criterio CUMPLE CON RECOMENDACIONES (A nivel accidentógeno, Tipo A o valores en segundo plano/bajos):
+        if ($ptsAcc >= 9.0 || $ptsTipoA >= 18.0 || $promedioBajo > 0 || $bajos > 0) {
+            return 'CUMPLE_CON_RECOMENDACIONES';
+        }
+
+        // 3. Criterio CUMPLE SIN ÍNDICE DE ACCIDENTALIDAD:
+        return 'CUMPLE_SIN_INDICE';
+    }
+
+    /**
+     * Genera la observación psicológica sugerida a partir de los hallazgos de PAC-A y VALANTI.
+     */
+    public function generarObservacionSugerida(): string
+    {
+        $paca = $this->resultadoPaca;
+        $valanti = $this->resultadoValanti;
+
+        if (!$paca || !$valanti) {
+            return 'CUMPLE';
+        }
+
+        $partes = [];
+
+        // 1. Dimensiones en segundo plano o negadas en VALANTI
+        $nombresValanti = [
+            'VERDAD'       => 'VERDAD',
+            'RECTITUD'     => 'RECTITUD',
+            'PAZ'          => 'PAZ',
+            'AMOR'         => 'AMOR',
+            'NO_VIOLENCIA' => 'NO VIOLENCIA',
+        ];
+        $valoresPE = [
+            'VERDAD'       => (int) $valanti->pe_verdad,
+            'RECTITUD'     => (int) $valanti->pe_rectitud,
+            'PAZ'          => (int) $valanti->pe_paz,
+            'AMOR'         => (int) $valanti->pe_amor,
+            'NO_VIOLENCIA' => (int) $valanti->pe_no_violencia,
+        ];
+
+        $negados = [];
+        $segundoPlano = [];
+        foreach ($valoresPE as $dim => $pe) {
+            if ($pe < 40) {
+                $negados[] = $nombresValanti[$dim];
+            } elseif ($pe <= 44) {
+                $segundoPlano[] = $nombresValanti[$dim];
+            }
+        }
+
+        if (!empty($negados)) {
+            $partes[] = 'NEGADO VALOR ' . implode(' Y ', $negados);
+        }
+        if (!empty($segundoPlano)) {
+            $partes[] = 'SEGUNDO PLANO VALOR ' . implode(' Y ', $segundoPlano);
+        }
+
+        // 2. PAC-A Tendencia Accidentógena
+        $ptsAcc = (float) $paca->puntaje_tendencia_accidentogena;
+        if ($ptsAcc >= 11.0) {
+            $partes[] = 'Presencia de rasgos que sugieren tendencia accidentógena en el evaluado.';
+        } elseif ($ptsAcc >= 9.0) {
+            $partes[] = 'Se sugiere indagar y/o descartar tendencia accidentógena.';
+        }
+
+        // 3. PAC-A Patrón Tipo A
+        $ptsTipoA = (float) $paca->puntaje_patron_tipo_a;
+        if ($ptsTipoA >= 20.0) {
+            $partes[] = 'Presencia de rasgos que indican la presencia del Patrón de comportamiento tipo A, en el evaluado.';
+        } elseif ($ptsTipoA >= 18.0) {
+            $partes[] = 'Se sugiere indagar y /o descatar la tendencia al Patrón de comportamiento tipo A.';
+        }
+
+        if (empty($partes)) {
+            return 'CUMPLE';
+        }
+
+        return mb_strtoupper(implode(', ', $partes), 'UTF-8');
+    }
+
+    /**
+     * Retorna el concepto actual (el emitido o el calculado automáticamente según resultados).
+     */
+    public function conceptoAptitudinalActual(): string
+    {
+        return $this->certificado_concepto ?: $this->calcularConceptoAptitudinal();
+    }
+
+    /**
      * Devuelve el texto para la columna OBSERVACION del reporte Excel anual.
      */
     public function observacionReporteExcel(): string
@@ -57,16 +191,20 @@ class EvaluacionCandidato extends Model
             return $obs;
         }
 
-        if ($this->certificado_concepto === 'CUMPLE_SIN_INDICE') {
+        $concepto = $this->conceptoAptitudinalActual();
+        if ($concepto === 'CUMPLE_SIN_INDICE') {
             return 'CUMPLE';
         }
 
-        return '';
+        return $this->generarObservacionSugerida();
     }
 
     public function badgeCertificadoAptitudinal(): array
     {
-        return match ($this->certificado_concepto) {
+        $concepto = $this->conceptoAptitudinalActual();
+        $emitido = $this->certificadoEmitido();
+
+        $info = match ($concepto) {
             'CUMPLE_SIN_INDICE' => [
                 'texto' => 'Cumple (Sin Accidentalidad)',
                 'clase' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -83,11 +221,18 @@ class EvaluacionCandidato extends Model
                 'icono' => 'fa-circle-xmark',
             ],
             default => [
-                'texto' => 'Pendiente por diligenciar',
+                'texto' => 'Pendiente',
                 'clase' => 'bg-amber-50 text-amber-700 border-amber-200',
                 'icono' => 'fa-pen-to-square',
             ],
         };
+
+        if (!$emitido) {
+            $info['subtexto'] = 'Auto: ' . $info['texto'];
+            $info['texto'] = 'Por emitir (' . $info['texto'] . ')';
+        }
+
+        return $info;
     }
 
     public function respuestasPaca(): HasMany
@@ -153,19 +298,19 @@ class EvaluacionCandidato extends Model
     }
 
     /**
-     * Estado derivado de las pruebas psicotécnicas (PAC-A + VALANTI).
+     * Estado derivado de las pruebas psicotécnicas (VALANTI + PAC-A).
      */
     public function estadoPaca(): string
     {
-        if ($this->pacaFinalizada() && $this->valantiFinalizada()) {
+        if ($this->valantiFinalizada() && $this->pacaFinalizada()) {
             return 'FINALIZADA';
         }
 
-        if ($this->pacaFinalizada() && !$this->valantiFinalizada()) {
-            return 'EN_VALANTI';
+        if ($this->valantiFinalizada() && !$this->pacaFinalizada()) {
+            return 'EN_PACA';
         }
 
-        return $this->totalRespondidasPaca() > 0 ? 'EN_CURSO' : 'PENDIENTE';
+        return $this->totalRespondidasValanti() > 0 ? 'EN_CURSO' : 'PENDIENTE';
     }
 
     public function badgeEstadoPaca(): array
@@ -176,13 +321,13 @@ class EvaluacionCandidato extends Model
                 'clase' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
                 'icono' => 'fa-circle-check',
             ],
-            'EN_VALANTI' => [
-                'texto' => 'PAC-A Lista · VALANTI (' . round($this->progresoValanti()) . '%)',
+            'EN_PACA' => [
+                'texto' => 'VALANTI Lista · PAC-A (' . round($this->progresoPaca()) . '%)',
                 'clase' => 'bg-sky-50 text-sky-700 border-sky-200',
                 'icono' => 'fa-spinner fa-spin',
             ],
             'EN_CURSO' => [
-                'texto' => 'En PAC-A (' . round($this->progresoPaca()) . '%)',
+                'texto' => 'En VALANTI (' . round($this->progresoValanti()) . '%)',
                 'clase' => 'bg-amber-50 text-amber-700 border-amber-200',
                 'icono' => 'fa-spinner fa-spin',
             ],

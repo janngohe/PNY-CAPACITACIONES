@@ -72,8 +72,8 @@
                         <i class="fa-solid fa-check"></i>
                     </div>
                     <span class="text-[10px] sm:text-[11px] font-bold text-emerald-700 mt-1 sm:mt-1.5">
-                        <span class="sm:hidden">2. PAC-A</span>
-                        <span class="hidden sm:inline">2. Prueba 1 (PAC-A)</span>
+                        <span class="sm:hidden">2. VALANTI</span>
+                        <span class="hidden sm:inline">2. Prueba 1 (VALANTI)</span>
                     </span>
                 </div>
 
@@ -83,8 +83,8 @@
                         <i class="fa-solid fa-check"></i>
                     </div>
                     <span class="text-[10px] sm:text-[11px] font-bold text-emerald-700 mt-1 sm:mt-1.5">
-                        <span class="sm:hidden">3. VALANTI</span>
-                        <span class="hidden sm:inline">3. Prueba 2 (VALANTI)</span>
+                        <span class="sm:hidden">3. PAC-A</span>
+                        <span class="hidden sm:inline">3. Prueba 2 (PAC-A)</span>
                     </span>
                 </div>
             </div>
@@ -124,7 +124,7 @@
             </h1>
 
             <p class="text-xs sm:text-sm text-muted mt-2 leading-relaxed">
-                Tus respuestas en las dos pruebas psicotécnicas (<strong>PAC-A</strong> y <strong>VALANTI</strong>) junto con tu consentimiento informado <strong>GH-FO-025</strong> han sido registradas de forma confidencial.
+                Tus respuestas en las dos pruebas psicotécnicas (<strong>VALANTI</strong> y <strong>PAC-A</strong>) junto con tu consentimiento informado <strong>GH-FO-025</strong> han sido registradas de forma confidencial.
             </p>
 
             @if($candidato)
@@ -138,12 +138,12 @@
                         <strong class="font-mono font-bold text-slate-800">{{ $candidato->identificacion }}</strong>
                     </div>
                     <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-                        <span class="text-slate-500">Prueba 1 (PAC-A):</span>
-                        <span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check"></i> Finalizada (40/40)</span>
+                        <span class="text-slate-500">Prueba 1 (VALANTI):</span>
+                        <span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check"></i> Finalizada (30/30 · 90 pts)</span>
                     </div>
                     <div class="flex items-center justify-between pt-1">
-                        <span class="text-slate-500">Prueba 2 (VALANTI):</span>
-                        <span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check"></i> Finalizada (30/30 · 90 pts)</span>
+                        <span class="text-slate-500">Prueba 2 (PAC-A):</span>
+                        <span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check"></i> Finalizada (40/40)</span>
                     </div>
                 </div>
             @endif

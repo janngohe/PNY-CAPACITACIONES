@@ -1,4 +1,4 @@
-@extends('layouts.psicologia')
+@extends(request()->routeIs('admin.*') ? 'layouts.admin' : 'layouts.psicologia')
 
 @section('title', 'Reportes · Psicología')
 @section('page_title', 'Reportes y Consolidado Excel')
@@ -29,7 +29,7 @@
 
             <!-- Selector de Año (en vivo) + Botón Descargar Excel -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
-                <form method="GET" action="{{ route('psicologia.reportes') }}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+                <form method="GET" action="{{ request()->routeIs('admin.*') ? route('admin.psicologia.reportes') : route('psicologia.reportes') }}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
                     <label for="selectAnioReporte" class="text-xs font-bold text-slate-600 flex items-center gap-1.5 shrink-0">
                         <i class="fa-regular fa-calendar text-brand-blue"></i>
                         <span>Año:</span>
@@ -46,7 +46,7 @@
                     </select>
                 </form>
 
-                <a href="{{ route('psicologia.reportes.excel', ['anio' => $anioSeleccionado]) }}"
+                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.reportes.excel', ['anio' => $anioSeleccionado]) : route('psicologia.reportes.excel', ['anio' => $anioSeleccionado]) }}"
                    class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 text-xs font-bold shadow-sm transition-colors">
                     <i class="fa-solid fa-file-arrow-down text-sm"></i>
                     <span>Descargar Excel {{ $anioSeleccionado }} (.xlsx)</span>
@@ -98,9 +98,10 @@
                 @php
                     $num = $index + 1;
                     $fechaApl = ($ev->fecha_hora_aceptacion ?? $ev->created_at)?->format('d/m/Y') ?? '—';
-                    $marcaCumple = $ev->certificado_concepto === 'CUMPLE_SIN_INDICE';
-                    $marcaRecom = $ev->certificado_concepto === 'CUMPLE_CON_RECOMENDACIONES';
-                    $marcaNoCumple = $ev->certificado_concepto === 'NO_CUMPLE';
+                    $concepto = $ev->conceptoAptitudinalActual();
+                    $marcaCumple = $concepto === 'CUMPLE_SIN_INDICE';
+                    $marcaRecom = $concepto === 'CUMPLE_CON_RECOMENDACIONES';
+                    $marcaNoCumple = $concepto === 'NO_CUMPLE';
                     $obsTexto = $ev->observacionReporteExcel();
                 @endphp
                 <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs space-y-2.5">
@@ -175,9 +176,10 @@
                             @php
                                 $num = $index + 1;
                                 $fechaApl = ($ev->fecha_hora_aceptacion ?? $ev->created_at)?->format('d/m/Y') ?? '';
-                                $marcaCumple = $ev->certificado_concepto === 'CUMPLE_SIN_INDICE' ? 'X' : '';
-                                $marcaRecom = $ev->certificado_concepto === 'CUMPLE_CON_RECOMENDACIONES' ? 'X' : '';
-                                $marcaNoCumple = $ev->certificado_concepto === 'NO_CUMPLE' ? 'X' : '';
+                                $concepto = $ev->conceptoAptitudinalActual();
+                                $marcaCumple = $concepto === 'CUMPLE_SIN_INDICE' ? 'X' : '';
+                                $marcaRecom = $concepto === 'CUMPLE_CON_RECOMENDACIONES' ? 'X' : '';
+                                $marcaNoCumple = $concepto === 'NO_CUMPLE' ? 'X' : '';
                                 $obsTexto = $ev->observacionReporteExcel();
                             @endphp
                             <tr class="hover:bg-emerald-50/30 transition-colors">

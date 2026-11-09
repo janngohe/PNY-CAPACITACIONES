@@ -1,4 +1,4 @@
-@extends('layouts.psicologia')
+@extends(request()->routeIs('admin.*') ? 'layouts.admin' : 'layouts.psicologia')
 
 @section('title', 'Resultados PAC-A · ' . $aplicacion->nombre_completo)
 @section('page_title', 'Resultados PAC-A')
@@ -31,10 +31,10 @@
 
         <div class="flex items-center gap-2.5 shrink-0 print:hidden flex-wrap">
             @if($aplicacion->valantiFinalizada())
-                <a href="{{ route('psicologia.valanti.resultado', $aplicacion) }}"
+                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $aplicacion) : route('psicologia.valanti.resultado', $aplicacion) }}"
                    class="inline-flex items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100 px-3.5 py-2 text-xs font-bold text-sky-700 transition-colors shadow-2xs">
                     <i class="fa-solid fa-scale-balanced text-xs"></i>
-                    Ver Prueba 2 (VALANTI)
+                    Ver Prueba 1 (VALANTI)
                 </a>
             @endif
             <button type="button"
@@ -48,7 +48,7 @@
                 <i class="fa-solid fa-print text-xs"></i>
                 Imprimir
             </button>
-            <a href="{{ route('psicologia.pruebas.historial') }}" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-all">
+            <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial') }}" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-all">
                 <i class="fa-solid fa-arrow-left text-xs"></i>
                 Volver al Historial
             </a>

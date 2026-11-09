@@ -163,6 +163,35 @@
                 'etiqueta' => 'Reportes',
             ],
         ],
+        'Psicología & Selección' => [
+            [
+                'tipo' => 'desplegable',
+                'id' => 'submenu-psicologia',
+                'icono' => 'fa-brain',
+                'etiqueta' => 'Psicología y Pruebas',
+                'patrones' => ['admin.psicologia.*'],
+                'subitems' => [
+                    [
+                        'id' => 'nav-psicologia-reportes',
+                        'ruta' => 'admin.psicologia.reportes',
+                        'patrones' => ['admin.psicologia.reportes', 'admin.psicologia.reportes.*'],
+                        'etiqueta' => 'Reportes y Descarga Excel',
+                    ],
+                    [
+                        'id' => 'nav-psicologia-historial',
+                        'ruta' => 'admin.psicologia.historial',
+                        'patrones' => ['admin.psicologia.historial', 'admin.psicologia.paca.*', 'admin.psicologia.valanti.*'],
+                        'etiqueta' => 'Historial de Pruebas',
+                    ],
+                    [
+                        'id' => 'nav-psicologia-certificados',
+                        'ruta' => 'admin.psicologia.certificados',
+                        'patrones' => ['admin.psicologia.certificados*'],
+                        'etiqueta' => 'Certificados Aptitudinales',
+                    ],
+                ],
+            ],
+        ],
         'Administración' => [
             [
                 'tipo' => 'enlace',

@@ -1,4 +1,4 @@
-@extends('layouts.psicologia')
+@extends(request()->routeIs('admin.*') ? 'layouts.admin' : 'layouts.psicologia')
 
 @section('title', 'Historial de Pruebas')
 @section('page_title', 'Pruebas Psicotécnicas')
@@ -13,10 +13,12 @@
             <h1 class="text-xl font-bold text-slate-900">Historial de Aplicaciones y Consentimientos</h1>
             <p class="text-xs text-slate-500 mt-1">Registro de evaluaciones psicotécnicas, custodia de consentimientos GH-FO-025 y resultados</p>
         </div>
-        <a href="{{ route('psicologia.pruebas.realizar') }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 text-xs font-bold text-white shadow-2xs transition-all hover:scale-[1.02] shrink-0">
-            <i class="fa-solid fa-qrcode text-xs"></i>
-            Proyectar Código QR
-        </a>
+        @if(!request()->routeIs('admin.*'))
+            <a href="{{ route('psicologia.pruebas.realizar') }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 text-xs font-bold text-white shadow-2xs transition-all hover:scale-[1.02] shrink-0">
+                <i class="fa-solid fa-qrcode text-xs"></i>
+                Proyectar Código QR
+            </a>
+        @endif
     </div>
 
     <!-- Barra de Filtros en Vivo (Sin botón de filtrar) -->
@@ -136,7 +138,7 @@
                         <div class="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 text-[11px] border border-slate-100">
                             <div>
                                 <span class="text-slate-400 block text-[10px] uppercase font-semibold">Pruebas</span>
-                                <span class="font-bold text-slate-800">PAC-A · VALANTI</span>
+                                <span class="font-bold text-slate-800">VALANTI · PAC-A</span>
                             </div>
                             <div>
                                 <span class="text-slate-400 block text-[10px] uppercase font-semibold">Fecha Aplicación</span>
@@ -169,14 +171,8 @@
 
                             <!-- Botón Resultados / Continuar -->
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                @if($app->pacaFinalizada())
-                                    <a href="{{ route('psicologia.paca.resultado', $app) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1.5 text-xs font-bold transition-colors">
-                                        <i class="fa-solid fa-chart-simple text-xs"></i>
-                                        <span>PAC-A</span>
-                                    </a>
-                                @endif
                                 @if($app->valantiFinalizada())
-                                    <a href="{{ route('psicologia.valanti.resultado', $app) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 px-2.5 py-1.5 text-xs font-bold transition-colors">
+                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 px-2.5 py-1.5 text-xs font-bold transition-colors">
                                         <i class="fa-solid fa-scale-balanced text-xs"></i>
                                         <span>VALANTI</span>
                                     </a>
@@ -184,22 +180,28 @@
                                         <i class="fa-solid fa-file-pdf"></i>
                                     </a>
                                 @endif
-                                @if(!$app->pacaFinalizada())
+                                @if($app->pacaFinalizada())
+                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1.5 text-xs font-bold transition-colors">
+                                        <i class="fa-solid fa-chart-simple text-xs"></i>
+                                        <span>PAC-A</span>
+                                    </a>
+                                @endif
+                                @if(!$app->valantiFinalizada())
                                     @php
                                         $pathCont = route('psicologia.evaluacion.paso2', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
                                     @endphp
                                     <button type="button"
-                                            onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario PAC-A')"
+                                            onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario VALANTI')"
                                             class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer">
                                         <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
                                         <span>QR Prueba 1</span>
                                     </button>
-                                @elseif(!$app->valantiFinalizada())
+                                @elseif(!$app->pacaFinalizada())
                                     @php
                                         $pathCont = route('psicologia.evaluacion.paso3', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
                                     @endphp
                                     <button type="button"
-                                            onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario VALANTI')"
+                                            onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario PAC-A')"
                                             class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer">
                                         <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
                                         <span>QR Prueba 2</span>
@@ -287,7 +289,7 @@
 
                                     <!-- Pruebas / Fecha -->
                                     <td class="py-3.5 px-4 whitespace-nowrap">
-                                        <strong class="text-slate-900 block font-bold">PAC-A · VALANTI</strong>
+                                        <strong class="text-slate-900 block font-bold">VALANTI · PAC-A</strong>
                                         <span class="text-[11px] text-slate-400">
                                             {{ ($app->fecha_hora_aceptacion ?? $app->created_at)->format('d/m/Y') }}
                                             @if($app->edad)
@@ -307,36 +309,36 @@
                                     <!-- Acciones -->
                                     <td class="py-3.5 px-5 text-right whitespace-nowrap">
                                         <div class="inline-flex items-center justify-end gap-1.5">
-                                            @if($app->pacaFinalizada())
-                                                <a href="{{ route('psicologia.paca.resultado', $app) }}" class="inline-flex items-center gap-1 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 text-xs font-bold transition-colors" title="Ver Resultados Prueba 1 (PAC-A)">
-                                                    <i class="fa-solid fa-chart-simple text-[11px]"></i> PAC-A
-                                                </a>
-                                            @endif
                                             @if($app->valantiFinalizada())
-                                                <a href="{{ route('psicologia.valanti.resultado', $app) }}" class="inline-flex items-center gap-1 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 px-3 py-1.5 text-xs font-bold transition-colors" title="Ver Resultados Prueba 2 (VALANTI)">
+                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}" class="inline-flex items-center gap-1 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 px-3 py-1.5 text-xs font-bold transition-colors" title="Ver Resultados Prueba 1 (VALANTI)">
                                                     <i class="fa-solid fa-scale-balanced text-[11px]"></i> VALANTI
                                                 </a>
                                                 <a href="{{ route('psicologia.valanti.pdf', $app) }}" class="inline-flex items-center justify-center h-7 w-7 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs transition-colors" title="Descargar PDF del Gráfico VALANTI">
                                                     <i class="fa-solid fa-file-arrow-down text-[11px]"></i>
                                                 </a>
                                             @endif
-                                            @if(!$app->pacaFinalizada())
+                                            @if($app->pacaFinalizada())
+                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}" class="inline-flex items-center gap-1 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 text-xs font-bold transition-colors" title="Ver Resultados Prueba 2 (PAC-A)">
+                                                    <i class="fa-solid fa-chart-simple text-[11px]"></i> PAC-A
+                                                </a>
+                                            @endif
+                                            @if(!$app->valantiFinalizada())
                                                 @php
                                                     $pathCont = route('psicologia.evaluacion.paso2', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
                                                 @endphp
                                                 <button type="button"
-                                                        onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario PAC-A')"
+                                                        onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario VALANTI')"
                                                         title="Mostrar Código QR para que el candidato continúe la Prueba 1 en su celular"
                                                         class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer">
                                                     <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
                                                     <span>QR Prueba 1</span>
                                                 </button>
-                                            @elseif(!$app->valantiFinalizada())
+                                            @elseif(!$app->pacaFinalizada())
                                                 @php
                                                     $pathCont = route('psicologia.evaluacion.paso3', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
                                                 @endphp
                                                 <button type="button"
-                                                        onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario VALANTI')"
+                                                        onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario PAC-A')"
                                                         title="Mostrar Código QR para que el candidato continúe la Prueba 2 en su celular"
                                                         class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer">
                                                     <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
@@ -576,7 +578,7 @@
     /**
      * Filtrado en vivo instantáneo + actualización AJAX sin recargar la página
      */
-    const URL_BASE_HISTORIAL = @json(route('psicologia.pruebas.historial'));
+    const URL_BASE_HISTORIAL = @json(request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial'));
     let timerDebounceAjax = null;
     let controladorFetchActual = null;
 

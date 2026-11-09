@@ -133,6 +133,18 @@
                         Otros Entornos
                     </div>
 
+                    @if($usuario->rol === 'ADMINISTRADOR')
+                        <!-- Acceso prioritario al Panel Principal de Administración -->
+                        <a href="{{ route('admin.dashboard') }}"
+                           class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all duration-150 text-white bg-slate-900 hover:bg-slate-800 shadow-2xs mb-2">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-gauge-high text-amber-400 text-sm"></i>
+                                <span>Volver a Panel Admin</span>
+                            </div>
+                            <i class="fa-solid fa-arrow-right text-[11px] text-slate-400 group-hover:translate-x-0.5 transition-transform"></i>
+                        </a>
+                    @endif
+
                     <!-- Acceso rápido a Capacitaciones (Modo Colaborador) -->
                     <a href="{{ route('empleado.capacitaciones') }}"
                        class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all duration-150 text-brand-dark bg-brand-light/70 hover:bg-brand-light border border-brand-blue/20">
@@ -215,6 +227,16 @@
 
                 <!-- Derecha: Firma Digital, Fecha & Perfil de Usuario -->
                 <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+
+                    @if($usuario->rol === 'ADMINISTRADOR')
+                        <!-- Botón para regresar al panel de Administrador -->
+                        <a href="{{ route('admin.dashboard') }}"
+                           title="Regresar al Panel Principal de Administración"
+                           class="inline-flex items-center justify-center gap-1.5 h-8 sm:h-auto px-2.5 sm:px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-heading font-bold text-xs transition shadow-2xs group cursor-pointer border border-slate-700">
+                            <i class="fa-solid fa-arrow-left text-[11px] text-slate-300 group-hover:-translate-x-0.5 transition-transform"></i>
+                            <span class="hidden sm:inline">Panel Admin</span>
+                        </a>
+                    @endif
 
                     <!-- Botón de Firma Digital Oficial -->
                     <button type="button"
