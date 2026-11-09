@@ -5,58 +5,53 @@
     <title>Informe de Resultados PAC-A - {{ $evaluacion->identificacion }}</title>
     <style>
         @page {
-            margin: 12mm 14mm 12mm 14mm;
+            margin: 18mm 16mm 18mm 16mm;
         }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
-            color: #0f172a;
-            font-size: 8.5pt;
-            line-height: 1.35;
+            color: #000;
+            font-size: 9.5pt;
+            line-height: 1.45;
         }
+
+        /* ENCABEZADO INSTITUCIONAL */
         .tabla-encabezado {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
+            margin-bottom: 14px;
         }
         .tabla-encabezado td {
             border: 1px solid #000;
-            padding: 4px 6px;
+            padding: 5px 8px;
             vertical-align: middle;
         }
         .logo-col {
-            width: 22%;
+            width: 25%;
             text-align: center;
         }
         .logo-col img {
-            max-width: 110px;
-            max-height: 40px;
+            max-width: 130px;
+            max-height: 52px;
         }
         .titulo-col {
-            width: 54%;
+            width: 50%;
             text-align: center;
         }
         .titulo-col h2 {
             margin: 0;
-            font-size: 8.5pt;
+            font-size: 10pt;
             font-weight: bold;
-            color: #1e3a8a;
             letter-spacing: 0.5px;
         }
         .titulo-col h1 {
-            margin: 2px 0 0 0;
+            margin: 3px 0 0 0;
             font-size: 11pt;
             font-weight: bold;
-            color: #0f172a;
-        }
-        .titulo-col p {
-            margin: 1px 0 0 0;
-            font-size: 7pt;
-            color: #64748b;
         }
         .meta-col {
-            width: 24%;
-            font-size: 7pt;
-            line-height: 1.25;
+            width: 25%;
+            font-size: 8pt;
+            line-height: 1.3;
             padding: 0 !important;
         }
         .tabla-meta {
@@ -66,226 +61,156 @@
         .tabla-meta td {
             border: none;
             border-bottom: 1px solid #000;
-            padding: 2px 4px;
+            padding: 2.5px 5px;
         }
         .tabla-meta tr:last-child td {
             border-bottom: none;
         }
 
-        /* FICHA DEL CANDIDATO */
-        .tabla-ficha {
+        /* FICHA DE DATOS DEL CANDIDATO */
+        .tabla-datos {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
-            font-size: 8pt;
+            margin-bottom: 14px;
+            font-size: 9pt;
         }
-        .tabla-ficha td {
-            border: 1px solid #cbd5e1;
-            padding: 4px 6px;
-            background-color: #f8fafc;
+        .tabla-datos td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            background-color: #fafafa;
         }
 
-        /* SECCIÓN DE LOS 2 INDICADORES PRINCIPALES */
-        .tabla-indicadores {
+        /* RESULTADOS: INDICADOR 1 E INDICADOR 2 */
+        .tabla-resultados {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 6px 0;
-            margin-bottom: 10px;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+            page-break-inside: avoid;
         }
-        .caja-indicador {
-            width: 50%;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 4px;
+        .tabla-resultados th {
+            background-color: #f1f5f9;
+            color: #000;
+            border: 1px solid #000;
+            padding: 6px 8px;
+            font-size: 8.5pt;
+            font-weight: bold;
+            text-align: left;
+            text-transform: uppercase;
+        }
+        .tabla-resultados td {
+            border: 1px solid #000;
             padding: 8px 10px;
             vertical-align: top;
-            background-color: #ffffff;
+            font-size: 9pt;
         }
-        .caja-indicador.acc {
-            border-color: #f43f5e;
-            background-color: #fff1f2;
+        .ind-puntaje {
+            font-size: 10pt;
+            margin-bottom: 4px;
         }
-        .caja-indicador.tipo-a {
-            border-color: #6366f1;
-            background-color: #eef2ff;
-        }
-        .ind-encabezado {
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-            padding-bottom: 4px;
-            margin-bottom: 6px;
-        }
-        .ind-num {
-            font-size: 7pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #64748b;
-        }
-        .ind-titulo {
-            font-size: 9.5pt;
-            font-weight: bold;
-            color: #0f172a;
-            margin: 1px 0;
-        }
-        .ind-puntaje-caja {
-            margin: 6px 0;
-            text-align: center;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            padding: 4px 6px;
-            border-radius: 4px;
-        }
-        .ind-puntaje-val {
-            font-size: 16pt;
-            font-weight: bold;
-            color: #0f172a;
-        }
-        .ind-puntaje-max {
-            font-size: 8.5pt;
-            color: #64748b;
+        .ind-sub {
+            font-size: 8pt;
+            color: #444;
+            margin-bottom: 8px;
         }
         .ind-interpretacion {
-            font-size: 7.5pt;
-            line-height: 1.35;
-            background-color: #ffffff;
-            border: 1px solid rgba(0,0,0,0.08);
+            font-size: 8.5pt;
+            line-height: 1.4;
+            background-color: #fafafa;
+            border: 1px solid #ccc;
             padding: 6px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            color: #1e293b;
             text-align: justify;
         }
 
-        /* TABLA DE BAREMOS Y RANGOS */
-        .tabla-baremos {
+        /* DESGLOSE DE LAS 40 AFIRMACIONES */
+        .titulo-seccion {
+            font-size: 9pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 12px 0 5px 0;
+            padding-bottom: 2px;
+            border-bottom: 1.5px solid #000;
+        }
+        .tabla-respuestas {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
-            font-size: 7.5pt;
+            font-size: 7.2pt;
+            line-height: 1.3;
         }
-        .tabla-baremos th {
-            background-color: #0f172a;
-            color: #ffffff;
-            padding: 4px 6px;
+        .tabla-respuestas th {
+            background-color: #f1f5f9;
+            color: #000;
+            border: 1px solid #000;
+            padding: 3.5px 5px;
             text-align: left;
             font-size: 7pt;
-            text-transform: uppercase;
-        }
-        .tabla-baremos td {
-            border: 1px solid #cbd5e1;
-            padding: 3px 6px;
-        }
-
-        /* DESGLOSE DE LAS 40 PREGUNTAS */
-        .seccion-titulo {
-            font-size: 8.5pt;
             font-weight: bold;
             text-transform: uppercase;
-            color: #0f172a;
-            margin: 8px 0 4px 0;
-            padding-bottom: 2px;
-            border-bottom: 1.5px solid #0f172a;
         }
-        .tabla-preguntas {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 6.8pt;
-            line-height: 1.25;
-        }
-        .tabla-preguntas th {
-            background-color: #1e293b;
-            color: #ffffff;
-            padding: 3px 4px;
-            text-align: left;
-            font-size: 6.5pt;
-            text-transform: uppercase;
-        }
-        .tabla-preguntas td {
-            border: 1px solid #e2e8f0;
-            padding: 2.5px 4px;
+        .tabla-respuestas td {
+            border: 1px solid #ccc;
+            padding: 3px 5px;
             vertical-align: middle;
         }
-        .tabla-preguntas tr:nth-child(even) td {
-            background-color: #f8fafc;
-        }
-        .badge-dim {
-            display: inline-block;
-            padding: 1px 4px;
-            border-radius: 3px;
-            font-size: 6pt;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .badge-acc {
-            background-color: #ffe4e6;
-            color: #be123c;
-        }
-        .badge-tipo-a {
-            background-color: #e0e7ff;
-            color: #3730a3;
-        }
-        .badge-control {
-            background-color: #f1f5f9;
-            color: #475569;
+        .tabla-respuestas tr:nth-child(even) td {
+            background-color: #fafafa;
         }
 
-        /* FIRMAS Y PIE */
-        .seccion-firmas {
-            margin-top: 10px;
+        /* SECCIÓN DE FIRMAS */
+        .tabla-firmas {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 18px;
             page-break-inside: avoid;
         }
-        .seccion-firmas td {
-            width: 50%;
+        .tabla-firmas td {
             vertical-align: bottom;
             text-align: center;
-            padding: 8px 15px;
+            padding: 10px 20px;
         }
         .linea-firma {
-            border-top: 1px solid #000;
-            margin: 0 10px 4px 10px;
+            border-top: 1.5px solid #000;
+            margin: 0 15px 6px 15px;
         }
         .img-firma {
             max-height: 48px;
             max-width: 160px;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
         .texto-firma {
-            font-size: 7.5pt;
-            color: #334155;
-            line-height: 1.3;
+            font-size: 8.5pt;
+            color: #000;
+            line-height: 1.35;
         }
         .pie-pagina {
-            margin-top: 8px;
-            font-size: 6.5pt;
-            color: #94a3b8;
+            margin-top: 10px;
+            font-size: 7pt;
+            color: #555;
             text-align: center;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid #ccc;
             padding-top: 3px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. ENCABEZADO INSTITUCIONAL GH-FO -->
+    <!-- 1. ENCABEZADO INSTITUCIONAL OFICIAL -->
     <table class="tabla-encabezado">
         <tr>
             <td class="logo-col">
                 @if(!empty($logoBase64))
                     <img src="{{ $logoBase64 }}" alt="Logo PNY">
                 @else
-                    <strong style="font-size: 8pt; color: #1e3a8a;">C.I. PISCÍCOLA NEW YORK S.A.</strong>
+                    <strong>C.I. PISCÍCOLA NEW YORK S.A.</strong>
                 @endif
             </td>
             <td class="titulo-col">
                 <h2>GESTIÓN HUMANA · PSICOLOGÍA ORGANIZACIONAL</h2>
                 <h1>INFORME DE EVALUACIÓN PAC-A</h1>
-                <p>Cuestionario de Tendencia Accidentógena y Patrón de Comportamiento Tipo A</p>
             </td>
             <td class="meta-col">
                 <table class="tabla-meta">
                     <tr>
-                        <td><strong>FORMATO:</strong> GH-FO-PAC</td>
+                        <td><strong>CÓDIGO:</strong> GH-FO-PAC</td>
                     </tr>
                     <tr>
                         <td><strong>VERSIÓN:</strong> 01</td>
@@ -301,88 +226,63 @@
         </tr>
     </table>
 
-    <!-- 2. DATOS DEL EVALUADO -->
-    <table class="tabla-ficha">
+    <!-- 2. DATOS DEL CANDIDATO EVALUADO -->
+    <table class="tabla-datos">
         <tr>
-            <td style="width: 38%;"><strong>Candidato(a):</strong> {{ $evaluacion->nombre_completo }}</td>
-            <td style="width: 24%;"><strong>Cédula:</strong> {{ $evaluacion->identificacion }} ({{ $evaluacion->lugar_expedicion }})</td>
-            <td style="width: 26%;"><strong>Área / Cargo:</strong> {{ $evaluacion->cargo_aspira }}</td>
+            <td style="width: 40%;"><strong>Candidato(a):</strong> {{ $evaluacion->nombre_completo }}</td>
+            <td style="width: 25%;"><strong>Cédula:</strong> {{ $evaluacion->identificacion }} ({{ $evaluacion->lugar_expedicion }})</td>
+            <td style="width: 23%;"><strong>Área / Cargo:</strong> {{ $evaluacion->cargo_aspira }}</td>
             <td style="width: 12%;"><strong>Edad:</strong> {{ $evaluacion->edad }} años</td>
         </tr>
     </table>
 
-    <!-- 3. RESULTADOS DE LOS DOS INDICADORES PRINCIPALES -->
-    <table class="tabla-indicadores">
-        <tr>
-            <!-- INDICADOR 1: TENDENCIA ACCIDENTÓGENA -->
-            <td class="caja-indicador acc">
-                <div class="ind-encabezado">
-                    <span class="ind-num">Indicador I · 12 Ítems</span>
-                    <div class="ind-titulo">Tendencia Accidentógena</div>
-                </div>
-
-                <div class="ind-puntaje-caja">
-                    <span class="ind-puntaje-val">{{ number_format($resultado->puntaje_tendencia_accidentogena, 1) }}</span>
-                    <span class="ind-puntaje-max">/ 24 pts máx</span>
-                </div>
-
-                <div class="ind-interpretacion">
-                    <strong>Interpretación:</strong><br>
-                    "{{ $resultado->interpretacion_accidentogena }}"
-                </div>
-            </td>
-
-            <!-- INDICADOR 2: PATRÓN DE COMPORTAMIENTO TIPO A -->
-            <td class="caja-indicador tipo-a">
-                <div class="ind-encabezado">
-                    <span class="ind-num">Indicador II · 20 Ítems</span>
-                    <div class="ind-titulo">Patrón de Comportamiento Tipo A</div>
-                </div>
-
-                <div class="ind-puntaje-caja">
-                    <span class="ind-puntaje-val">{{ number_format($resultado->puntaje_patron_tipo_a, 1) }}</span>
-                    <span class="ind-puntaje-max">/ 40 pts máx</span>
-                </div>
-
-                <div class="ind-interpretacion">
-                    <strong>Interpretación:</strong><br>
-                    "{{ $resultado->interpretacion_tipo_a }}"
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <!-- 4. TABLA COMPARATIVA DE BAREMOS Y RANGOS NORMATIVOS -->
-    <table class="tabla-baremos">
-        <tr>
-            <th style="width: 50%;">Baremo: Indicador I (Tendencia Accidentógena)</th>
-            <th style="width: 50%;">Baremo: Indicador II (Patrón Tipo A)</th>
-        </tr>
-        <tr>
-            <td>
-                <strong>&le; 8.5 pts:</strong> No se evidencian rasgos accidentógenos (Favorable)<br>
-                <strong>9.0 a 10.5 pts:</strong> Se sugiere indagar / descartar tendencia accidentógena<br>
-                <strong>&ge; 11.0 pts:</strong> Presencia de rasgos que sugieren tendencia accidentógena
-            </td>
-            <td>
-                <strong>&lt; 18.0 pts:</strong> No se evidencian rasgos del Patrón Tipo A (Tipo B / Estable)<br>
-                <strong>18.0 a 19.5 pts:</strong> Se sugiere indagar / descartar tendencia al Patrón Tipo A<br>
-                <strong>&ge; 20.0 pts:</strong> Presencia de rasgos del Patrón Tipo A (Urgencia / Competitividad)
-            </td>
-        </tr>
-    </table>
-
-    <!-- 5. DESGLOSE TABULADO DE LAS 40 AFIRMACIONES -->
-    <div class="seccion-titulo">Desglose Detallado de Respuestas (40 Afirmaciones)</div>
-
-    <table class="tabla-preguntas">
+    <!-- 3. RESULTADOS: SOLO INDICADOR 1 E INDICADOR 2 -->
+    <table class="tabla-resultados">
         <thead>
             <tr>
-                <th style="width: 4%; text-align: center;">Nº</th>
-                <th style="width: 53%;">Afirmación Evaluada</th>
-                <th style="width: 17%;">Dimensión Evaluada</th>
-                <th style="width: 16%;">Opción Elegida</th>
-                <th style="width: 10%; text-align: center;">Puntos</th>
+                <th style="width: 50%;">INDICADOR I: TENDENCIA ACCIDENTÓGENA</th>
+                <th style="width: 50%;">INDICADOR II: PATRÓN DE COMPORTAMIENTO TIPO A</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <!-- INDICADOR 1 -->
+                <td>
+                    <div class="ind-puntaje">
+                        Puntaje Obtenido: <strong>{{ number_format($resultado->puntaje_tendencia_accidentogena, 1) }} / 24 pts máx</strong>
+                    </div>
+                    <div class="ind-sub">Total 12 Afirmaciones Evaluadas</div>
+                    <div class="ind-interpretacion">
+                        <strong>Interpretación Institucional:</strong><br>
+                        "{{ $resultado->interpretacion_accidentogena }}"
+                    </div>
+                </td>
+
+                <!-- INDICADOR 2 -->
+                <td>
+                    <div class="ind-puntaje">
+                        Puntaje Obtenido: <strong>{{ number_format($resultado->puntaje_patron_tipo_a, 1) }} / 40 pts máx</strong>
+                    </div>
+                    <div class="ind-sub">Total 20 Afirmaciones Evaluadas</div>
+                    <div class="ind-interpretacion">
+                        <strong>Interpretación Institucional:</strong><br>
+                        "{{ $resultado->interpretacion_tipo_a }}"
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 4. DESGLOSE DETALLADO DE RESPUESTAS (SIN COLUMNA DE PUNTOS) -->
+    <div class="titulo-seccion">Desglose de Respuestas (40 Afirmaciones)</div>
+
+    <table class="tabla-respuestas">
+        <thead>
+            <tr>
+                <th style="width: 5%; text-align: center;">Nº</th>
+                <th style="width: 58%;">Afirmación Evaluada</th>
+                <th style="width: 22%;">Dimensión Evaluada</th>
+                <th style="width: 15%; text-align: center;">Respuesta Elegida</th>
             </tr>
         </thead>
         <tbody>
@@ -399,34 +299,26 @@
                     <td>{{ $texto }}</td>
                     <td>
                         @if($esAcc)
-                            <span class="badge-dim badge-acc">Accidentógena</span>
+                            Tendencia Accidentógena
                         @elseif($esTipoA)
-                            <span class="badge-dim badge-tipo-a">Patrón Tipo A</span>
+                            Patrón Tipo A
                         @else
-                            <span class="badge-dim badge-control">Control</span>
+                            Control
                         @endif
                     </td>
-                    <td>
+                    <td style="text-align: center;">
                         <strong>{{ $infoOpcion['nombre'] }}</strong> ({{ $opcion }})
-                    </td>
-                    <td style="text-align: center; font-weight: bold;">
-                        @if($esAcc || $esTipoA)
-                            {{ number_format($infoOpcion['puntaje'], 1) }}
-                        @else
-                            <span style="color: #94a3b8;">—</span>
-                        @endif
                     </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
 
-    <!-- 6. VALIDACIÓN Y FIRMA PROFESIONAL -->
-    <table class="seccion-firmas">
+    <!-- 5. FIRMA Y CONSTANCIA PROFESIONAL -->
+    <table class="tabla-firmas">
         <tr>
-            <td>
-                <!-- Candidato Evaluado -->
-                <div style="font-size: 7.5pt; color: #64748b; margin-bottom: 4px;">Firma registrada en Consentimiento GH-FO-025:</div>
+            <td style="width: 50%;">
+                <div style="font-size: 8pt; color: #444; margin-bottom: 6px;">Firma registrada en Consentimiento GH-FO-025:</div>
                 <div class="linea-firma"></div>
                 <div class="texto-firma">
                     <strong>{{ $evaluacion->nombre_completo }}</strong><br>
@@ -434,12 +326,11 @@
                     Candidato(a) Evaluado(a)
                 </div>
             </td>
-            <td>
-                <!-- Psicóloga Oficial Responsable -->
+            <td style="width: 50%;">
                 @if(!empty($firmaPsicologaBase64))
                     <img src="{{ $firmaPsicologaBase64 }}" class="img-firma" alt="Firma Profesional">
                 @else
-                    <div style="height: 38px;"></div>
+                    <div style="height: 48px;"></div>
                 @endif
                 <div class="linea-firma"></div>
                 <div class="texto-firma">
@@ -452,9 +343,8 @@
     </table>
 
     <div class="pie-pagina">
-        Documento confidencial emitido por el Sistema Integral de Selección y Capacitaciones · C.I. Piscícola New York S.A.S. · Fecha de emisión: {{ now()->format('d/m/Y h:i A') }}
+        Documento confidencial emitido por el Sistema de Selección y Talento Humano · C.I. Piscícola New York S.A.S. · Fecha de emisión: {{ now()->format('d/m/Y h:i A') }}
     </div>
 
 </body>
 </html>
-

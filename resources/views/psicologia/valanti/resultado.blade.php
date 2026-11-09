@@ -58,39 +58,39 @@
             </p>
         </div>
 
-        <div class="flex items-center gap-2 shrink-0 print:hidden flex-wrap">
-            <!-- Exportar PDF del Gráfico y Reporte VALANTI (Ya generado automáticamente) -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-2 w-full lg:w-auto shrink-0 print:hidden">
+            <!-- Exportar PDF del Gráfico y Reporte VALANTI -->
             <a href="{{ $urlPdfValantiDescarga }}"
-               class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white transition-all shadow-2xs">
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white transition-all shadow-2xs">
                 <i class="fa-solid fa-file-arrow-down text-xs"></i>
-                Exportar PDF Gráfico
+                <span>Exportar</span>
             </a>
 
             <button type="button"
                onclick="abrirModalPdf('{{ $urlPdfValantiInline }}', '{{ $urlPdfValantiDescarga }}', 'Cuestionario VALANTI · {{ addslashes($aplicacion->nombre_completo) }}', 'Reporte Cuestionario VALANTI')"
-               class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 transition-colors shadow-2xs cursor-pointer">
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 transition-colors shadow-2xs cursor-pointer">
                 <i class="fa-solid fa-eye text-xs text-brand-blue"></i>
-                Ver PDF Gráfico
+                <span>Ver</span>
             </button>
 
             @if($aplicacion->pacaFinalizada())
                 <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $aplicacion) : route('psicologia.paca.resultado', $aplicacion) }}"
-                   class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 text-xs font-bold text-indigo-700 transition-colors shadow-2xs">
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 text-xs font-bold text-indigo-700 transition-colors shadow-2xs">
                     <i class="fa-solid fa-chart-simple text-xs"></i>
-                    Ver Prueba 2 (PAC-A)
+                    <span>Prueba 2 (PAC-A)</span>
                 </a>
             @endif
 
             <button type="button"
                onclick="abrirModalPdf('{{ $urlPdfConsentimientoInline }}', '{{ $urlPdfConsentimientoDescarga }}', 'Consentimiento Informado · {{ addslashes($aplicacion->nombre_completo) }}', 'Formato Oficial GH-FO-025')"
-               class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 text-xs font-bold text-rose-700 transition-colors shadow-2xs cursor-pointer">
+               class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 text-xs font-bold text-rose-700 transition-colors shadow-2xs cursor-pointer">
                 <i class="fa-solid fa-file-pdf text-xs text-rose-600"></i>
-                Consentimiento
+                <span>Consentimiento</span>
             </button>
 
-            <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial') }}" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-all">
+            <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-2xs transition-all">
                 <i class="fa-solid fa-arrow-left text-xs"></i>
-                Historial
+                <span>Historial</span>
             </a>
         </div>
     </div>

@@ -5,7 +5,7 @@
 @section('page_subtitle', $aplicacion->nombre_completo)
 
 @section('content')
-<div class="space-y-8 max-w-5xl mx-auto pb-16">
+<div class="space-y-8 w-full max-w-7xl mx-auto pb-16">
 
     @php
         $urlPdfConsentimientoInline = (request()->routeIs('admin.*') ? route('admin.psicologia.consentimientos.pdf', $aplicacion) : route('psicologia.consentimientos.pdf', $aplicacion)) . '?inline=1';
@@ -15,62 +15,66 @@
         $urlPdfPacaDescarga = request()->routeIs('admin.*') ? route('admin.psicologia.paca.pdf', $aplicacion) : route('psicologia.paca.pdf', $aplicacion);
     @endphp
 
-    <!-- Encabezado con Botones de Acción -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <div class="flex items-center gap-2">
-                <span class="rounded-lg bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200">
-                    <i class="fa-solid fa-circle-check"></i> Prueba Calificada
-                </span>
-                <span class="text-xs text-slate-400">Sesión #{{ $aplicacion->id }} ({{ $aplicacion->codigo_sesion }})</span>
+    <!-- Encabezado con Botones de Acción (En móvil: opciones en columna; en PC: diseño horizontal ajustado) -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div class="space-y-2 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="rounded-lg bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200">
+                        <i class="fa-solid fa-circle-check"></i> Prueba Calificada
+                    </span>
+                    <span class="text-xs text-slate-400 font-medium">Sesión #{{ $aplicacion->id }} ({{ $aplicacion->codigo_sesion }})</span>
+                </div>
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                    Resultados de Evaluación PAC-A
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-600 font-medium flex items-center gap-1.5 flex-wrap pt-0.5">
+                    <span class="text-slate-400 font-normal">Evaluado:</span>
+                    <strong class="text-slate-900 font-bold">{{ $aplicacion->nombre_completo }}</strong>
+                    <span class="text-slate-400 font-normal">&bull;</span>
+                    <span class="text-slate-500 font-mono text-xs">C.C. {{ $aplicacion->identificacion }}</span>
+                </p>
             </div>
-            <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 mt-1">
-                Resultados de Evaluación PAC-A
-            </h1>
-            <p class="text-xs text-slate-500 mt-0.5">
-                Evaluado: <strong>{{ $aplicacion->nombre_completo }}</strong> (CC {{ $aplicacion->identificacion }})
-            </p>
-        </div>
 
-        <div class="flex items-center gap-2.5 shrink-0 print:hidden flex-wrap">
-            <!-- Exportar PDF PAC-A -->
-            <a href="{{ $urlPdfPacaDescarga }}"
-               class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-3.5 py-2 text-xs font-bold text-white transition-all shadow-2xs">
-                <i class="fa-solid fa-file-arrow-down text-xs"></i>
-                Exportar PDF PAC-A
-            </a>
-
-            <!-- Previsualizar PDF PAC-A -->
-            <button type="button"
-               onclick="abrirModalPdf('{{ $urlPdfPacaInline }}', '{{ $urlPdfPacaDescarga }}', '{{ addslashes($aplicacion->nombre_completo) }}', 'Informe PAC-A · {{ addslashes($aplicacion->nombre_completo) }}')"
-               title="Previsualizar Informe de Resultados PAC-A"
-               class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 text-xs font-bold text-indigo-700 transition-colors shadow-2xs cursor-pointer">
-                <i class="fa-solid fa-eye text-xs text-indigo-600"></i>
-                Ver PDF PAC-A
-            </button>
-
-            @if($aplicacion->valantiFinalizada())
-                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $aplicacion) : route('psicologia.valanti.resultado', $aplicacion) }}"
-                   class="inline-flex items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100 px-3.5 py-2 text-xs font-bold text-sky-700 transition-colors shadow-2xs">
-                    <i class="fa-solid fa-scale-balanced text-xs"></i>
-                    Ver Prueba 1 (VALANTI)
+            <!-- Botones de Acción: En móvil en columna (flex-col w-full), en PC en fila adaptada (sm:flex-row sm:w-auto sm:flex-wrap) -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-2 w-full lg:w-auto print:hidden">
+                <!-- Exportar PDF PAC-A -->
+                <a href="{{ $urlPdfPacaDescarga }}"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 text-xs font-bold text-white transition-all shadow-2xs">
+                    <i class="fa-solid fa-file-arrow-down text-xs"></i>
+                    <span>Exportar</span>
                 </a>
-            @endif
-            <button type="button"
-               onclick="abrirModalPdf('{{ $urlPdfConsentimientoInline }}', '{{ $urlPdfConsentimientoDescarga }}', '{{ addslashes($aplicacion->nombre_completo) }}', 'Consentimiento Informado (GH-FO-025) · {{ addslashes($aplicacion->nombre_completo) }}')"
-               title="Previsualizar y Descargar Consentimiento (GH-FO-025)"
-               class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 text-xs font-bold text-rose-700 transition-colors shadow-2xs cursor-pointer">
-                <i class="fa-solid fa-file-pdf text-xs text-rose-600"></i>
-                Ver Consentimiento
-            </button>
-            <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 transition-colors shadow-2xs cursor-pointer">
-                <i class="fa-solid fa-print text-xs"></i>
-                Imprimir
-            </button>
-            <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial') }}" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-all">
-                <i class="fa-solid fa-arrow-left text-xs"></i>
-                Volver al Historial
-            </a>
+
+                <!-- Previsualizar PDF PAC-A -->
+                <button type="button"
+                   onclick="abrirModalPdf('{{ $urlPdfPacaInline }}', '{{ $urlPdfPacaDescarga }}', '{{ addslashes($aplicacion->nombre_completo) }}', 'Informe PAC-A · {{ addslashes($aplicacion->nombre_completo) }}')"
+                   title="Previsualizar Informe de Resultados PAC-A"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 text-xs font-bold text-indigo-700 transition-colors shadow-2xs cursor-pointer">
+                    <i class="fa-solid fa-eye text-xs text-indigo-600"></i>
+                    <span>Ver</span>
+                </button>
+
+                @if($aplicacion->valantiFinalizada())
+                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $aplicacion) : route('psicologia.valanti.resultado', $aplicacion) }}"
+                       class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors shadow-2xs">
+                        <i class="fa-solid fa-scale-balanced text-xs"></i>
+                        <span>Prueba 1 (VALANTI)</span>
+                    </a>
+                @endif
+
+                <button type="button"
+                   onclick="abrirModalPdf('{{ $urlPdfConsentimientoInline }}', '{{ $urlPdfConsentimientoDescarga }}', '{{ addslashes($aplicacion->nombre_completo) }}', 'Consentimiento Informado (GH-FO-025) · {{ addslashes($aplicacion->nombre_completo) }}')"
+                   title="Previsualizar y Descargar Consentimiento (GH-FO-025)"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 text-xs font-bold text-rose-700 transition-colors shadow-2xs cursor-pointer">
+                    <i class="fa-solid fa-file-pdf text-xs text-rose-600"></i>
+                    <span>Consentimiento</span>
+                </button>
+
+                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-blue hover:bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-2xs transition-all">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                    <span>Volver al Historial</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -502,7 +506,7 @@
                                 </span>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                                 @foreach($opciones as $cod => $infoOpc)
                                     @php
                                         $esSeleccionada = ($opcionMarcada === $cod);
@@ -510,7 +514,7 @@
                                     @endphp
                                     <label id="card-opcion-paca-{{ $num }}-{{ $cod }}"
                                            onclick="seleccionarOpcionPaca({{ $num }}, '{{ $cod }}')"
-                                           class="cursor-pointer relative block rounded-2xl p-4 border transition-all card-opc-paca-{{ $num }} {{ $esSeleccionada ? 'bg-blue-50/90 border-2 border-brand-blue shadow-xs ring-4 ring-blue-50/50' : 'bg-white border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-300' }}">
+                                           class="cursor-pointer relative block rounded-2xl p-3.5 sm:p-4 border transition-all card-opc-paca-{{ $num }} min-w-0 {{ $esSeleccionada ? 'bg-blue-50/90 border-2 border-brand-blue shadow-xs ring-4 ring-blue-50/50' : 'bg-white border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-300' }}">
                                         
                                         <input type="radio"
                                                name="respuestas[{{ $num }}]"
@@ -522,23 +526,24 @@
                                                class="sr-only">
 
                                         <span id="badge-marcada-{{ $num }}-{{ $cod }}"
-                                              class="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs {{ $esSeleccionada ? 'bg-brand-blue text-white' : 'hidden' }}">
-                                            <i class="fa-solid fa-check text-[9px]"></i> Marcó el candidato
+                                              class="absolute -top-2.5 right-2 sm:right-3 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs {{ $esSeleccionada ? 'bg-brand-blue text-white' : 'hidden' }}">
+                                            <i class="fa-solid fa-check text-[8px]"></i> Marcada
                                         </span>
 
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-2">
+                                        <div class="flex items-center justify-between gap-2 min-w-0">
+                                            <div class="flex items-center gap-2 min-w-0">
                                                 <span id="cod-box-{{ $num }}-{{ $cod }}"
-                                                      class="w-7 h-7 rounded-lg font-mono font-black text-xs flex items-center justify-center {{ $esSeleccionada ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-600' }}">
+                                                      class="w-7 h-7 rounded-lg font-mono font-black text-xs shrink-0 flex items-center justify-center {{ $esSeleccionada ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-600' }}">
                                                     {{ $cod }}
                                                 </span>
                                                 <span id="cod-nombre-{{ $num }}-{{ $cod }}"
-                                                      class="font-bold text-xs sm:text-sm {{ $esSeleccionada ? 'text-slate-900' : 'text-slate-600' }}">
+                                                      class="font-bold text-xs sm:text-sm truncate {{ $esSeleccionada ? 'text-slate-900' : 'text-slate-600' }}"
+                                                      title="{{ $infoOpc['nombre'] }}">
                                                     {{ $infoOpc['nombre'] }}
                                                 </span>
                                             </div>
                                             <span id="cod-pts-{{ $num }}-{{ $cod }}"
-                                                  class="font-mono text-xs font-bold {{ $esSeleccionada ? 'text-brand-blue' : 'text-slate-400' }}">
+                                                  class="font-mono text-xs font-bold shrink-0 {{ $esSeleccionada ? 'text-brand-blue' : 'text-slate-400' }}">
                                                 {{ number_format($ptsOpcion, 1) }} pts
                                             </span>
                                         </div>
@@ -1001,11 +1006,11 @@
             const esOriginal = (radio && radio.getAttribute('data-original') === nuevoCodigo);
             badgeActivo.classList.remove('hidden');
             if (esOriginal) {
-                badgeActivo.className = 'absolute -top-2.5 right-3 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs bg-brand-blue text-white';
-                badgeActivo.innerHTML = '<i class="fa-solid fa-check text-[9px]"></i> Marcó el candidato';
+                badgeActivo.className = 'absolute -top-2.5 right-2 sm:right-3 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs bg-brand-blue text-white';
+                badgeActivo.innerHTML = '<i class="fa-solid fa-check text-[8px]"></i> Marcada';
             } else {
-                badgeActivo.className = 'absolute -top-2.5 right-3 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs bg-amber-500 text-white';
-                badgeActivo.innerHTML = '<i class="fa-solid fa-user-pen text-[9px]"></i> Ajustado por Psicología';
+                badgeActivo.className = 'absolute -top-2.5 right-2 sm:right-3 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs bg-amber-500 text-white';
+                badgeActivo.innerHTML = '<i class="fa-solid fa-user-pen text-[8px]"></i> Modificada';
             }
         }
 
