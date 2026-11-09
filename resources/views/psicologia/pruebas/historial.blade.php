@@ -176,7 +176,7 @@
                                         <i class="fa-solid fa-scale-balanced text-xs"></i>
                                         <span>VALANTI</span>
                                     </a>
-                                    <a href="{{ route('psicologia.valanti.pdf', $app) }}" title="Descargar PDF Gráfico VALANTI" class="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs transition-colors">
+                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.pdf', $app) : route('psicologia.valanti.pdf', $app) }}" title="Descargar PDF Gráfico VALANTI" class="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs transition-colors">
                                         <i class="fa-solid fa-file-pdf"></i>
                                     </a>
                                 @endif
@@ -184,6 +184,9 @@
                                     <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1.5 text-xs font-bold transition-colors">
                                         <i class="fa-solid fa-chart-simple text-xs"></i>
                                         <span>PAC-A</span>
+                                    </a>
+                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.pdf', $app) : route('psicologia.paca.pdf', $app) }}" title="Descargar PDF Resultados PAC-A" class="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs transition-colors">
+                                        <i class="fa-solid fa-file-pdf"></i>
                                     </a>
                                 @endif
                                 @if(!$app->valantiFinalizada())
@@ -313,13 +316,16 @@
                                                 <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}" class="inline-flex items-center gap-1 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 px-3 py-1.5 text-xs font-bold transition-colors" title="Ver Resultados Prueba 1 (VALANTI)">
                                                     <i class="fa-solid fa-scale-balanced text-[11px]"></i> VALANTI
                                                 </a>
-                                                <a href="{{ route('psicologia.valanti.pdf', $app) }}" class="inline-flex items-center justify-center h-7 w-7 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs transition-colors" title="Descargar PDF del Gráfico VALANTI">
+                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.pdf', $app) : route('psicologia.valanti.pdf', $app) }}" class="inline-flex items-center justify-center h-7 w-7 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs transition-colors" title="Descargar PDF del Gráfico VALANTI">
                                                     <i class="fa-solid fa-file-arrow-down text-[11px]"></i>
                                                 </a>
                                             @endif
                                             @if($app->pacaFinalizada())
                                                 <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}" class="inline-flex items-center gap-1 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 text-xs font-bold transition-colors" title="Ver Resultados Prueba 2 (PAC-A)">
                                                     <i class="fa-solid fa-chart-simple text-[11px]"></i> PAC-A
+                                                </a>
+                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.pdf', $app) : route('psicologia.paca.pdf', $app) }}" class="inline-flex items-center justify-center h-7 w-7 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs transition-colors" title="Descargar PDF Resultados PAC-A">
+                                                    <i class="fa-solid fa-file-arrow-down text-[11px]"></i>
                                                 </a>
                                             @endif
                                             @if(!$app->valantiFinalizada())

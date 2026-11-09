@@ -83,12 +83,10 @@ class CalificadorPacaService
 
     /**
      * Interpreta el puntaje de Tendencia Accidentógena.
-     * Criterios del archivo Excel:
-     * - [= ó > 11] => Presencia de rasgos (Fórmula: >= 11)
-     * - de 9 a 10.5 => Se sugiere indagar (Fórmula: >= 9 y <= 10.5)
-     * - [= ó < 8] => No se evidencian rasgos (Fórmula: <= 8.5)
-     *
-     * Discrepancia: El valor 8.5 está cubierto por la fórmula (<= 8.5), pero el texto dice (<= 8).
+     * Criterios oficiales:
+     * - [>= 11.0]        => Presencia de rasgos
+     * - [9.0 a 10.5]     => Se sugiere indagar
+     * - [<= 8.5]         => No se evidencian rasgos
      */
     public function interpretarTendenciaAccidentogena(float $puntaje): array
     {
@@ -108,33 +106,19 @@ class CalificadorPacaService
             ];
         }
 
-        if ($puntaje <= 8.0) {
-            return [
-                'texto' => self::TXT_ACC_AUSENCIA,
-                'estado' => 'DEFINIDA',
-                'observacion' => null,
-            ];
-        }
-
-        // Caso ambiguo: 8.5 (o valores entre 8.0 y 9.0)
         return [
-            'texto' => self::TXT_ACC_AUSENCIA . ' [Criterio con discrepancia documental: la fórmula original evalúa <= 8.5 pero el texto de referencia indica <= 8.0].',
-            'estado' => 'AMBIGUA_VALIDACION_PENDIENTE',
-            'observacion' => 'Puntaje de 8.5 cae en la brecha entre la descripción documental (<= 8) y la condición de la fórmula original en Excel (<= 8.5). Requiere validación por la profesional de psicología responsable.',
+            'texto' => self::TXT_ACC_AUSENCIA,
+            'estado' => 'DEFINIDA',
+            'observacion' => null,
         ];
     }
 
     /**
      * Interpreta el puntaje de Patrón de Comportamiento Tipo A.
-     * Criterios del archivo Excel:
-     * - [= ó > 20] => Presencia de rasgos (Fórmula: >= 20)
-     * - de 18 a 19.5 => Se sugiere indagar (Fórmula: >= 18 y <= 19.5)
-     * - [= ó < 18] => No se evidencian rasgos (Fórmula: <= 18.5)
-     *
-     * Discrepancia y Superposición: Para los valores 18.0 y 18.5, existe conflicto:
-     * El texto dice simultáneamente <= 18 (ausencia) y de 18 a 19.5 (indagar).
-     * En la fórmula original se evalúa primero >= 18 dando prioridad a "indagar",
-     * dejando la condición <= 18.5 inalcanzable para 18 y 18.5.
+     * Criterios oficiales:
+     * - [>= 20.0]       => Presencia de rasgos
+     * - [18.0 a 19.5]   => Se sugiere indagar
+     * - [< 18.0]        => No se evidencian rasgos
      */
     public function interpretarPatronTipoA(float $puntaje): array
     {
@@ -146,7 +130,7 @@ class CalificadorPacaService
             ];
         }
 
-        if ($puntaje >= 19.0 && $puntaje <= 19.5) {
+        if ($puntaje >= 18.0 && $puntaje <= 19.5) {
             return [
                 'texto' => self::TXT_TPOA_INDAGAR,
                 'estado' => 'DEFINIDA',
@@ -154,19 +138,10 @@ class CalificadorPacaService
             ];
         }
 
-        if ($puntaje < 18.0) {
-            return [
-                'texto' => self::TXT_TPOA_AUSENCIA,
-                'estado' => 'DEFINIDA',
-                'observacion' => null,
-            ];
-        }
-
-        // Caso ambiguo: valores 18.0 y 18.5 (zona de superposición entre rangos en Excel original)
         return [
-            'texto' => self::TXT_TPOA_INDAGAR . ' [Criterio con superposición en Excel original entre 18.0 y 18.5].',
-            'estado' => 'AMBIGUA_VALIDACION_PENDIENTE',
-            'observacion' => 'Puntaje en rango de superposición (18.0 - 18.5): el texto original incluye 18 en ambos rangos (<=18 y de 18 a 19.5) y la fórmula del Excel capturó >= 18 primero. Se conserva el puntaje y se deja pendiente de criterio profesional.',
+            'texto' => self::TXT_TPOA_AUSENCIA,
+            'estado' => 'DEFINIDA',
+            'observacion' => null,
         ];
     }
 

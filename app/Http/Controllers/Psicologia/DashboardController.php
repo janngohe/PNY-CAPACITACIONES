@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Psicologia;
 use App\Constants\PacaPreguntas;
 use App\Constants\ValantiPreguntas;
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\EvaluacionCandidato;
 use App\Models\RespuestaPaca;
 use App\Models\RespuestaValanti;
@@ -113,8 +114,9 @@ class DashboardController extends Controller
     {
         $codigo = $codigo ?? 'PSI-PNY';
         $fechaHoraActual = now();
+        $areas = Area::where('estado', true)->orderBy('nombre')->get()->unique('nombre');
 
-        return view('psicologia.evaluacion_candidato', compact('codigo', 'fechaHoraActual'));
+        return view('psicologia.evaluacion_candidato', compact('codigo', 'fechaHoraActual', 'areas'));
     }
 
     /**
@@ -185,7 +187,7 @@ class DashboardController extends Controller
             'fecha_nacimiento.required' => 'La fecha de nacimiento es obligatoria.',
             'edad.required' => 'La edad es obligatoria.',
             'edad.min' => 'La edad mínima permitida es 16 años.',
-            'cargo_aspira.required' => 'El cargo al que aspiras es obligatorio.',
+            'cargo_aspira.required' => 'Debes seleccionar el área a la que aspiras.',
             'firma_digital.required' => 'Debes dibujar tu firma digital en el recuadro.',
             'acepta_terminos.accepted' => 'Debes marcar la casilla de aceptación para continuar.',
         ]);
@@ -803,6 +805,7 @@ class DashboardController extends Controller
         $resultado = $res;
         $preguntas = ValantiPreguntas::PREGUNTAS;
         $baremos = ValantiPreguntas::BAREMOS;
+        $combinaciones = ValantiPreguntas::COMBINACIONES_VALIDAS;
         $respuestasPorNumero = $evaluacion->respuestasValanti->keyBy('numero_pregunta');
 
         return view('psicologia.valanti.resultado', compact(
@@ -810,8 +813,198 @@ class DashboardController extends Controller
             'resultado',
             'preguntas',
             'baremos',
-            'respuestasPorNumero'
+            'respuestasPorNumero',
+            'combinaciones'
         ));
+    }
+
+    /**
+     * Permite al profesional de Psicología o Administrador ajustar las respuestas de PAC-A
+     * y recalcular de inmediato los puntajes, niveles de riesgo e interpretación institucional.
+     */
+    public function actualizarRespuestasPaca(
+        Request $request,
+        EvaluacionCandidato $evaluacion,
+        CalificadorPacaService $calificador
+    ) {
+        $respuestasInput = (array) $request->input('respuestas', []);
+
+        if (empty($respuestasInput)) {
+            return back()->with('error', 'No se recibieron respuestas para actualizar.');
+        }
+
+        DB::transaction(function () use ($evaluacion, $respuestasInput) {
+            foreach ($respuestasInput as $num => $op) {
+                $num = (int) $num;
+                $op = strtoupper(trim((string) $op));
+                if ($num >= 1 && $num <= 40 && in_array($op, ['S', 'F', 'R', 'N'], true)) {
+                    RespuestaPaca::updateOrCreate(
+                        [
+                            'evaluacion_candidato_id' => $evaluacion->id,
+                            'numero_pregunta' => $num,
+                        ],
+                        [
+                            'opcion_seleccionada' => $op,
+                            'puntaje' => PacaPreguntas::puntajeDeOpcion($op),
+                        ]
+                    );
+                }
+            }
+        });
+
+        // Recalcular resultado cuantitativo y cualitativo
+        $resultado = $calificador->calificarYAplicar($evaluacion);
+
+        // Si ya cuenta con ambas pruebas y tiene certificado, sincronizar concepto aptitudinal
+        if ($evaluacion->pacaFinalizada() && $evaluacion->valantiFinalizada()) {
+            $nuevoConcepto = $evaluacion->calcularConceptoAptitudinal();
+            $evaluacion->update([
+                'certificado_concepto' => $nuevoConcepto,
+            ]);
+        }
+
+        $msg = "Respuestas de PAC-A actualizadas y prueba recalificada exitosamente. Tendencia Accidentógena: {$resultado->nivel_riesgo_accidentogena} ({$resultado->puntaje_tendencia_accidentogena} pts) · Patrón Tipo A: {$resultado->nivel_riesgo_patron_tipo_a} ({$resultado->puntaje_patron_tipo_a} pts).";
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'ok' => true,
+                'mensaje' => $msg,
+            ]);
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Permite al profesional de Psicología o Administrador ajustar las respuestas de VALANTI
+     * y recalcular de inmediato los puntajes directos, baremos estándar (PE), gráfico radial y PDF.
+     */
+    public function actualizarRespuestasValanti(
+        Request $request,
+        EvaluacionCandidato $evaluacion,
+        CalificadorValantiService $calificador
+    ) {
+        $respuestasInput = (array) $request->input('respuestas', []);
+
+        if (empty($respuestasInput)) {
+            return back()->with('error', 'No se recibieron respuestas para actualizar.');
+        }
+
+        DB::transaction(function () use ($evaluacion, $respuestasInput) {
+            foreach ($respuestasInput as $num => $parStr) {
+                $num = (int) $num;
+                $parStr = trim((string) $parStr);
+                if ($num >= 1 && $num <= 30 && isset(ValantiPreguntas::COMBINACIONES_VALIDAS[$parStr])) {
+                    $par = ValantiPreguntas::COMBINACIONES_VALIDAS[$parStr];
+                    RespuestaValanti::updateOrCreate(
+                        [
+                            'evaluacion_candidato_id' => $evaluacion->id,
+                            'numero_pregunta' => $num,
+                        ],
+                        [
+                            'puntos_a' => $par['a'],
+                            'puntos_b' => $par['b'],
+                        ]
+                    );
+                }
+            }
+        });
+
+        // Recalcular resultado, gráfico radial en base64 y PDF
+        $resultado = $calificador->calificarYAplicar($evaluacion);
+
+        // Si ya cuenta con ambas pruebas y tiene certificado, sincronizar concepto aptitudinal
+        if ($evaluacion->pacaFinalizada() && $evaluacion->valantiFinalizada()) {
+            $nuevoConcepto = $evaluacion->calcularConceptoAptitudinal();
+            $evaluacion->update([
+                'certificado_concepto' => $nuevoConcepto,
+            ]);
+        }
+
+        $msg = "Respuestas de VALANTI actualizadas y perfil radial recalificado exitosamente. (Verdad: {$resultado->pe_verdad}, Rectitud: {$resultado->pe_rectitud}, Paz: {$resultado->pe_paz}, Amor: {$resultado->pe_amor}, No Violencia: {$resultado->pe_no_violencia}).";
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'ok' => true,
+                'mensaje' => $msg,
+            ]);
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Genera y muestra/descarga el PDF oficial de resultados de la prueba PAC-A.
+     */
+    public function verPacaPdf(
+        Request $request,
+        EvaluacionCandidato $evaluacion,
+        CalificadorPacaService $calificador
+    ) {
+        $evaluacion->load(['respuestasPaca', 'resultadoPaca']);
+
+        if (!$evaluacion->resultadoPaca && $evaluacion->respuestasPaca->count() === 40) {
+            $calificador->calificarYAplicar($evaluacion);
+            $evaluacion->load('resultadoPaca');
+        }
+
+        if (!$evaluacion->resultadoPaca) {
+            abort(404, 'Resultados PAC-A no disponibles.');
+        }
+
+        $resultado = $evaluacion->resultadoPaca;
+        $afirmaciones = PacaPreguntas::AFIRMACIONES;
+        $respuestasPorId = $evaluacion->respuestasPaca->keyBy('numero_pregunta');
+        $preguntasAccidentogena = PacaPreguntas::PREGUNTAS_TENDENCIA_ACCIDENTOGENA;
+        $preguntasTipoA = PacaPreguntas::PREGUNTAS_PATRON_TIPO_A;
+        $preguntasControl = PacaPreguntas::PREGUNTAS_CONTROL;
+        $opciones = PacaPreguntas::OPCIONES;
+
+        // Logo institucional en Base64
+        $logoBase64 = null;
+        $rutaLogo = public_path('images/Logo.png');
+        if (file_exists($rutaLogo)) {
+            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($rutaLogo));
+        }
+
+        // Psicóloga oficial y firma digital
+        $psicologo = null;
+        if (Auth::user() && !empty(Auth::user()->firma_digital)) {
+            $psicologo = Auth::user();
+        } else {
+            $psicologo = Usuario::where('rol', 'PSICOLOGIA')->whereNotNull('firma_digital')->first();
+        }
+
+        $firmaPsicologaBase64 = null;
+        if ($psicologo && !empty($psicologo->firma_digital)) {
+            if (str_starts_with($psicologo->firma_digital, 'data:image')) {
+                $firmaPsicologaBase64 = $this->convertirTintaFirmaANegro($psicologo->firma_digital);
+            } elseif (Storage::disk('public')->exists($psicologo->firma_digital)) {
+                $firmaPsicologaBase64 = $this->convertirTintaFirmaANegro(Storage::disk('public')->get($psicologo->firma_digital));
+            }
+        }
+
+        $pdf = Pdf::loadView('psicologia.paca.pdf', compact(
+            'evaluacion',
+            'resultado',
+            'afirmaciones',
+            'respuestasPorId',
+            'preguntasAccidentogena',
+            'preguntasTipoA',
+            'preguntasControl',
+            'opciones',
+            'logoBase64',
+            'firmaPsicologaBase64',
+            'psicologo'
+        ))->setPaper('letter', 'portrait');
+
+        $nombreDescarga = "Reporte_PACA_{$evaluacion->identificacion}.pdf";
+
+        if ($request->boolean('inline')) {
+            return $pdf->stream($nombreDescarga);
+        }
+
+        return $pdf->download($nombreDescarga);
     }
 
     /**

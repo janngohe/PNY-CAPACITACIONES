@@ -1,3 +1,6 @@
+@php
+    $areas = $areas ?? \App\Models\Area::where('estado', true)->orderBy('nombre')->get()->unique('nombre');
+@endphp
 <!DOCTYPE html>
 <html lang="es" class="h-full bg-slate-50">
 <head>
@@ -278,20 +281,25 @@
                         </div>
                     </div>
 
-                    <!-- Cargo al que aspira (Texto escrito libre) -->
+                    <!-- Área / Cargo al que aspira (Selección obligatoria entre las áreas registradas) -->
                     <div class="sm:col-span-2">
                         <label for="cargo_aspira" class="block font-heading font-bold text-slate-700 mb-1.5">
-                            Cargo al que Aspira <span class="text-rose-500">*</span>
+                            Área a la que Aspira <span class="text-rose-500">*</span>
                         </label>
                         <div class="relative">
-                            <i class="fa-solid fa-briefcase absolute left-3.5 top-3 text-slate-400 text-xs"></i>
-                            <input type="text"
-                                   id="cargo_aspira"
-                                   name="cargo_aspira"
-                                   required
-                                   value="{{ old('cargo_aspira') }}"
-                                   placeholder="Ej. Operario de Cultivo Piscícola / Auxiliar Administrativo"
-                                   class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-line focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue text-xs text-slate-800 placeholder:text-slate-400">
+                            <i class="fa-solid fa-building-user absolute left-3.5 top-3.5 text-slate-400 text-xs pointer-events-none"></i>
+                            <select id="cargo_aspira"
+                                    name="cargo_aspira"
+                                    required
+                                    class="w-full pl-9 pr-9 py-2.5 rounded-xl border border-line focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue text-xs text-slate-800 bg-white cursor-pointer appearance-none">
+                                <option value="" disabled {{ old('cargo_aspira') ? '' : 'selected' }}>-- Selecciona el área a la que aspiras --</option>
+                                @foreach($areas as $area)
+                                    <option value="{{ $area->nombre }}" {{ old('cargo_aspira') === $area->nombre ? 'selected' : '' }}>
+                                        {{ $area->nombre === 'Sst' ? 'SST' : $area->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3.5 top-3.5 text-slate-400 text-xs pointer-events-none"></i>
                         </div>
                     </div>
 
@@ -659,7 +667,7 @@
             const cargo = document.getElementById('cargo_aspira').value.trim();
             if (!cargo) {
                 e.preventDefault();
-                mostrarError('Por favor escribe el cargo al que aspiras.');
+                mostrarError('Por favor selecciona el área a la que aspiras.');
                 document.getElementById('cargo_aspira').focus();
                 return false;
             }

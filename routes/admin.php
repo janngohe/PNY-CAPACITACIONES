@@ -122,7 +122,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
         Route::get('/reportes/excel', [\App\Http\Controllers\Psicologia\DashboardController::class, 'descargarReporteExcel'])->name('reportes.excel');
         Route::get('/historial-pruebas', [\App\Http\Controllers\Psicologia\DashboardController::class, 'historialPruebas'])->name('historial');
         Route::get('/pruebas/{evaluacion}/resultado', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verResultadoPaca'])->name('paca.resultado');
+        Route::get('/pruebas/{evaluacion}/paca-pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verPacaPdf'])->name('paca.pdf');
+        Route::post('/pruebas/{evaluacion}/paca-respuestas', [\App\Http\Controllers\Psicologia\DashboardController::class, 'actualizarRespuestasPaca'])->name('paca.actualizar_respuestas');
         Route::get('/pruebas/{evaluacion}/resultado-valanti', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verResultadoValanti'])->name('valanti.resultado');
+        Route::post('/pruebas/{evaluacion}/valanti-respuestas', [\App\Http\Controllers\Psicologia\DashboardController::class, 'actualizarRespuestasValanti'])->name('valanti.actualizar_respuestas');
         Route::get('/pruebas/{evaluacion}/valanti-pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verValantiPdf'])->name('valanti.pdf');
         Route::get('/pruebas/{evaluacion}/consentimiento-pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verConsentimientoPdf'])->name('consentimientos.pdf');
         Route::get('/certificado-aptitudinal', [\App\Http\Controllers\Psicologia\DashboardController::class, 'certificadoAptitudinal'])->name('certificados');

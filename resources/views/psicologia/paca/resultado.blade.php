@@ -8,8 +8,11 @@
 <div class="space-y-8 max-w-5xl mx-auto pb-16">
 
     @php
-        $urlPdfInline = route('psicologia.consentimientos.pdf', $aplicacion) . '?inline=1';
-        $urlPdfDescarga = route('psicologia.consentimientos.pdf', $aplicacion);
+        $urlPdfConsentimientoInline = (request()->routeIs('admin.*') ? route('admin.psicologia.consentimientos.pdf', $aplicacion) : route('psicologia.consentimientos.pdf', $aplicacion)) . '?inline=1';
+        $urlPdfConsentimientoDescarga = request()->routeIs('admin.*') ? route('admin.psicologia.consentimientos.pdf', $aplicacion) : route('psicologia.consentimientos.pdf', $aplicacion);
+
+        $urlPdfPacaInline = (request()->routeIs('admin.*') ? route('admin.psicologia.paca.pdf', $aplicacion) : route('psicologia.paca.pdf', $aplicacion)) . '?inline=1';
+        $urlPdfPacaDescarga = request()->routeIs('admin.*') ? route('admin.psicologia.paca.pdf', $aplicacion) : route('psicologia.paca.pdf', $aplicacion);
     @endphp
 
     <!-- Encabezado con Botones de Acción -->
@@ -30,6 +33,22 @@
         </div>
 
         <div class="flex items-center gap-2.5 shrink-0 print:hidden flex-wrap">
+            <!-- Exportar PDF PAC-A -->
+            <a href="{{ $urlPdfPacaDescarga }}"
+               class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-3.5 py-2 text-xs font-bold text-white transition-all shadow-2xs">
+                <i class="fa-solid fa-file-arrow-down text-xs"></i>
+                Exportar PDF PAC-A
+            </a>
+
+            <!-- Previsualizar PDF PAC-A -->
+            <button type="button"
+               onclick="abrirModalPdf('{{ $urlPdfPacaInline }}', '{{ $urlPdfPacaDescarga }}', '{{ addslashes($aplicacion->nombre_completo) }}', 'Informe PAC-A · {{ addslashes($aplicacion->nombre_completo) }}')"
+               title="Previsualizar Informe de Resultados PAC-A"
+               class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 text-xs font-bold text-indigo-700 transition-colors shadow-2xs cursor-pointer">
+                <i class="fa-solid fa-eye text-xs text-indigo-600"></i>
+                Ver PDF PAC-A
+            </button>
+
             @if($aplicacion->valantiFinalizada())
                 <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $aplicacion) : route('psicologia.valanti.resultado', $aplicacion) }}"
                    class="inline-flex items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100 px-3.5 py-2 text-xs font-bold text-sky-700 transition-colors shadow-2xs">
@@ -38,7 +57,7 @@
                 </a>
             @endif
             <button type="button"
-               onclick="abrirModalPdf('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($aplicacion->nombre_completo) }}')"
+               onclick="abrirModalPdf('{{ $urlPdfConsentimientoInline }}', '{{ $urlPdfConsentimientoDescarga }}', '{{ addslashes($aplicacion->nombre_completo) }}', 'Consentimiento Informado (GH-FO-025) · {{ addslashes($aplicacion->nombre_completo) }}')"
                title="Previsualizar y Descargar Consentimiento (GH-FO-025)"
                class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 text-xs font-bold text-rose-700 transition-colors shadow-2xs cursor-pointer">
                 <i class="fa-solid fa-file-pdf text-xs text-rose-600"></i>
@@ -54,6 +73,30 @@
             </a>
         </div>
     </div>
+
+    @if(session('success'))
+        <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-xs font-bold text-emerald-800 flex items-center justify-between gap-3 shadow-2xs">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="rounded-2xl border border-rose-300 bg-rose-50 p-4 text-xs font-bold text-rose-800 flex items-center justify-between gap-3 shadow-2xs">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-triangle-exclamation text-rose-600 text-base"></i>
+                <span>{{ session('error') }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-950 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    @endif
 
     <!-- Tarjeta de Ficha Técnica de la Aplicación -->
     <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xs">
@@ -145,7 +188,7 @@
                         <span class="font-medium text-slate-700">Sugerir indagar / descartar</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Puntaje &le; 8:</span>
+                        <span>Puntaje &le; 8.5:</span>
                         <span class="font-medium text-slate-700">No se evidencian rasgos</span>
                     </div>
                 </div>
@@ -267,24 +310,29 @@
     </div>
 
     <!-- SECCIÓN MAESTRA: DESGLOSE COMPLETO DE LAS 40 PREGUNTAS (UNA POR UNA O LISTA COMPLETA) -->
-    <div id="seccionDesglosePaca" class="rounded-3xl border border-slate-200 bg-white p-5 sm:p-7 shadow-2xs space-y-6 scroll-mt-20">
-        
-        <!-- Cabecera de la sección -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="px-2.5 py-0.5 rounded-md bg-brand-light text-brand-blue font-bold text-[11px] tracking-wide uppercase border border-brand-blue/20">
-                        <i class="fa-solid fa-list-check mr-1"></i> Auditoría Detallada
-                    </span>
-                    <span class="text-xs text-slate-400 font-semibold">Las 40 afirmaciones del instrumento</span>
+    <form id="formAjustarPaca" action="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.actualizar_respuestas', $aplicacion) : route('psicologia.paca.actualizar_respuestas', $aplicacion) }}" method="POST">
+        @csrf
+        <div id="seccionDesglosePaca" class="rounded-3xl border border-slate-200 bg-white p-5 sm:p-7 shadow-2xs space-y-6 scroll-mt-20">
+            
+            <!-- Cabecera de la sección -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                        <span class="px-2.5 py-0.5 rounded-md bg-brand-light text-brand-blue font-bold text-[11px] tracking-wide uppercase border border-brand-blue/20">
+                            <i class="fa-solid fa-list-check mr-1"></i> Auditoría Detallada
+                        </span>
+                        <span class="px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-800 font-bold text-[11px] tracking-wide border border-amber-200 flex items-center gap-1">
+                            <i class="fa-solid fa-user-pen text-amber-600"></i> Modo Ajuste Profesional
+                        </span>
+                        <span class="text-xs text-slate-400 font-semibold hidden sm:inline">40 afirmaciones</span>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                        Desglose Completo de las 40 Preguntas PAC-A
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Revise cada afirmación y la respuesta del candidato. Como profesional de Psicología, puede hacer clic en cualquier opción para ajustar la respuesta y recalcular el resultado.
+                    </p>
                 </div>
-                <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
-                    Desglose Completo de las 40 Preguntas PAC-A
-                </h3>
-                <p class="text-xs text-slate-500 mt-0.5">
-                    Revise cada afirmación, la respuesta marcada por el candidato, su ponderación y el indicador institucional al que aporta.
-                </p>
-            </div>
 
             <!-- Selector de Modos de Vista (Visor 1 por 1 vs Lista Completa) -->
             <div class="flex items-center gap-1.5 shrink-0 self-start md:self-auto bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80">
@@ -445,11 +493,13 @@
                             </blockquote>
                         </div>
 
-                        <!-- Las 4 Opciones de Respuesta con la marcada destacada -->
+                        <!-- Las 4 Opciones de Respuesta con la marcada destacada (Modo interactivo de ajuste) -->
                         <div class="space-y-2">
-                            <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-600 flex-wrap gap-1">
                                 <span>Opciones de respuesta institucional:</span>
-                                <span class="text-[11px] text-brand-blue font-semibold">Respuesta elegida por el evaluado destacada</span>
+                                <span class="text-[11px] text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 font-semibold">
+                                    <i class="fa-solid fa-hand-pointer text-[10px] mr-1"></i>Haga clic para cambiar respuesta
+                                </span>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -458,27 +508,41 @@
                                         $esSeleccionada = ($opcionMarcada === $cod);
                                         $ptsOpcion = $cat['puntua'] ? $infoOpc['puntaje'] : 0.0;
                                     @endphp
-                                    <div class="relative rounded-2xl p-4 border transition-all {{ $esSeleccionada ? 'bg-blue-50/90 border-2 border-brand-blue shadow-xs ring-4 ring-blue-50/50' : 'bg-white border-slate-200 opacity-60' }}">
-                                        @if($esSeleccionada)
-                                            <span class="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-brand-blue text-white text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs">
-                                                <i class="fa-solid fa-check text-[9px]"></i> Marcó el candidato
-                                            </span>
-                                        @endif
+                                    <label id="card-opcion-paca-{{ $num }}-{{ $cod }}"
+                                           onclick="seleccionarOpcionPaca({{ $num }}, '{{ $cod }}')"
+                                           class="cursor-pointer relative block rounded-2xl p-4 border transition-all card-opc-paca-{{ $num }} {{ $esSeleccionada ? 'bg-blue-50/90 border-2 border-brand-blue shadow-xs ring-4 ring-blue-50/50' : 'bg-white border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-300' }}">
+                                        
+                                        <input type="radio"
+                                               name="respuestas[{{ $num }}]"
+                                               value="{{ $cod }}"
+                                               id="radio-paca-{{ $num }}-{{ $cod }}"
+                                               data-pregunta="{{ $num }}"
+                                               data-original="{{ $opcionMarcada }}"
+                                               {{ $esSeleccionada ? 'checked' : '' }}
+                                               class="sr-only">
+
+                                        <span id="badge-marcada-{{ $num }}-{{ $cod }}"
+                                              class="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs {{ $esSeleccionada ? 'bg-brand-blue text-white' : 'hidden' }}">
+                                            <i class="fa-solid fa-check text-[9px]"></i> Marcó el candidato
+                                        </span>
 
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center gap-2">
-                                                <span class="w-7 h-7 rounded-lg font-mono font-black text-xs flex items-center justify-center {{ $esSeleccionada ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-600' }}">
+                                                <span id="cod-box-{{ $num }}-{{ $cod }}"
+                                                      class="w-7 h-7 rounded-lg font-mono font-black text-xs flex items-center justify-center {{ $esSeleccionada ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-600' }}">
                                                     {{ $cod }}
                                                 </span>
-                                                <span class="font-bold text-xs sm:text-sm {{ $esSeleccionada ? 'text-slate-900' : 'text-slate-600' }}">
+                                                <span id="cod-nombre-{{ $num }}-{{ $cod }}"
+                                                      class="font-bold text-xs sm:text-sm {{ $esSeleccionada ? 'text-slate-900' : 'text-slate-600' }}">
                                                     {{ $infoOpc['nombre'] }}
                                                 </span>
                                             </div>
-                                            <span class="font-mono text-xs font-bold {{ $esSeleccionada ? 'text-brand-blue' : 'text-slate-400' }}">
+                                            <span id="cod-pts-{{ $num }}-{{ $cod }}"
+                                                  class="font-mono text-xs font-bold {{ $esSeleccionada ? 'text-brand-blue' : 'text-slate-400' }}">
                                                 {{ number_format($ptsOpcion, 1) }} pts
                                             </span>
                                         </div>
-                                    </div>
+                                    </label>
                                 @endforeach
                             </div>
                         </div>
@@ -568,12 +632,19 @@
                             </p>
                         </div>
 
-                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px]">
-                            <span class="text-slate-400 font-medium">Marcó el evaluado:</span>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 border border-brand-blue/30 text-brand-dark font-extrabold">
-                                <i class="fa-solid fa-check text-[10px] text-brand-blue"></i>
-                                <span>{{ $textoOpcion }} ({{ $opcionMarcada }})</span>
-                            </span>
+                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px] flex-wrap">
+                            <span class="text-slate-500 font-medium">Respuesta:</span>
+                            <div class="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                                @foreach($opciones as $cod => $infoOpc)
+                                    <button type="button"
+                                            id="btn-lista-paca-{{ $num }}-{{ $cod }}"
+                                            onclick="seleccionarOpcionPaca({{ $num }}, '{{ $cod }}')"
+                                            class="btn-opc-lista-{{ $num }} px-2.5 py-1 rounded-lg text-xs font-mono font-black transition-all cursor-pointer {{ $opcionMarcada === $cod ? 'bg-brand-blue text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-white' }}"
+                                            title="{{ $infoOpc['nombre'] }} ({{ $cod }})">
+                                        {{ $cod }}
+                                    </button>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 @endfor
@@ -588,9 +659,38 @@
                 </button>
             </div>
         </div>
-    </div>
+        </div>
 
-    </div>
+        <!-- Barra Flotante de Confirmación de Ajustes en PAC-A -->
+        <div id="barraFlotantePaca" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden max-w-xl w-[92%] bg-slate-900/95 backdrop-blur-md text-white p-3.5 sm:p-4 rounded-2xl shadow-2xl border border-slate-700/80 flex items-center justify-between gap-3 transition-all duration-300">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold shrink-0">
+                    <i class="fa-solid fa-pen-nib text-sm"></i>
+                </div>
+                <div class="min-w-0">
+                    <span class="text-xs sm:text-sm font-extrabold text-white block truncate" id="txtConteoModificadasPaca">
+                        1 respuesta ajustada
+                    </span>
+                    <span class="text-[10px] sm:text-[11px] text-slate-400 block truncate">
+                        Recalculará los puntajes de riesgo del evaluado
+                    </span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button"
+                        onclick="descartarModificacionesPaca()"
+                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer">
+                    Descartar
+                </button>
+                <button type="submit"
+                        id="btnGuardarPacaAjuste"
+                        class="px-3.5 sm:px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-md transition-all cursor-pointer active:scale-95">
+                    <i class="fa-solid fa-calculator text-xs"></i>
+                    <span>Guardar y Recalcular</span>
+                </button>
+            </div>
+        </div>
+    </form>
 
     <!-- NOTA INSTITUCIONAL DE CONFIDENCIALIDAD Y RESPONSABILIDAD ÉTICA -->
     <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-2xs text-xs text-slate-600 space-y-2">
@@ -660,7 +760,7 @@
 </div>
 
 <script>
-    function abrirModalPdf(urlInline, urlDescarga, nombrePersona) {
+    function abrirModalPdf(urlInline, urlDescarga, nombrePersona, tituloCustom) {
         const modal = document.getElementById('modalVisorPdf');
         const iframe = document.getElementById('iframeVisorPdf');
         const spinner = document.getElementById('spinnerCargaPdf');
@@ -668,7 +768,7 @@
         const btnDescargar = document.getElementById('btnDescargarPdfModal');
         const btnPestana = document.getElementById('btnPestanaModal');
 
-        titulo.textContent = 'Consentimiento Informado · ' + nombrePersona;
+        titulo.textContent = tituloCustom || ('Consentimiento Informado · ' + nombrePersona);
         btnDescargar.href = urlDescarga;
         btnPestana.href = urlInline;
 
@@ -869,6 +969,93 @@
             if (e.key === 'ArrowLeft') cambiarPreguntaPaca(-1);
         }
     });
+
+    // =========================================================================
+    // LÓGICA DE AJUSTE PROFESIONAL DE RESPUESTAS PAC-A
+    // =========================================================================
+    function seleccionarOpcionPaca(numPregunta, nuevoCodigo) {
+        // 1. Marcar radio input
+        const radio = document.getElementById(`radio-paca-${numPregunta}-${nuevoCodigo}`);
+        if (radio) {
+            radio.checked = true;
+        }
+
+        // 2. Actualizar tarjetas del Visor
+        document.querySelectorAll(`.card-opc-paca-${numPregunta}`).forEach(card => {
+            card.classList.remove('bg-blue-50/90', 'border-2', 'border-brand-blue', 'shadow-xs', 'ring-4', 'ring-blue-50/50');
+            card.classList.add('bg-white', 'border-slate-200', 'opacity-60');
+        });
+
+        const cardActiva = document.getElementById(`card-opcion-paca-${numPregunta}-${nuevoCodigo}`);
+        if (cardActiva) {
+            cardActiva.classList.remove('bg-white', 'border-slate-200', 'opacity-60');
+            cardActiva.classList.add('bg-blue-50/90', 'border-2', 'border-brand-blue', 'shadow-xs', 'ring-4', 'ring-blue-50/50');
+        }
+
+        // 3. Badges de selección en el Visor
+        document.querySelectorAll(`[id^="badge-marcada-${numPregunta}-"]`).forEach(b => {
+            b.classList.add('hidden');
+        });
+        const badgeActivo = document.getElementById(`badge-marcada-${numPregunta}-${nuevoCodigo}`);
+        if (badgeActivo) {
+            const esOriginal = (radio && radio.getAttribute('data-original') === nuevoCodigo);
+            badgeActivo.classList.remove('hidden');
+            if (esOriginal) {
+                badgeActivo.className = 'absolute -top-2.5 right-3 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs bg-brand-blue text-white';
+                badgeActivo.innerHTML = '<i class="fa-solid fa-check text-[9px]"></i> Marcó el candidato';
+            } else {
+                badgeActivo.className = 'absolute -top-2.5 right-3 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-2xs bg-amber-500 text-white';
+                badgeActivo.innerHTML = '<i class="fa-solid fa-user-pen text-[9px]"></i> Ajustado por Psicología';
+            }
+        }
+
+        // 4. Actualizar botones en modo Lista
+        document.querySelectorAll(`.btn-opc-lista-${numPregunta}`).forEach(btn => {
+            btn.className = 'btn-opc-lista-' + numPregunta + ' px-2.5 py-1 rounded-lg text-xs font-mono font-black transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white';
+        });
+        const btnListaActivo = document.getElementById(`btn-lista-paca-${numPregunta}-${nuevoCodigo}`);
+        if (btnListaActivo) {
+            const esOriginal = (radio && radio.getAttribute('data-original') === nuevoCodigo);
+            btnListaActivo.className = 'btn-opc-lista-' + numPregunta + ' px-2.5 py-1 rounded-lg text-xs font-mono font-black transition-all cursor-pointer text-white shadow-xs ' + (esOriginal ? 'bg-brand-blue' : 'bg-amber-500');
+        }
+
+        // 5. Actualizar barra flotante
+        actualizarBarraModificacionesPaca();
+    }
+
+    function actualizarBarraModificacionesPaca() {
+        let modificadas = 0;
+        const radios = document.querySelectorAll('#formAjustarPaca input[type="radio"]:checked');
+        radios.forEach(r => {
+            const orig = r.getAttribute('data-original');
+            if (orig && r.value !== orig) {
+                modificadas++;
+            }
+        });
+
+        const barra = document.getElementById('barraFlotantePaca');
+        const txt = document.getElementById('txtConteoModificadasPaca');
+        if (barra && txt) {
+            if (modificadas > 0) {
+                txt.textContent = `${modificadas} ${modificadas === 1 ? 'respuesta ajustada' : 'respuestas ajustadas'}`;
+                barra.classList.remove('hidden');
+            } else {
+                barra.classList.add('hidden');
+            }
+        }
+    }
+
+    function descartarModificacionesPaca() {
+        const radios = document.querySelectorAll('#formAjustarPaca input[type="radio"]');
+        radios.forEach(r => {
+            const orig = r.getAttribute('data-original');
+            if (orig && r.value === orig) {
+                seleccionarOpcionPaca(r.getAttribute('data-pregunta'), orig);
+            }
+        });
+        const barra = document.getElementById('barraFlotantePaca');
+        if (barra) barra.classList.add('hidden');
+    }
 
     // Iniciar con la primera pregunta activa
     document.addEventListener('DOMContentLoaded', function() {

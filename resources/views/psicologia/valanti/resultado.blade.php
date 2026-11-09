@@ -95,6 +95,30 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-xs font-bold text-emerald-800 flex items-center justify-between gap-3 shadow-2xs">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-950 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="rounded-2xl border border-rose-300 bg-rose-50 p-4 text-xs font-bold text-rose-800 flex items-center justify-between gap-3 shadow-2xs">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-triangle-exclamation text-rose-600 text-base"></i>
+                <span>{{ session('error') }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-950 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    @endif
+
     <!-- Tarjeta de Ficha Técnica de la Aplicación -->
     <div class="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-2xs">
         <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5 flex items-center gap-2">
@@ -422,170 +446,251 @@
     </div>
 
     <!-- DESGLOSE INTERACTIVO PASO A PASO DE LAS 30 RESPUESTAS DEL CANDIDATO (UNA POR UNA) -->
-    <div class="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-2xs">
-        <details id="detailsDesgloseValanti" class="group text-xs">
-            <summary class="font-bold text-brand-blue cursor-pointer select-none flex items-center justify-between gap-3 text-sm sm:text-base py-1">
-                <span class="flex items-center gap-2.5">
-                    <span class="w-8 h-8 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center shrink-0">
-                        <i class="fa-solid fa-list-check"></i>
+    <form id="formAjustarValanti" action="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.actualizar_respuestas', $aplicacion) : route('psicologia.valanti.actualizar_respuestas', $aplicacion) }}" method="POST">
+        @csrf
+        <div class="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-2xs">
+            <details id="detailsDesgloseValanti" class="group text-xs" open>
+                <summary class="font-bold text-brand-blue cursor-pointer select-none flex items-center justify-between gap-3 text-sm sm:text-base py-1">
+                    <span class="flex items-center gap-2.5 flex-wrap">
+                        <span class="w-8 h-8 rounded-xl bg-brand-light text-brand-blue flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-list-check"></i>
+                        </span>
+                        <span>Ver desglose detallado de las 30 respuestas del candidato (Una por una)</span>
+                        <span class="px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-800 font-bold text-[11px] tracking-wide border border-amber-200 flex items-center gap-1">
+                            <i class="fa-solid fa-user-pen text-amber-600"></i> Modo Ajuste Profesional
+                        </span>
                     </span>
-                    <span>Ver desglose detallado de las 30 respuestas del candidato (Una por una)</span>
-                </span>
-                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 group-open:text-brand-blue">
-                    <span class="hidden sm:inline group-open:hidden">Desplegar visor</span>
-                    <span class="hidden sm:group-open:inline">Ocultar visor</span>
-                    <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200 group-open:rotate-180"></i>
-                </span>
-            </summary>
+                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 group-open:text-brand-blue">
+                        <span class="hidden sm:inline group-open:hidden">Desplegar visor</span>
+                        <span class="hidden sm:group-open:inline">Ocultar visor</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200 group-open:rotate-180"></i>
+                    </span>
+                </summary>
 
-            <div class="mt-5 pt-4 border-t border-slate-100 space-y-4">
+                <div class="mt-5 pt-4 border-t border-slate-100 space-y-4">
 
-            <!-- Selector rápido por columnas (1 al 30) sin desplazamiento lateral en móvil -->
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-[11px] text-slate-500 font-semibold px-0.5 flex-wrap gap-1">
-                        <span>Seleccione o avance pregunta por pregunta (1 a 30):</span>
-                        <span id="indicadorParteActiva" class="font-bold text-brand-blue">Parte 1 · Valores (Ítems 1–9)</span>
+                <!-- Selector rápido por columnas (1 al 30) sin desplazamiento lateral en móvil -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-[11px] text-slate-500 font-semibold px-0.5 flex-wrap gap-1">
+                            <span>Seleccione o avance pregunta por pregunta (1 a 30):</span>
+                            <span id="indicadorParteActiva" class="font-bold text-brand-blue">Parte 1 · Valores (Ítems 1–9)</span>
+                        </div>
+
+                        <div class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-15 gap-1.5">
+                            @foreach($preguntas as $num => $item)
+                                <button type="button"
+                                        id="btn-pill-pregunta-{{ $num }}"
+                                        onclick="irAPreguntaDesglose({{ $num }})"
+                                        class="pill-pregunta-desglose h-8 sm:h-9 rounded-xl font-mono text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center {{ $num === 1 ? 'bg-brand-blue text-white border-brand-blue shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100' }}">
+                                    {{ $num }}
+                                </button>
+                            @endforeach
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-15 gap-1.5">
+                    <!-- Contenedor de las 30 Tarjetas (Solo 1 visible a la vez) -->
+                    <div class="relative">
                         @foreach($preguntas as $num => $item)
-                            <button type="button"
-                                    id="btn-pill-pregunta-{{ $num }}"
-                                    onclick="irAPreguntaDesglose({{ $num }})"
-                                    class="pill-pregunta-desglose h-8 sm:h-9 rounded-xl font-mono text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center {{ $num === 1 ? 'bg-brand-blue text-white border-brand-blue shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100' }}">
-                                {{ $num }}
-                            </button>
+                            @php
+                                $r = $respuestasPorNumero[$num] ?? null;
+                                $ptsA = $r ? (int) $r->puntos_a : 0;
+                                $ptsB = $r ? (int) $r->puntos_b : 0;
+                                $dimAInfo = $baremos[$item['dim_a']];
+                                $dimBInfo = $baremos[$item['dim_b']];
+                            @endphp
+
+                            <div id="slide-pregunta-{{ $num }}"
+                                 data-parte="{{ $item['parte'] }}"
+                                 class="slide-desglose-valanti {{ $num === 1 ? '' : 'hidden' }} rounded-2xl bg-slate-50/80 border border-slate-200/90 p-4 sm:p-6 space-y-4 transition-all">
+
+                                <!-- Cabecera de la Pregunta Activa -->
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200/80">
+                                    <div class="flex items-center gap-2.5 flex-wrap">
+                                        <span class="px-3 py-1 rounded-xl bg-brand-dark text-white font-mono text-xs sm:text-sm font-black">
+                                            Pregunta #{{ $num }} de 30
+                                        </span>
+                                        <span class="px-2.5 py-1 rounded-xl text-xs font-bold border {{ $item['parte'] === 1 ? 'bg-blue-50 text-brand-blue border-blue-200' : 'bg-amber-50 text-amber-800 border-amber-200' }}">
+                                            {{ $item['parte'] === 1 ? 'Parte 1 · Selección de Valores por Importancia' : 'Parte 2 · Juicio de Inaceptabilidad (Antivalores)' }}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex items-center gap-2 self-start sm:self-auto">
+                                        <span class="text-xs font-semibold text-slate-500">Distribución marcada:</span>
+                                        <span id="badge-dist-valanti-{{ $num }}" class="px-3 py-1 rounded-xl bg-white border border-brand-blue/30 font-mono text-sm font-black text-brand-blue shadow-2xs">
+                                            {{ $ptsA }} - {{ $ptsB }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Comparativa de Opción A y Opción B (Lado a lado en PC, apilado en móvil) -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5">
+
+                                    <!-- Tarjeta Opción A -->
+                                    <div class="p-4 sm:p-5 rounded-2xl border-2 transition-all flex flex-col justify-between gap-3 {{ $ptsA >= 2 ? 'bg-white border-brand-blue shadow-xs' : 'bg-white/70 border-slate-200 opacity-85' }}">
+                                        <div class="space-y-2">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                                                    <span class="w-6 h-6 rounded-lg bg-brand-dark text-white flex items-center justify-center font-mono text-xs">A</span>
+                                                    <span>Opción A</span>
+                                                </span>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                                    Valor: {{ $dimAInfo['nombre'] }}
+                                                </span>
+                                            </div>
+                                            <p class="text-sm sm:text-base font-bold text-slate-900 leading-snug pt-1">
+                                                “{{ $item['texto_a'] }}”
+                                            </p>
+                                        </div>
+
+                                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                                            <span class="text-[11px] font-semibold text-slate-500">
+                                                Puntos asignados a {{ $dimAInfo['nombre'] }}:
+                                            </span>
+                                            <span id="pts-a-valanti-{{ $num }}" class="px-3 py-1 rounded-xl font-mono text-xs sm:text-sm font-black {{ $ptsA >= 2 ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-700 border border-slate-200' }}">
+                                                {{ $ptsA }} {{ $ptsA === 1 ? 'punto' : 'puntos' }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tarjeta Opción B -->
+                                    <div class="p-4 sm:p-5 rounded-2xl border-2 transition-all flex flex-col justify-between gap-3 {{ $ptsB >= 2 ? 'bg-white border-brand-blue shadow-xs' : 'bg-white/70 border-slate-200 opacity-85' }}">
+                                        <div class="space-y-2">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                                                    <span class="w-6 h-6 rounded-lg bg-sky-700 text-white flex items-center justify-center font-mono text-xs">B</span>
+                                                    <span>Opción B</span>
+                                                </span>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                                    Valor: {{ $dimBInfo['nombre'] }}
+                                                </span>
+                                            </div>
+                                            <p class="text-sm sm:text-base font-bold text-slate-900 leading-snug pt-1">
+                                                “{{ $item['texto_b'] }}”
+                                            </p>
+                                        </div>
+
+                                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                                            <span class="text-[11px] font-semibold text-slate-500">
+                                                Puntos asignados a {{ $dimBInfo['nombre'] }}:
+                                            </span>
+                                            <span id="pts-b-valanti-{{ $num }}" class="px-3 py-1 rounded-xl font-mono text-xs sm:text-sm font-black {{ $ptsB >= 2 ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-700 border border-slate-200' }}">
+                                                {{ $ptsB }} {{ $ptsB === 1 ? 'punto' : 'puntos' }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- Selector de Ajuste Profesional de los 4 Pares (Suma 3) -->
+                                <div class="pt-3.5 border-t border-slate-200/80 space-y-2">
+                                    <div class="flex items-center justify-between text-xs font-bold text-slate-700 flex-wrap gap-1">
+                                        <span class="flex items-center gap-1.5 text-amber-700">
+                                            <i class="fa-solid fa-hand-pointer text-amber-600"></i>
+                                            <span>Ajustar distribución de puntos:</span>
+                                        </span>
+                                        <span id="badge-distribucion-activa-{{ $num }}"
+                                              class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+                                            A: {{ $ptsA }} · B: {{ $ptsB }} (Marcó el candidato)
+                                        </span>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        @foreach($combinaciones as $clavePar => $infoPar)
+                                            @php
+                                                $checked = ($ptsA === (int)$infoPar['a'] && $ptsB === (int)$infoPar['b']);
+                                                $claveOriginal = "{$ptsA}-{$ptsB}";
+                                            @endphp
+                                            <label id="card-comb-valanti-{{ $num }}-{{ $clavePar }}"
+                                                   onclick="seleccionarCombinacionValanti({{ $num }}, {{ $infoPar['a'] }}, {{ $infoPar['b'] }}, '{{ $clavePar }}')"
+                                                   class="cursor-pointer relative block p-2.5 rounded-2xl border transition-all text-center card-comb-valanti-{{ $num }} {{ $checked ? 'bg-brand-blue text-white border-brand-blue shadow-xs ring-2 ring-brand-blue/30' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' }}">
+                                                <input type="radio"
+                                                       name="respuestas[{{ $num }}]"
+                                                       value="{{ $clavePar }}"
+                                                       id="radio-valanti-{{ $num }}-{{ $clavePar }}"
+                                                       data-pregunta="{{ $num }}"
+                                                       data-original="{{ $claveOriginal }}"
+                                                       data-pts-a="{{ $infoPar['a'] }}"
+                                                       data-pts-b="{{ $infoPar['b'] }}"
+                                                       {{ $checked ? 'checked' : '' }}
+                                                       class="sr-only">
+
+                                                <span class="font-mono text-sm font-black tracking-tight block">
+                                                    {{ $infoPar['etiqueta'] }}
+                                                </span>
+                                                <span class="text-[10px] font-semibold opacity-85 block mt-0.5">
+                                                    A: {{ $infoPar['a'] }} · B: {{ $infoPar['b'] }}
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                            </div>
                         @endforeach
                     </div>
-                </div>
 
-                <!-- Contenedor de las 30 Tarjetas (Solo 1 visible a la vez) -->
-                <div class="relative">
-                    @foreach($preguntas as $num => $item)
-                        @php
-                            $r = $respuestasPorNumero[$num] ?? null;
-                            $ptsA = $r ? (int) $r->puntos_a : 0;
-                            $ptsB = $r ? (int) $r->puntos_b : 0;
-                            $dimAInfo = $baremos[$item['dim_a']];
-                            $dimBInfo = $baremos[$item['dim_b']];
-                        @endphp
+                    <!-- Controles de Navegación (Anterior / Contador / Siguiente) adaptados a Móvil y PC -->
+                    <div class="flex items-center justify-between gap-2 sm:gap-4 pt-1">
+                        <button type="button"
+                                id="btnPreguntaAnterior"
+                                onclick="cambiarPreguntaDesglose(-1)"
+                                class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none px-3.5 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-700 transition-all shadow-2xs cursor-pointer">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                            <span>Anterior</span>
+                        </button>
 
-                        <div id="slide-pregunta-{{ $num }}"
-                             data-parte="{{ $item['parte'] }}"
-                             class="slide-desglose-valanti {{ $num === 1 ? '' : 'hidden' }} rounded-2xl bg-slate-50/80 border border-slate-200/90 p-4 sm:p-6 space-y-4 transition-all">
-
-                            <!-- Cabecera de la Pregunta Activa -->
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200/80">
-                                <div class="flex items-center gap-2.5 flex-wrap">
-                                    <span class="px-3 py-1 rounded-xl bg-brand-dark text-white font-mono text-xs sm:text-sm font-black">
-                                        Pregunta #{{ $num }} de 30
-                                    </span>
-                                    <span class="px-2.5 py-1 rounded-xl text-xs font-bold border {{ $item['parte'] === 1 ? 'bg-blue-50 text-brand-blue border-blue-200' : 'bg-amber-50 text-amber-800 border-amber-200' }}">
-                                        {{ $item['parte'] === 1 ? 'Parte 1 · Selección de Valores por Importancia' : 'Parte 2 · Juicio de Inaceptabilidad (Antivalores)' }}
-                                    </span>
-                                </div>
-
-                                <div class="flex items-center gap-2 self-start sm:self-auto">
-                                    <span class="text-xs font-semibold text-slate-500">Distribución marcada:</span>
-                                    <span class="px-3 py-1 rounded-xl bg-white border border-brand-blue/30 font-mono text-sm font-black text-brand-blue shadow-2xs">
-                                        {{ $ptsA }} - {{ $ptsB }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Comparativa de Opción A y Opción B (Lado a lado en PC, apilado en móvil) -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5">
-
-                                <!-- Tarjeta Opción A -->
-                                <div class="p-4 sm:p-5 rounded-2xl border-2 transition-all flex flex-col justify-between gap-3 {{ $ptsA >= 2 ? 'bg-white border-brand-blue shadow-xs' : 'bg-white/70 border-slate-200 opacity-85' }}">
-                                    <div class="space-y-2">
-                                        <div class="flex items-center justify-between gap-2">
-                                            <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                                                <span class="w-6 h-6 rounded-lg bg-brand-dark text-white flex items-center justify-center font-mono text-xs">A</span>
-                                                <span>Opción A</span>
-                                            </span>
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                                                Valor: {{ $dimAInfo['nombre'] }}
-                                            </span>
-                                        </div>
-                                        <p class="text-sm sm:text-base font-bold text-slate-900 leading-snug pt-1">
-                                            “{{ $item['texto_a'] }}”
-                                        </p>
-                                    </div>
-
-                                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                                        <span class="text-[11px] font-semibold text-slate-500">
-                                            Puntos asignados a {{ $dimAInfo['nombre'] }}:
-                                        </span>
-                                        <span class="px-3 py-1 rounded-xl font-mono text-xs sm:text-sm font-black {{ $ptsA >= 2 ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-700 border border-slate-200' }}">
-                                            {{ $ptsA }} {{ $ptsA === 1 ? 'punto' : 'puntos' }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Tarjeta Opción B -->
-                                <div class="p-4 sm:p-5 rounded-2xl border-2 transition-all flex flex-col justify-between gap-3 {{ $ptsB >= 2 ? 'bg-white border-brand-blue shadow-xs' : 'bg-white/70 border-slate-200 opacity-85' }}">
-                                    <div class="space-y-2">
-                                        <div class="flex items-center justify-between gap-2">
-                                            <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                                                <span class="w-6 h-6 rounded-lg bg-sky-700 text-white flex items-center justify-center font-mono text-xs">B</span>
-                                                <span>Opción B</span>
-                                            </span>
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                                                Valor: {{ $dimBInfo['nombre'] }}
-                                            </span>
-                                        </div>
-                                        <p class="text-sm sm:text-base font-bold text-slate-900 leading-snug pt-1">
-                                            “{{ $item['texto_b'] }}”
-                                        </p>
-                                    </div>
-
-                                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                                        <span class="text-[11px] font-semibold text-slate-500">
-                                            Puntos asignados a {{ $dimBInfo['nombre'] }}:
-                                        </span>
-                                        <span class="px-3 py-1 rounded-xl font-mono text-xs sm:text-sm font-black {{ $ptsB >= 2 ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-700 border border-slate-200' }}">
-                                            {{ $ptsB }} {{ $ptsB === 1 ? 'punto' : 'puntos' }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                            </div>
+                        <div class="text-center">
+                            <span id="contadorPreguntaDesglose" class="font-mono font-extrabold text-xs sm:text-sm text-slate-800">
+                                Pregunta 1 de 30
+                            </span>
+                            <span class="hidden sm:block text-[11px] text-slate-400">
+                                También puede usar las flechas ⬅ ➡ del teclado
+                            </span>
                         </div>
-                    @endforeach
-                </div>
 
-                <!-- Controles de Navegación (Anterior / Contador / Siguiente) adaptados a Móvil y PC -->
-                <div class="flex items-center justify-between gap-2 sm:gap-4 pt-1">
-                    <button type="button"
-                            id="btnPreguntaAnterior"
-                            onclick="cambiarPreguntaDesglose(-1)"
-                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none px-3.5 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-700 transition-all shadow-2xs cursor-pointer">
-                        <i class="fa-solid fa-arrow-left text-xs"></i>
-                        <span>Anterior</span>
-                    </button>
-
-                    <div class="text-center">
-                        <span id="contadorPreguntaDesglose" class="font-mono font-extrabold text-xs sm:text-sm text-slate-800">
-                            Pregunta 1 de 30
-                        </span>
-                        <span class="hidden sm:block text-[11px] text-slate-400">
-                            También puede usar las flechas ⬅ ➡ del teclado
-                        </span>
+                        <button type="button"
+                                id="btnPreguntaSiguiente"
+                                onclick="cambiarPreguntaDesglose(1)"
+                                class="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue hover:bg-brand-dark disabled:opacity-40 disabled:pointer-events-none px-3.5 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-white transition-all shadow-2xs cursor-pointer">
+                            <span>Siguiente</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
                     </div>
 
-                    <button type="button"
-                            id="btnPreguntaSiguiente"
-                            onclick="cambiarPreguntaDesglose(1)"
-                            class="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue hover:bg-brand-dark disabled:opacity-40 disabled:pointer-events-none px-3.5 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-white transition-all shadow-2xs cursor-pointer">
-                        <span>Siguiente</span>
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </button>
                 </div>
+            </details>
+        </div>
 
+        <!-- Barra Flotante de Confirmación de Ajustes en VALANTI -->
+        <div id="barraFlotanteValanti" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden max-w-xl w-[92%] bg-slate-900/95 backdrop-blur-md text-white p-3.5 sm:p-4 rounded-2xl shadow-2xl border border-slate-700/80 flex items-center justify-between gap-3 transition-all duration-300">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold shrink-0">
+                    <i class="fa-solid fa-scale-balanced text-sm"></i>
+                </div>
+                <div class="min-w-0">
+                    <span class="text-xs sm:text-sm font-extrabold text-white block truncate" id="txtConteoModificadasValanti">
+                        1 distribución ajustada
+                    </span>
+                    <span class="text-[10px] sm:text-[11px] text-slate-400 block truncate">
+                        Recalculará los puntajes estándar (PE), el gráfico radial y el PDF
+                    </span>
+                </div>
             </div>
-        </details>
-    </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button"
+                        onclick="descartarModificacionesValanti()"
+                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer">
+                    Descartar
+                </button>
+                <button type="submit"
+                        id="btnGuardarValantiAjuste"
+                        class="px-3.5 sm:px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-md transition-all cursor-pointer active:scale-95">
+                    <i class="fa-solid fa-calculator text-xs"></i>
+                    <span>Guardar y Recalcular</span>
+                </button>
+            </div>
+        </div>
+    </form>
 
 </div>
 
@@ -834,6 +939,95 @@
 
     function cambiarPreguntaDesglose(delta) {
         irAPreguntaDesglose(preguntaDesgloseActual + delta);
+    }
+
+    // =========================================================================
+    // LÓGICA DE AJUSTE PROFESIONAL DE RESPUESTAS VALANTI
+    // =========================================================================
+    function seleccionarCombinacionValanti(numPregunta, ptsA, ptsB, clavePar) {
+        // 1. Marcar radio input
+        const radio = document.getElementById(`radio-valanti-${numPregunta}-${clavePar}`);
+        if (radio) {
+            radio.checked = true;
+        }
+
+        // 2. Actualizar estilos de las 4 tarjetas de combinación
+        document.querySelectorAll(`.card-comb-valanti-${numPregunta}`).forEach(card => {
+            card.className = 'cursor-pointer relative block p-2.5 rounded-2xl border transition-all text-center card-comb-valanti-' + numPregunta + ' bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300';
+        });
+        const cardActiva = document.getElementById(`card-comb-valanti-${numPregunta}-${clavePar}`);
+        if (cardActiva) {
+            cardActiva.className = 'cursor-pointer relative block p-2.5 rounded-2xl border transition-all text-center card-comb-valanti-' + numPregunta + ' bg-brand-blue text-white border-brand-blue shadow-xs ring-2 ring-brand-blue/30';
+        }
+
+        // 3. Actualizar puntos en tarjetas A y B
+        const elPtsA = document.getElementById(`pts-a-valanti-${numPregunta}`);
+        const elPtsB = document.getElementById(`pts-b-valanti-${numPregunta}`);
+        if (elPtsA) {
+            elPtsA.textContent = `${ptsA} ${ptsA === 1 ? 'punto' : 'puntos'}`;
+            elPtsA.className = `px-3 py-1 rounded-xl font-mono text-xs sm:text-sm font-black ${ptsA >= 2 ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'}`;
+        }
+        if (elPtsB) {
+            elPtsB.textContent = `${ptsB} ${ptsB === 1 ? 'punto' : 'puntos'}`;
+            elPtsB.className = `px-3 py-1 rounded-xl font-mono text-xs sm:text-sm font-black ${ptsB >= 2 ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'}`;
+        }
+
+        // 4. Actualizar badge superior de distribución
+        const badgeDist = document.getElementById(`badge-dist-valanti-${numPregunta}`);
+        if (badgeDist) {
+            badgeDist.textContent = `${ptsA} - ${ptsB}`;
+        }
+
+        const badgeEstado = document.getElementById(`badge-distribucion-activa-${numPregunta}`);
+        if (badgeEstado) {
+            const esOriginal = (radio && radio.getAttribute('data-original') === clavePar);
+            if (esOriginal) {
+                badgeEstado.className = 'text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200';
+                badgeEstado.textContent = `A: ${ptsA} · B: ${ptsB} (Marcó el candidato)`;
+            } else {
+                badgeEstado.className = 'text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border bg-amber-500 text-white border-amber-600 shadow-2xs';
+                badgeEstado.textContent = `A: ${ptsA} · B: ${ptsB} (Ajustado por Psicología)`;
+            }
+        }
+
+        // 5. Actualizar barra flotante
+        actualizarBarraModificacionesValanti();
+    }
+
+    function actualizarBarraModificacionesValanti() {
+        let modificadas = 0;
+        const radios = document.querySelectorAll('#formAjustarValanti input[type="radio"]:checked');
+        radios.forEach(r => {
+            const orig = r.getAttribute('data-original');
+            if (orig && r.value !== orig) {
+                modificadas++;
+            }
+        });
+
+        const barra = document.getElementById('barraFlotanteValanti');
+        const txt = document.getElementById('txtConteoModificadasValanti');
+        if (barra && txt) {
+            if (modificadas > 0) {
+                txt.textContent = `${modificadas} ${modificadas === 1 ? 'distribución ajustada' : 'distribuciones ajustadas'}`;
+                barra.classList.remove('hidden');
+            } else {
+                barra.classList.add('hidden');
+            }
+        }
+    }
+
+    function descartarModificacionesValanti() {
+        const radios = document.querySelectorAll('#formAjustarValanti input[type="radio"]');
+        radios.forEach(r => {
+            const orig = r.getAttribute('data-original');
+            if (orig && r.value === orig) {
+                const ptsA = parseInt(r.getAttribute('data-pts-a'));
+                const ptsB = parseInt(r.getAttribute('data-pts-b'));
+                seleccionarCombinacionValanti(r.getAttribute('data-pregunta'), ptsA, ptsB, orig);
+            }
+        });
+        const barra = document.getElementById('barraFlotanteValanti');
+        if (barra) barra.classList.add('hidden');
     }
 
     document.addEventListener('DOMContentLoaded', () => {

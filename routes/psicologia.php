@@ -61,7 +61,10 @@ Route::prefix('psicologia')->name('psicologia.')->middleware(['auth', 'rol:PSICO
     // 3. Historial de Pruebas y Resultados (PAC-A + VALANTI) + Custodia GH-FO-025 + PDF Gráfico VALANTI
     Route::get('/historial-pruebas', [DashboardController::class, 'historialPruebas'])->name('pruebas.historial');
     Route::get('/pruebas/{evaluacion}/resultado', [DashboardController::class, 'verResultadoPaca'])->name('paca.resultado');
+    Route::get('/pruebas/{evaluacion}/paca-pdf', [DashboardController::class, 'verPacaPdf'])->name('paca.pdf');
+    Route::post('/pruebas/{evaluacion}/paca-respuestas', [DashboardController::class, 'actualizarRespuestasPaca'])->name('paca.actualizar_respuestas');
     Route::get('/pruebas/{evaluacion}/resultado-valanti', [DashboardController::class, 'verResultadoValanti'])->name('valanti.resultado');
+    Route::post('/pruebas/{evaluacion}/valanti-respuestas', [DashboardController::class, 'actualizarRespuestasValanti'])->name('valanti.actualizar_respuestas');
     Route::get('/pruebas/{evaluacion}/valanti-pdf', [DashboardController::class, 'verValantiPdf'])->name('valanti.pdf');
     Route::get('/pruebas/{evaluacion}/consentimiento-pdf', [DashboardController::class, 'verConsentimientoPdf'])->name('consentimientos.pdf');
 
