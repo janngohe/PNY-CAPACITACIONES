@@ -236,23 +236,24 @@
     </div>
 
     <!-- Sesiones de Inducción con Participantes de tu Área -->
-    <div class="bg-white rounded-3xl border border-line p-4 sm:p-6 shadow-2xs space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-brand-blue border border-blue-200 uppercase tracking-wider">
-                        <i class="fa-solid fa-users-viewfinder mr-1"></i> Área: {{ $areaNombre ?? 'Tu Área' }}
+    <div class="bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-6 shadow-sm ring-1 ring-slate-900/5 my-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-brand-blue border border-blue-200 uppercase tracking-wider shadow-2xs">
+                        <i class="fa-solid fa-users-viewfinder text-brand-blue"></i> Área: {{ $areaNombre ?? 'Tu Área' }}
                     </span>
                 </div>
-                <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2 font-serif">
-                    <i class="fa-solid fa-file-signature text-brand-blue"></i> Inducciones con Personal de tu Área
+                <h3 class="text-base sm:text-lg font-heading font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-file-signature text-brand-blue"></i> Historial de Inducciones del Personal de tu Área
                 </h3>
                 <p class="text-xs text-slate-500">
-                    Historial de inducciones donde han asistido colaboradores de tu área. Puedes consultar los participantes y sus firmas digitales.
+                    Registro consolidado de sesiones de inducción a las que han asistido los colaboradores de tu área, con sus firmas digitales y actas oficiales.
                 </p>
             </div>
-            <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 self-start sm:self-center border border-slate-200 shrink-0">
-                {{ $sesionesArea->count() }} sesiones registradas
+            <span class="inline-flex items-center gap-1.5 text-xs font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-700 self-start sm:self-center border border-slate-200/80 shadow-2xs shrink-0">
+                <i class="fa-solid fa-list-check text-slate-500"></i>
+                <span>{{ $sesionesArea->count() }} sesiones</span>
             </span>
         </div>
 
@@ -268,64 +269,63 @@
             </div>
         @else
             <!-- VISTA MÓVIL: TARJETAS EN COLUMNA (block md:hidden) -->
-            <div class="block md:hidden space-y-3">
+            <div class="block md:hidden space-y-3.5">
                 @foreach($sesionesArea as $ses)
-                    <div class="bg-slate-50/70 rounded-2xl border border-slate-200 p-4 space-y-3 transition-all hover:border-brand-blue/30">
+                    <div class="rounded-2xl border border-slate-300/80 bg-white p-4 shadow-sm ring-1 ring-slate-900/5 space-y-3 transition-all hover:border-brand-blue/40">
                         <!-- Cabecera Móvil: Código y Estado -->
-                        <div class="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-2.5">
-                            <div class="flex items-center gap-2">
-                                <span class="w-7 h-7 rounded-lg bg-cyan-100/70 border border-cyan-200 text-cyan-800 flex items-center justify-center text-xs font-bold font-mono">
-                                    <i class="fa-solid fa-qrcode text-[11px]"></i>
-                                </span>
-                                <div>
-                                    <span class="font-mono font-bold text-cyan-800 text-xs tracking-wider block">
-                                        {{ $ses->codigo_sesion }}
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-900 font-mono font-extrabold text-xs shadow-2xs">
+                                <i class="fa-solid fa-qrcode text-cyan-600"></i>
+                                {{ $ses->codigo_sesion }}
+                            </span>
                             <div>
                                 @if($ses->estaActiva())
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 animate-pulse">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs animate-pulse">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En curso
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                                         <i class="fa-solid fa-check text-[9px] text-emerald-600"></i> Finalizada
                                     </span>
                                 @endif
                             </div>
                         </div>
 
-                        <!-- Título de la Inducción y Facilitador -->
-                        <div>
-                            <h4 class="font-bold text-slate-900 text-sm leading-snug">
-                                {{ $ses->induccion->titulo }}
-                            </h4>
-                            <div class="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                                <span class="flex items-center gap-1">
-                                    <i class="fa-solid fa-user-tie text-slate-400 text-[11px]"></i>
-                                    <span>{{ $ses->facilitador->nombre_completo ?? 'N/A' }}</span>
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <i class="fa-solid fa-location-dot text-rose-500 text-[10px]"></i>
-                                    <span>{{ $ses->sede->nombre ?? 'Sede Principal' }}</span>
-                                </span>
+                        <!-- Título de la Inducción y Facilitador con Logo -->
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200/80 text-brand-blue flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                <i class="fa-solid fa-chalkboard-user text-xs"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="font-bold text-slate-900 text-sm leading-snug">
+                                    {{ $ses->induccion->titulo }}
+                                </h4>
+                                <div class="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                                    <i class="fa-solid fa-circle-user text-indigo-500 text-xs"></i>
+                                    <span class="font-medium text-slate-700">{{ $ses->facilitador->nombre_completo ?? 'N/A' }}</span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Metadatos: Fecha y Asistentes de tu Área -->
-                        <div class="grid grid-cols-2 gap-2 text-xs bg-white p-2.5 rounded-xl border border-slate-200/70">
+                        <!-- Sede a lo largo (Horizontal completa) -->
+                        <div class="flex items-center gap-2 text-xs text-rose-800 bg-rose-50/90 border border-rose-200/90 px-3 py-1.5 rounded-xl shadow-2xs">
+                            <i class="fa-solid fa-location-dot text-rose-500 text-xs shrink-0"></i>
+                            <span class="font-bold truncate">{{ $ses->sede->nombre ?? 'Sede Principal PNY' }}</span>
+                        </div>
+
+                        <!-- Metadatos en Recuadro: Fecha y Participantes -->
+                        <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50/80 p-2.5 rounded-xl border border-slate-200/80">
                             <div>
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Fecha</span>
-                                <div class="font-medium text-slate-700 text-xs flex items-center gap-1">
-                                    <i class="fa-regular fa-calendar text-slate-400 text-[10px]"></i>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Fecha y Hora</span>
+                                <div class="font-semibold text-slate-700 text-xs flex items-center gap-1">
+                                    <i class="fa-regular fa-calendar text-slate-400 text-xs"></i>
                                     <span>{{ $ses->fecha_inicio ? $ses->fecha_inicio->format('d/m/Y h:i A') : 'Sin fecha' }}</span>
                                 </div>
                             </div>
                             <div>
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5 text-right">De tu Área</span>
                                 <div class="flex justify-end items-center gap-1">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-blue-50 text-brand-blue border border-blue-200">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-bold bg-blue-50 text-brand-blue border border-blue-200">
                                         <i class="fa-solid fa-users text-[10px]"></i> {{ $ses->asistencias_area_count }}
                                     </span>
                                     @if($ses->total_asistencias_count > $ses->asistencias_area_count)
@@ -341,12 +341,12 @@
                                     onclick="abrirModalParticipantes({{ $ses->id }})"
                                     class="flex-1 py-2 px-3 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer">
                                 <i class="fa-solid fa-signature"></i>
-                                <span>Ver Participantes</span>
+                                <span>Ver Participantes ({{ $ses->asistencias_area_count }})</span>
                             </button>
                             <a href="{{ route('induccion.acta.pdf', $ses->codigo_sesion) }}"
-                               class="py-2 px-3 rounded-xl bg-white hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200 transition-colors shadow-2xs shrink-0"
+                               class="py-2 px-3 rounded-xl bg-white hover:bg-rose-50 hover:text-rose-700 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-300 transition-colors shadow-2xs shrink-0"
                                title="Descargar Acta Oficial en PDF">
-                                <i class="fa-solid fa-file-pdf text-red-500"></i>
+                                <i class="fa-solid fa-file-pdf text-rose-500"></i>
                                 <span>Acta</span>
                             </a>
                         </div>
@@ -354,71 +354,149 @@
                 @endforeach
             </div>
 
-            <!-- VISTA ESCRITORIO: TABLA (hidden md:block) -->
-            <div class="hidden md:block overflow-x-auto rounded-2xl border border-slate-200">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200">
-                        <tr>
-                            <th class="py-3 px-3.5">Código</th>
-                            <th class="py-3 px-3.5">Inducción</th>
-                            <th class="py-3 px-3.5">Facilitador</th>
-                            <th class="py-3 px-3.5">Sede</th>
-                            <th class="py-3 px-3.5">Fecha</th>
-                            <th class="py-3 px-3.5 text-center">De tu Área</th>
-                            <th class="py-3 px-3.5 text-right">Acciones</th>
+            <!-- VISTA ESCRITORIO: TABLA (hidden md:block) Totalmente adaptada al ancho sin scroll horizontal -->
+            <div class="hidden md:block overflow-hidden rounded-2xl border border-slate-300/80 bg-white shadow-sm ring-1 ring-slate-900/5">
+                <table class="w-full text-left border-collapse table-auto">
+                    <!-- Cabecera Ejecutiva Navy / Dark Corporativa PNY -->
+                    <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                        <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                            <th class="py-3 px-3 w-24 whitespace-nowrap">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-qrcode text-cyan-400 text-xs"></i>
+                                    <span>Código</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-3">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-chalkboard-user text-sky-400 text-xs"></i>
+                                    <span>Inducción</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-2.5 w-36 lg:w-44">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-user-tie text-indigo-400 text-xs"></i>
+                                    <span>Facilitador</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-2.5 w-28 lg:w-32">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-location-dot text-rose-400 text-xs"></i>
+                                    <span>Sede</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-2.5 w-24 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-regular fa-calendar text-amber-400 text-xs"></i>
+                                    <span>Fecha</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-2 w-20 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-users text-emerald-400 text-xs"></i>
+                                    <span>Área</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-3 text-right w-36 whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <i class="fa-solid fa-gears text-slate-300 text-xs"></i>
+                                    <span>Acciones</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                    <tbody class="divide-y divide-slate-200/80 text-slate-700 bg-white">
                         @foreach($sesionesArea as $ses)
-                            <tr class="hover:bg-slate-50/70 transition-colors">
-                                <td class="py-3 px-3.5 font-mono font-bold text-cyan-800 whitespace-nowrap">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-cyan-50 border border-cyan-200">
-                                        <i class="fa-solid fa-qrcode text-[10px] text-cyan-600"></i>
-                                        {{ $ses->codigo_sesion }}
+                            <tr class="hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors">
+                                <!-- Código -->
+                                <td class="py-3 px-3 font-mono font-bold text-cyan-900 whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-cyan-50/90 border border-cyan-200 text-cyan-900 text-[11px] shadow-2xs">
+                                        <i class="fa-solid fa-qrcode text-cyan-600 text-[10px]"></i>
+                                        <span>{{ $ses->codigo_sesion }}</span>
                                     </span>
                                 </td>
-                                <td class="py-3 px-3.5">
-                                    <div class="font-bold text-slate-900 leading-snug">{{ $ses->induccion->titulo }}</div>
-                                    @if($ses->estaActiva())
-                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 mt-0.5">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Sesión en curso
+
+                                <!-- Inducción -->
+                                <td class="py-3 px-3">
+                                    <div class="flex items-start gap-2">
+                                        <div class="w-7 h-7 rounded-lg bg-blue-50 border border-blue-200/80 text-brand-blue flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                            <i class="fa-solid fa-chalkboard-user text-xs"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="font-bold text-slate-900 text-xs leading-snug line-clamp-2" title="{{ $ses->induccion->titulo }}">
+                                                {{ $ses->induccion->titulo }}
+                                            </div>
+                                            @if($ses->estaActiva())
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mt-0.5 shadow-2xs animate-pulse">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> En curso
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 mt-0.5">
+                                                    <i class="fa-solid fa-check text-[8px] text-emerald-600"></i> Finalizada
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Facilitador -->
+                                <td class="py-3 px-2.5">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <div class="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-200/80 text-indigo-600 flex items-center justify-center shrink-0 shadow-2xs">
+                                            <i class="fa-solid fa-circle-user text-xs"></i>
+                                        </div>
+                                        <div class="min-w-0 truncate" title="{{ $ses->facilitador->nombre_completo ?? 'N/A' }}">
+                                            <span class="font-semibold text-slate-800 text-xs block leading-tight truncate">
+                                                {{ $ses->facilitador->nombre_completo ?? 'N/A' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Sede -->
+                                <td class="py-3 px-2.5">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 text-rose-800 text-[11px] font-semibold border border-rose-200/80 shadow-2xs truncate max-w-full" title="{{ $ses->sede->nombre ?? 'Sede Principal' }}">
+                                        <i class="fa-solid fa-location-dot text-rose-500 text-[10px] shrink-0"></i>
+                                        <span class="truncate">{{ $ses->sede->nombre ?? 'Sede Principal' }}</span>
+                                    </span>
+                                </td>
+
+                                <!-- Fecha / Hora -->
+                                <td class="py-3 px-2.5 text-center whitespace-nowrap">
+                                    <div class="text-xs font-semibold text-slate-700 leading-tight">
+                                        <span>{{ $ses->fecha_inicio ? $ses->fecha_inicio->format('d/m/Y') : '-' }}</span>
+                                        @if($ses->fecha_inicio)
+                                            <span class="block text-[10px] text-slate-400 font-mono font-normal">{{ $ses->fecha_inicio->format('h:i A') }}</span>
+                                        @endif
+                                    </div>
+                                </td>
+
+                                <!-- De tu Área -->
+                                <td class="py-3 px-2 text-center whitespace-nowrap">
+                                    <div class="inline-flex flex-col items-center">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-extrabold bg-blue-50 text-brand-blue border border-blue-200 shadow-2xs">
+                                            <i class="fa-solid fa-users text-[10px]"></i>
+                                            <span>{{ $ses->asistencias_area_count }}</span>
                                         </span>
-                                    @endif
+                                        @if($ses->total_asistencias_count > $ses->asistencias_area_count)
+                                            <span class="text-[9px] text-slate-400 font-medium mt-0.5" title="Total en la sesión">/ {{ $ses->total_asistencias_count }}</span>
+                                        @endif
+                                    </div>
                                 </td>
-                                <td class="py-3 px-3.5 text-slate-600 whitespace-nowrap">
-                                    {{ $ses->facilitador->nombre_completo ?? 'N/A' }}
-                                </td>
-                                <td class="py-3 px-3.5 whitespace-nowrap">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[11px] font-semibold border border-rose-100">
-                                        <i class="fa-solid fa-location-dot text-[9px]"></i>
-                                        {{ $ses->sede->nombre ?? 'Sede Principal' }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-3.5 text-slate-500 font-mono whitespace-nowrap">
-                                    {{ $ses->fecha_inicio ? $ses->fecha_inicio->format('d/m/Y h:i A') : '-' }}
-                                </td>
-                                <td class="py-3 px-3.5 text-center whitespace-nowrap">
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-brand-blue border border-blue-200">
-                                        <i class="fa-solid fa-users text-[10px]"></i>
-                                        {{ $ses->asistencias_area_count }}
-                                    </span>
-                                    @if($ses->total_asistencias_count > $ses->asistencias_area_count)
-                                        <div class="text-[10px] text-slate-400 mt-0.5">de {{ $ses->total_asistencias_count }} en sala</div>
-                                    @endif
-                                </td>
-                                <td class="py-3 px-3.5 text-right whitespace-nowrap">
-                                    <div class="inline-flex items-center gap-1.5">
+
+                                <!-- Acciones -->
+                                <td class="py-3 px-3 text-right whitespace-nowrap">
+                                    <div class="inline-flex items-center gap-1 justify-end">
                                         <button type="button"
                                                 onclick="abrirModalParticipantes({{ $ses->id }})"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white font-bold text-xs transition-colors shadow-2xs cursor-pointer"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white font-bold text-xs transition-all shadow-2xs hover:shadow-xs cursor-pointer"
                                                 title="Ver lista de participantes y sus firmas digitales">
-                                            <i class="fa-solid fa-signature"></i>
+                                            <i class="fa-solid fa-signature text-[11px]"></i>
                                             <span>Firmas</span>
                                         </button>
                                         <a href="{{ route('induccion.acta.pdf', $ses->codigo_sesion) }}"
-                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-bold transition-colors border border-slate-200"
+                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 font-bold text-xs transition-all border border-slate-300 shadow-2xs hover:shadow-xs"
                                            title="Descargar Acta Oficial en PDF">
-                                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                                            <i class="fa-solid fa-file-pdf text-rose-500 text-[11px]"></i>
                                             <span>PDF</span>
                                         </a>
                                     </div>
