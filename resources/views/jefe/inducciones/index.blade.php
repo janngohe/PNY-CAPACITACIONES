@@ -65,59 +65,172 @@
         </div>
     </div>
 
-    <!-- Catálogo de Inducciones Aplicables a tu Área -->
-    <div class="bg-white rounded-3xl border border-line p-6 shadow-2xs space-y-4">
-        <div class="flex items-center justify-between">
+    <!-- Catálogo de Inducciones Aplicables a tu Área (Pase Directo de una en una) -->
+    <div class="bg-white rounded-3xl border border-line/90 p-5 sm:p-6 shadow-2xs space-y-4 relative overflow-hidden" id="carruselInduccionesWrapper">
+        <!-- Encabezado con Título y Controles -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line/70">
             <div>
-                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-brand-light text-brand-blue border border-brand-blue/20">
+                        <i class="fa-solid fa-chalkboard-user text-[9px] text-brand-blue"></i> Catálogo de Inducciones
+                    </span>
+                    <span class="text-xs text-slate-400">• Navegación individual</span>
+                </div>
+                <h3 class="text-base sm:text-lg font-heading font-extrabold text-brand-dark flex items-center gap-2">
                     <i class="fa-solid fa-layer-group text-brand-blue"></i> Inducciones Institucionales Disponibles
                 </h3>
-                <p class="text-xs text-slate-500">Charlas y presentaciones oficiales disponibles para proyectar con código QR</p>
+                <p class="text-xs text-slate-500">
+                    Pasa de una en una entre las inducciones oficiales disponibles para tu área y proyecta la que necesites.
+                </p>
             </div>
-            <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600">
-                {{ $inducciones->count() }} activas
-            </span>
+
+            <!-- Controles del Slider (Flechas y Contador Directo) -->
+            <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                <span id="carruselIndicadorIndice" class="text-xs font-mono font-bold px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200/80">
+                    Inducción 1 de {{ $inducciones->count() }}
+                </span>
+
+                <div class="flex items-center gap-1 bg-slate-100/90 p-1 rounded-2xl border border-line/80">
+                    <button type="button"
+                            onclick="moverCarrusel(-1)"
+                            title="Inducción anterior"
+                            class="w-9 h-9 rounded-xl bg-white hover:bg-brand-blue hover:text-white text-slate-700 flex items-center justify-center transition-all shadow-2xs cursor-pointer">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <button type="button"
+                            onclick="moverCarrusel(1)"
+                            title="Siguiente inducción"
+                            class="w-9 h-9 rounded-xl bg-white hover:bg-brand-blue hover:text-white text-slate-700 flex items-center justify-center transition-all shadow-2xs cursor-pointer">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         @if($inducciones->isEmpty())
-            <div class="p-8 text-center text-xs text-slate-400">
-                No hay inducciones disponibles en este momento.
+            <div class="p-10 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <i class="fa-solid fa-chalkboard-user text-3xl text-slate-300 mb-2"></i>
+                <p class="font-bold text-slate-600">No hay inducciones institucionales activas en este momento.</p>
             </div>
         @else
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach($inducciones as $ind)
-                    <div class="p-4 rounded-2xl border border-slate-200 hover:border-cyan-500/50 bg-slate-50/50 transition-all flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between gap-2 mb-2">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-100 text-cyan-800">
-                                    Inducción
-                                </span>
-                                <div class="flex items-center gap-1 text-xs text-slate-400">
-                                    @if($ind->video_url)
-                                        <i class="fa-brands fa-youtube text-red-500" title="Contiene video"></i>
-                                    @endif
-                                    @if($ind->archivo_presentacion)
-                                        <i class="fa-solid fa-file-pdf text-red-600" title="Contiene PDF"></i>
-                                    @endif
+            <!-- Contenedor con overflow hidden para el slider de una en una -->
+            <div class="relative overflow-hidden py-1" id="carruselViewport">
+                <!-- Flechas Flotantes Laterales -->
+                <button type="button"
+                        onclick="moverCarrusel(-1)"
+                        title="Inducción anterior"
+                        class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-2xl bg-white/90 hover:bg-brand-blue text-slate-700 hover:text-white border border-line shadow-md backdrop-blur-xs flex items-center justify-center transition-all hover:scale-105 cursor-pointer">
+                    <i class="fa-solid fa-chevron-left text-sm"></i>
+                </button>
+
+                <button type="button"
+                        onclick="moverCarrusel(1)"
+                        title="Siguiente inducción"
+                        class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-2xl bg-white/90 hover:bg-brand-blue text-slate-700 hover:text-white border border-line shadow-md backdrop-blur-xs flex items-center justify-center transition-all hover:scale-105 cursor-pointer">
+                    <i class="fa-solid fa-chevron-right text-sm"></i>
+                </button>
+
+                <!-- Pista deslizable (Track) -->
+                <div id="carruselTrack"
+                     class="flex transition-transform duration-300 ease-out select-none will-change-transform"
+                     style="transform: translateX(0%);">
+                    @foreach($inducciones as $index => $ind)
+                        <div class="carrusel-slide w-full min-w-full shrink-0 px-1"
+                             data-index="{{ $index }}">
+                            <div class="bg-white rounded-3xl border border-line/90 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden grid grid-cols-1 md:grid-cols-12 group">
+                                <!-- Columna Izquierda: Fotico de la Inducción (5/12 en desktop) -->
+                                <div class="md:col-span-5 relative h-56 sm:h-64 md:h-auto md:min-h-[280px] bg-slate-900 overflow-hidden">
+                                    <img src="{{ $ind->imagen_portada_url }}"
+                                         alt="{{ $ind->titulo }}"
+                                         loading="lazy"
+                                         class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out">
+                                    
+                                    <!-- Gradiente protector inferior -->
+                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent"></div>
+
+                                    <!-- Insignia Superior Izquierda (Número) -->
+                                    <div class="absolute top-3.5 left-3.5 flex items-center gap-1.5 z-10">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-slate-900/85 text-cyan-300 border border-white/15 backdrop-blur-xs shadow-xs">
+                                            <i class="fa-solid fa-chalkboard-user text-[9px]"></i> Inducción #{{ $index + 1 }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Iconos de Recursos Superior Derecha -->
+                                    <div class="absolute top-3.5 right-3.5 flex items-center gap-1 bg-slate-900/80 backdrop-blur-xs p-1 rounded-xl border border-white/10 shadow-xs z-10">
+                                        @if($ind->video_url)
+                                            <span class="w-6 h-6 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center text-xs" title="Video explicativo">
+                                                <i class="fa-brands fa-youtube"></i>
+                                            </span>
+                                        @endif
+                                        @if($ind->archivo_presentacion)
+                                            <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center text-xs" title="Diapositivas PowerPoint">
+                                                <i class="fa-solid fa-file-powerpoint"></i>
+                                            </span>
+                                        @endif
+                                        <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-xs" title="Asistencia QR habilitada">
+                                            <i class="fa-solid fa-qrcode"></i>
+                                        </span>
+                                    </div>
+
+                                    <!-- Sede Inferior Sobre la Foto -->
+                                    <div class="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-white/90 text-xs z-10">
+                                        <span class="inline-flex items-center gap-1.5 font-semibold truncate">
+                                            <i class="fa-solid fa-location-dot text-cyan-400 text-xs"></i>
+                                            <span>Todas las Sedes PNY</span>
+                                        </span>
+                                        <span class="text-[10px] font-mono text-cyan-300 font-bold bg-cyan-950/70 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+                                            Oficial
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Columna Derecha: Información y Acción (7/12 en desktop) -->
+                                <div class="md:col-span-7 p-5 sm:p-7 flex flex-col justify-between space-y-4 bg-white min-w-0">
+                                    <div>
+                                        <div class="flex items-center justify-between gap-2 mb-2">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                <i class="fa-solid fa-circle-check text-[9px]"></i> Disponible para Dictar
+                                            </span>
+                                            <span class="text-xs text-slate-400 font-mono">ID #{{ $ind->id }}</span>
+                                        </div>
+
+                                        <h4 class="font-heading font-extrabold text-base sm:text-xl text-slate-900 group-hover:text-brand-blue transition-colors leading-snug">
+                                            {{ $ind->titulo }}
+                                        </h4>
+
+                                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2.5 line-clamp-3 sm:line-clamp-4">
+                                            {{ $ind->descripcion ?: 'Capacitación e inducción institucional estructurada para el equipo de trabajo.' }}
+                                        </p>
+                                    </div>
+
+                                    <div class="pt-4 border-t border-line/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div class="flex items-center gap-3 text-xs text-slate-500">
+                                            <span class="flex items-center gap-1 font-semibold text-slate-700">
+                                                <i class="fa-solid fa-users text-brand-blue text-[11px]"></i> Presencial
+                                            </span>
+                                            <span>•</span>
+                                            <span class="flex items-center gap-1 text-slate-600">
+                                                <i class="fa-solid fa-qrcode text-emerald-600 text-[11px]"></i> Registro con QR
+                                            </span>
+                                        </div>
+
+                                        <a href="{{ route('induccion.index') }}"
+                                           target="_blank"
+                                           class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-blue to-brand-deep hover:brightness-110 text-white font-heading font-bold text-xs shadow-xs transition-all hover:scale-[1.02] cursor-pointer shrink-0">
+                                            <i class="fa-solid fa-play text-xs"></i>
+                                            <span>Dictar Esta Inducción</span>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                            <h4 class="font-bold text-slate-800 text-sm mb-1">{{ $ind->titulo }}</h4>
-                            <p class="text-xs text-slate-500 line-clamp-2 mb-3">{{ $ind->descripcion }}</p>
                         </div>
+                    @endforeach
+                </div>
+            </div>
 
-                        <div class="pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
-                            <span class="text-[11px] text-slate-400">
-                                Disponible para todas las sedes
-                            </span>
-                            <a href="{{ route('induccion.index') }}"
-                               target="_blank"
-                               class="text-xs font-bold text-brand-blue hover:text-brand-dark flex items-center gap-1">
-                                <span>Dictar</span>
-                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                            </a>
-                        </div>
-                    </div>
-                @endforeach
+            <!-- Paginador / Indicadores (Dots) Inferiores -->
+            <div class="flex items-center justify-center gap-1.5 pt-1" id="carruselDotsContainer">
+                {{-- Se genera dinámicamente con JS --}}
             </div>
         @endif
     </div>
@@ -719,5 +832,138 @@
     function cerrarModalZoomFirma() {
         document.getElementById('modalZoomFirma').classList.add('hidden');
     }
+
+    // =========================================================================
+    // SLIDER DE INDUCCIONES (PASO DIRECTO DE UNA EN UNA - SIN AUTOPLAY)
+    // =========================================================================
+    let carruselIndex = 0;
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    function getTotalSlides() {
+        return document.querySelectorAll('.carrusel-slide').length;
+    }
+
+    function actualizarCarrusel() {
+        const track = document.getElementById('carruselTrack');
+        if (!track) return;
+
+        const total = getTotalSlides();
+        if (total === 0) return;
+
+        if (carruselIndex >= total) {
+            carruselIndex = 0;
+        } else if (carruselIndex < 0) {
+            carruselIndex = total - 1;
+        }
+
+        // Desplazamiento 100% directo a la siguiente inducción
+        track.style.transform = `translateX(-${carruselIndex * 100}%)`;
+
+        // Indicador directo: Inducción X de Y
+        const indicador = document.getElementById('carruselIndicadorIndice');
+        if (indicador) {
+            indicador.textContent = `Inducción ${carruselIndex + 1} de ${total}`;
+        }
+
+        actualizarDotsCarrusel(total);
+    }
+
+    function moverCarrusel(direccion) {
+        const total = getTotalSlides();
+        if (total <= 1) return;
+
+        carruselIndex += direccion;
+
+        if (carruselIndex >= total) {
+            carruselIndex = 0;
+        } else if (carruselIndex < 0) {
+            carruselIndex = total - 1;
+        }
+
+        actualizarCarrusel();
+    }
+
+    function irASlide(index) {
+        carruselIndex = index;
+        actualizarCarrusel();
+    }
+
+    function renderizarDotsCarrusel() {
+        const container = document.getElementById('carruselDotsContainer');
+        if (!container) return;
+
+        const total = getTotalSlides();
+        if (total <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        for (let i = 0; i < total; i++) {
+            const activo = (i === carruselIndex);
+            html += `
+                <button type="button"
+                        onclick="irASlide(${i})"
+                        title="Ir a inducción ${i + 1}"
+                        class="h-2 rounded-full transition-all duration-300 cursor-pointer ${activo ? 'w-6 bg-brand-blue' : 'w-2 bg-slate-300 hover:bg-slate-400'}">
+                </button>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    function actualizarDotsCarrusel(total) {
+        const container = document.getElementById('carruselDotsContainer');
+        if (!container) return;
+
+        const dots = container.querySelectorAll('button');
+        if (dots.length !== total) {
+            renderizarDotsCarrusel();
+            return;
+        }
+
+        dots.forEach((dot, i) => {
+            if (i === carruselIndex) {
+                dot.className = 'h-2 rounded-full transition-all duration-300 cursor-pointer w-6 bg-brand-blue';
+            } else {
+                dot.className = 'h-2 rounded-full transition-all duration-300 cursor-pointer w-2 bg-slate-300 hover:bg-slate-400';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const wrapper = document.getElementById('carruselInduccionesWrapper');
+        if (wrapper && getTotalSlides() > 0) {
+            renderizarDotsCarrusel();
+            actualizarCarrusel();
+
+            // Soporte para gestos táctiles (Swipe directo) en móviles y tablets
+            const viewport = document.getElementById('carruselViewport');
+            if (viewport) {
+                viewport.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+
+                viewport.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    const diff = touchStartX - touchEndX;
+                    if (Math.abs(diff) > 40) {
+                        if (diff > 0) moverCarrusel(1);
+                        else moverCarrusel(-1);
+                    }
+                }, { passive: true });
+            }
+
+            // Teclas de flecha izquierda/derecha al tener foco
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') {
+                    moverCarrusel(1);
+                } else if (e.key === 'ArrowLeft') {
+                    moverCarrusel(-1);
+                }
+            });
+        }
+    });
 </script>
 @endsection
