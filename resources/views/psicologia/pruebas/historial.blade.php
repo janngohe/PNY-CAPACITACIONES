@@ -96,8 +96,8 @@
             </div>
         @else
 
-            <!-- 1. VISTA MÓVIL: Tarjetas Adaptativas (< md) -->
-            <div class="block md:hidden space-y-3">
+            <!-- 1. VISTA MÓVIL: Tarjetas Adaptativas con Estilo Ejecutivo (< md) -->
+            <div class="block md:hidden space-y-3.5">
                 @foreach($aplicaciones as $app)
                     @php
                         $badge = $app->badgeEstadoPaca();
@@ -107,97 +107,96 @@
                         $estadoFiltro = ($app->pacaFinalizada() && $app->valantiFinalizada())
                             ? 'FINALIZADA'
                             : (($app->totalRespondidasPaca() > 0 || $app->pacaFinalizada()) ? 'EN_CURSO' : 'BORRADOR');
-                        $textoBusqueda = mb_strtolower($app->nombre_completo . ' ' . $app->identificacion . ' ' . ($app->cargo_aspira ?? ''), 'UTF-8');
+                        $textoBusqueda = mb_strtolower($app->nombre_completo . ' ' . $app->identificacion . ' ' . ($app->cargo_aspira ?? '') . ' ' . ($app->sede?->nombre ?? ''), 'UTF-8');
                     @endphp
-                    <div class="item-historial-vivo rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs space-y-3"
+                    <div class="item-historial-vivo rounded-2xl border border-slate-300/80 bg-white p-4 shadow-sm space-y-3 transition-all ring-1 ring-slate-900/5"
                          data-search="{{ $textoBusqueda }}"
                          data-estado="{{ $estadoFiltro }}"
                          data-fecha="{{ $fechaIso }}">
                         
-                        <!-- Fila Superior: Nombre y Estado -->
+                        <!-- Fila Superior: Logo de Usuario + Nombre + Estado -->
                         <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0">
-                                <span class="font-bold text-slate-900 text-sm block leading-snug">
-                                    {{ $app->nombre_completo }}
-                                </span>
-                                <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 mt-0.5">
-                                    <span class="font-mono">CC {{ $app->identificacion }}</span>
-                                    @if($app->cargo_aspira)
-                                        <span>•</span>
-                                        <span class="text-slate-600 font-medium truncate max-w-[160px]">{{ $app->cargo_aspira }}</span>
-                                    @endif
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="h-10 w-10 rounded-2xl bg-indigo-50 border border-indigo-200/80 text-indigo-600 flex items-center justify-center shadow-2xs shrink-0 select-none">
+                                    <i class="fa-solid fa-circle-user text-2xl"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="font-bold text-slate-900 text-sm block leading-snug truncate">
+                                        {{ $app->nombre_completo }}
+                                    </span>
+                                    <span class="font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold text-[10px] inline-block mt-0.5 whitespace-nowrap">
+                                        CC {{ $app->identificacion }}
+                                    </span>
                                 </div>
                             </div>
-                            <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border {{ $badge['clase'] }} shrink-0">
+                            <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold border shadow-2xs {{ $badge['clase'] }} shrink-0 whitespace-nowrap">
                                 <i class="fa-solid {{ $badge['icono'] }} text-[9px]"></i>
                                 {{ $badge['texto'] }}
                             </span>
                         </div>
 
-                        <!-- Fila Central: Datos de Pruebas y Fecha -->
-                        <div class="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 text-[11px] border border-slate-100">
+                        <!-- Fila de Sede a lo largo (Horizontal completa sin saltos de línea) -->
+                        @if($app->sede)
+                            <div class="flex items-center gap-2 text-xs text-sky-800 bg-sky-50/90 border border-sky-200/90 px-3 py-1.5 rounded-xl shadow-2xs">
+                                <i class="fa-solid fa-location-dot text-sky-600 text-xs shrink-0"></i>
+                                <span class="text-[11px] font-semibold whitespace-nowrap truncate">Sede: <strong class="font-bold text-sky-950">{{ $app->sede->nombre }}</strong></span>
+                            </div>
+                        @endif
+
+                        <!-- Fila Central: Datos de Cargo, Pruebas y Fecha -->
+                        <div class="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 text-[11px] border border-slate-200/70">
                             <div>
-                                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Pruebas</span>
-                                <span class="font-bold text-slate-800">VALANTI · PAC-A</span>
+                                <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Área / Cargo</span>
+                                <span class="font-bold text-slate-800 truncate block">{{ $app->cargo_aspira ?: '—' }}</span>
                             </div>
                             <div>
-                                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Fecha Aplicación</span>
+                                <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Aplicación</span>
                                 <span class="font-bold text-slate-800">
                                     {{ ($app->fecha_hora_aceptacion ?? $app->created_at)->format('d/m/Y') }}
-                                    @if($app->edad)
-                                        · {{ $app->edad }} años
-                                    @endif
+                                    @if($app->edad) · {{ $app->edad }} años @endif
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Fila Inferior: Botones de Acción Táctiles (Consentimiento + Resultados) -->
-                        <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 flex-wrap">
+                        <!-- Fila Inferior: Botones de Acción (Consentimiento + Entrar a VALANTI / PAC-A) -->
+                        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 flex-wrap">
                             
-                            <!-- Acciones Consentimiento -->
+                            <!-- Ver Consentimiento -->
                             <div class="flex items-center gap-1.5">
                                 <button type="button"
                                         onclick="abrirModalPdf('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($app->nombre_completo) }}')"
-                                        class="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer">
-                                    <i class="fa-solid fa-eye text-xs text-rose-600"></i>
+                                        class="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
+                                    <i class="fa-solid fa-file-pdf text-xs text-rose-600"></i>
                                     <span>Ver Consentimiento</span>
                                 </button>
-                                <a href="{{ $urlPdfDescarga }}"
-                                   title="Descargar PDF"
-                                   class="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs transition-colors">
-                                    <i class="fa-solid fa-download"></i>
-                                </a>
                             </div>
 
-                            <!-- Botón Resultados / Continuar -->
+                            <!-- Botones para Entrar a VALANTI y PAC-A -->
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 @if($app->valantiFinalizada())
-                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 px-2.5 py-1.5 text-xs font-bold transition-colors">
-                                        <i class="fa-solid fa-scale-balanced text-xs"></i>
+                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}"
+                                       class="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 text-xs font-bold transition-colors shadow-2xs">
+                                        <i class="fa-solid fa-scale-balanced text-xs text-sky-600"></i>
                                         <span>VALANTI</span>
-                                    </a>
-                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.pdf', $app) : route('psicologia.valanti.pdf', $app) }}" title="Descargar PDF Gráfico VALANTI" class="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs transition-colors">
-                                        <i class="fa-solid fa-file-pdf"></i>
                                     </a>
                                 @endif
                                 @if($app->pacaFinalizada())
-                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-2.5 py-1.5 text-xs font-bold transition-colors">
-                                        <i class="fa-solid fa-chart-simple text-xs"></i>
+                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}"
+                                       class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 text-xs font-bold transition-colors shadow-2xs">
+                                        <i class="fa-solid fa-chart-simple text-xs text-indigo-600"></i>
                                         <span>PAC-A</span>
                                     </a>
-                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.pdf', $app) : route('psicologia.paca.pdf', $app) }}" title="Descargar PDF Resultados PAC-A" class="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs transition-colors">
-                                        <i class="fa-solid fa-file-pdf"></i>
-                                    </a>
                                 @endif
+
                                 @if(!$app->valantiFinalizada())
                                     @php
                                         $pathCont = route('psicologia.evaluacion.paso2', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
                                     @endphp
                                     <button type="button"
                                             onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario VALANTI')"
-                                            class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer">
+                                            class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
                                         <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
-                                        <span>QR Prueba 1</span>
+                                        <span>QR P1</span>
                                     </button>
                                 @elseif(!$app->pacaFinalizada())
                                     @php
@@ -205,9 +204,9 @@
                                     @endphp
                                     <button type="button"
                                             onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario PAC-A')"
-                                            class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer">
+                                            class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
                                         <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
-                                        <span>QR Prueba 2</span>
+                                        <span>QR P2</span>
                                     </button>
                                 @endif
                             </div>
@@ -218,17 +217,43 @@
                 @endforeach
             </div>
 
-            <!-- 2. VISTA ESCRITORIO: Tabla Completa sin ID ni columnas de puntaje interno (>= md) -->
-            <div class="hidden md:block rounded-2xl border border-slate-200/80 bg-white shadow-2xs overflow-hidden">
+            <!-- 2. VISTA ESCRITORIO: Panel Ejecutivo con Cabecera Oscura y Logo de Usuario (>= md) -->
+            <div class="hidden md:block rounded-2xl border border-slate-300/80 bg-white shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-100 bg-slate-50/75 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                                <th class="py-3.5 px-5">Persona Evaluada</th>
-                                <th class="py-3.5 px-4">Consentimiento GH-FO-025</th>
-                                <th class="py-3.5 px-4">Pruebas / Fecha</th>
-                                <th class="py-3.5 px-4">Estado</th>
-                                <th class="py-3.5 px-5 text-right">Resultados / Acción</th>
+                        <!-- Cabecera Ejecutiva Navy / Indigo -->
+                        <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                            <tr class="text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                                <th class="py-4 px-5">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-user text-indigo-400"></i>
+                                        <span>Persona Evaluada</span>
+                                    </div>
+                                </th>
+                                <th class="py-4 px-4">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-file-signature text-rose-400"></i>
+                                        <span>Consentimiento GH-FO-025</span>
+                                    </div>
+                                </th>
+                                <th class="py-4 px-4">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-calendar-check text-sky-400"></i>
+                                        <span>Pruebas / Fecha</span>
+                                    </div>
+                                </th>
+                                <th class="py-4 px-4">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-bars-progress text-emerald-400"></i>
+                                        <span>Estado</span>
+                                    </div>
+                                </th>
+                                <th class="py-4 px-5 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <i class="fa-solid fa-arrow-right-to-bracket text-amber-400"></i>
+                                        <span>Entrar a Pruebas</span>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-xs">
@@ -241,101 +266,107 @@
                                     $estadoFiltro = ($app->pacaFinalizada() && $app->valantiFinalizada())
                                         ? 'FINALIZADA'
                                         : (($app->totalRespondidasPaca() > 0 || $app->pacaFinalizada()) ? 'EN_CURSO' : 'BORRADOR');
-                                    $textoBusqueda = mb_strtolower($app->nombre_completo . ' ' . $app->identificacion . ' ' . ($app->cargo_aspira ?? ''), 'UTF-8');
+                                    $textoBusqueda = mb_strtolower($app->nombre_completo . ' ' . $app->identificacion . ' ' . ($app->cargo_aspira ?? '') . ' ' . ($app->sede?->nombre ?? ''), 'UTF-8');
                                 @endphp
-                                <tr class="item-historial-vivo hover:bg-slate-50/60 transition-colors"
+                                <tr class="item-historial-vivo odd:bg-white even:bg-slate-50/70 hover:bg-indigo-50/40 transition-colors duration-150"
                                     data-search="{{ $textoBusqueda }}"
                                     data-estado="{{ $estadoFiltro }}"
                                     data-fecha="{{ $fechaIso }}">
 
-                                    <!-- Persona Evaluada -->
+                                    <!-- 1. Persona Evaluada (Con Logo de Usuario) -->
                                     <td class="py-3.5 px-5">
-                                        <span class="font-bold text-slate-900 block leading-tight text-sm">
-                                            {{ $app->nombre_completo }}
-                                        </span>
-                                        <div class="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400">
-                                            <span class="font-mono">CC {{ $app->identificacion }}</span>
-                                            @if($app->cargo_aspira)
-                                                <span>•</span>
-                                                <span class="text-slate-500 font-medium truncate max-w-[220px]" title="{{ $app->cargo_aspira }}">
-                                                    {{ $app->cargo_aspira }}
+                                        <div class="flex items-center gap-3">
+                                            <div class="h-10 w-10 rounded-2xl bg-indigo-50 border border-indigo-200/80 text-indigo-600 flex items-center justify-center shadow-2xs shrink-0 select-none">
+                                                <i class="fa-solid fa-circle-user text-2xl"></i>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <span class="font-bold text-slate-900 block leading-tight text-sm truncate max-w-[240px]">
+                                                    {{ $app->nombre_completo }}
                                                 </span>
-                                            @endif
+                                                <div class="flex items-center gap-1.5 mt-1 text-[11px] flex-wrap">
+                                                    <span class="font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold text-[10px]">CC {{ $app->identificacion }}</span>
+                                                    @if($app->sede)
+                                                        <span class="inline-flex items-center gap-1 text-[10px] font-medium bg-sky-50 text-sky-700 border border-sky-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                            <i class="fa-solid fa-location-dot text-[9px] text-sky-600"></i>
+                                                            <span class="whitespace-nowrap">{{ $app->sede->nombre }}</span>
+                                                        </span>
+                                                    @endif
+                                                    @if($app->cargo_aspira)
+                                                        <span class="text-slate-500 font-semibold truncate max-w-[150px]" title="{{ $app->cargo_aspira }}">
+                                                            • {{ $app->cargo_aspira }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
 
-                                    <!-- CONSENTIMIENTO: Previsualización + Descarga Directa -->
+                                    <!-- 2. CONSENTIMIENTO: Previsualización en Modal -->
                                     <td class="py-3.5 px-4">
                                         <div class="flex items-center gap-1.5 flex-wrap">
                                             <!-- Botón Previsualizar PDF en Modal -->
                                             <button type="button"
                                                     onclick="abrirModalPdf('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($app->nombre_completo) }}')"
                                                     title="Previsualizar consentimiento en pantalla"
-                                                    class="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/90 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs hover:scale-[1.02] cursor-pointer">
-                                                <i class="fa-solid fa-file-pdf text-rose-600"></i>
-                                                <span>Ver PDF</span>
+                                                    class="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs hover:scale-[1.02] cursor-pointer">
+                                                <i class="fa-solid fa-file-pdf text-rose-600 text-xs"></i>
+                                                <span>Ver Consentimiento</span>
                                             </button>
-
-                                            <!-- Botón Descargar PDF Directo -->
-                                            <a href="{{ $urlPdfDescarga }}"
-                                               title="Descargar archivo PDF oficial"
-                                               class="inline-flex items-center justify-center h-6 w-6 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-[10px] transition-colors">
-                                                <i class="fa-solid fa-download"></i>
-                                            </a>
                                         </div>
-                                        <div class="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-                                            <span class="text-emerald-700 font-semibold flex items-center gap-1">
-                                                <i class="fa-solid fa-check text-[9px]"></i> Firmado digitalmente
+                                        <div class="text-[10.5px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
+                                            <i class="fa-solid fa-circle-check text-[9px]"></i>
+                                            <span>Firmado digitalmente</span>
+                                        </div>
+                                    </td>
+
+                                    <!-- 3. Pruebas / Fecha en Cápsula Estilizada -->
+                                    <td class="py-3.5 px-4 whitespace-nowrap">
+                                        <div class="inline-block p-2 rounded-xl bg-slate-100/80 border border-slate-200/60 text-xs">
+                                            <strong class="text-slate-900 block font-bold text-[11px]">VALANTI · PAC-A</strong>
+                                            <span class="text-[10.5px] text-slate-500 font-medium">
+                                                {{ ($app->fecha_hora_aceptacion ?? $app->created_at)->format('d/m/Y') }}
+                                                @if($app->edad) · {{ $app->edad }} años @endif
                                             </span>
                                         </div>
                                     </td>
 
-                                    <!-- Pruebas / Fecha -->
+                                    <!-- 4. Estado con Píldora Definida -->
                                     <td class="py-3.5 px-4 whitespace-nowrap">
-                                        <strong class="text-slate-900 block font-bold">VALANTI · PAC-A</strong>
-                                        <span class="text-[11px] text-slate-400">
-                                            {{ ($app->fecha_hora_aceptacion ?? $app->created_at)->format('d/m/Y') }}
-                                            @if($app->edad)
-                                                · {{ $app->edad }} años
-                                            @endif
-                                        </span>
-                                    </td>
-
-                                    <!-- Estado -->
-                                    <td class="py-3.5 px-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold border {{ $badge['clase'] }}">
-                                            <i class="fa-solid {{ $badge['icono'] }} text-[9px]"></i>
+                                        <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10.5px] font-bold border shadow-2xs {{ $badge['clase'] }}">
+                                            <i class="fa-solid {{ $badge['icono'] }} text-[9.5px]"></i>
                                             {{ $badge['texto'] }}
                                         </span>
                                     </td>
 
-                                    <!-- Acciones -->
+                                    <!-- 5. Entrar a Pruebas (Solo VALANTI y PAC-A para entrar) -->
                                     <td class="py-3.5 px-5 text-right whitespace-nowrap">
-                                        <div class="inline-flex items-center justify-end gap-1.5">
+                                        <div class="inline-flex items-center justify-end gap-2">
                                             @if($app->valantiFinalizada())
-                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}" class="inline-flex items-center gap-1 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 px-3 py-1.5 text-xs font-bold transition-colors" title="Ver Resultados Prueba 1 (VALANTI)">
-                                                    <i class="fa-solid fa-scale-balanced text-[11px]"></i> VALANTI
-                                                </a>
-                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.pdf', $app) : route('psicologia.valanti.pdf', $app) }}" class="inline-flex items-center justify-center h-7 w-7 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs transition-colors" title="Descargar PDF del Gráfico VALANTI">
-                                                    <i class="fa-solid fa-file-arrow-down text-[11px]"></i>
+                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}"
+                                                   class="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 border border-sky-200/90 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02]"
+                                                   title="Entrar a los Resultados de VALANTI">
+                                                    <i class="fa-solid fa-scale-balanced text-xs text-sky-600"></i>
+                                                    <span>VALANTI</span>
                                                 </a>
                                             @endif
+
                                             @if($app->pacaFinalizada())
-                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}" class="inline-flex items-center gap-1 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 text-xs font-bold transition-colors" title="Ver Resultados Prueba 2 (PAC-A)">
-                                                    <i class="fa-solid fa-chart-simple text-[11px]"></i> PAC-A
-                                                </a>
-                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.pdf', $app) : route('psicologia.paca.pdf', $app) }}" class="inline-flex items-center justify-center h-7 w-7 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs transition-colors" title="Descargar PDF Resultados PAC-A">
-                                                    <i class="fa-solid fa-file-arrow-down text-[11px]"></i>
+                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}"
+                                                   class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-200/90 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02]"
+                                                   title="Entrar a los Resultados de PAC-A">
+                                                    <i class="fa-solid fa-chart-simple text-xs text-indigo-600"></i>
+                                                    <span>PAC-A</span>
                                                 </a>
                                             @endif
+
                                             @if(!$app->valantiFinalizada())
                                                 @php
                                                     $pathCont = route('psicologia.evaluacion.paso2', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
                                                 @endphp
                                                 <button type="button"
                                                         onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario VALANTI')"
-                                                        title="Mostrar Código QR para que el candidato continúe la Prueba 1 en su celular"
-                                                        class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer">
+                                                        title="Mostrar Código QR para continuar Prueba 1"
+                                                        class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
                                                     <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
                                                     <span>QR Prueba 1</span>
                                                 </button>
@@ -345,8 +376,8 @@
                                                 @endphp
                                                 <button type="button"
                                                         onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario PAC-A')"
-                                                        title="Mostrar Código QR para que el candidato continúe la Prueba 2 en su celular"
-                                                        class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer">
+                                                        title="Mostrar Código QR para continuar Prueba 2"
+                                                        class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
                                                     <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
                                                     <span>QR Prueba 2</span>
                                                 </button>

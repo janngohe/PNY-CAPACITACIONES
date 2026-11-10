@@ -24,27 +24,25 @@ class PlantillaController extends Controller
         $usuario = Auth::user();
         $areaId = $usuario->area_id;
 
-        // Plantillas vinculadas al área del Jefe o generales
+        // Plantillas asignadas por el Administrador vinculadas al área del Jefe o generales
         $todasPlantillas = PlantillaCertificado::query()
             ->with(['area', 'creador'])
-            ->where(function ($query) use ($areaId, $usuario) {
+            ->where(function ($query) use ($areaId) {
                 if ($areaId) {
                     $query->where('area_id', $areaId)
                           ->orWhereNull('area_id');
+                } else {
+                    $query->whereNull('area_id');
                 }
-                $query->orWhere('creado_por', $usuario->id);
             })
             ->orderByDesc('id')
             ->get();
 
-        // Separar entre institucionales (asignadas por Admin) y creadas por el propio Jefe
-        $plantillasAdmin = $todasPlantillas->filter(function ($pl) use ($usuario) {
-            return $pl->creado_por !== $usuario->id;
-        });
-
-        $plantillasPropias = $todasPlantillas->filter(function ($pl) use ($usuario) {
-            return $pl->creado_por === $usuario->id;
-        });
+        // En la vista actual, el Jefe visualiza únicamente las plantillas asignadas por la administración
+        $plantillasAdmin = $todasPlantillas;
+        $plantillasPropias = PlantillaCertificado::query()
+            ->where('creado_por', $usuario->id)
+            ->get();
 
         // Contar cuántas plantillas institucionales activas tienen pendiente la firma del Jefe
         $firmasPendientes = $plantillasAdmin->filter(function ($pl) {

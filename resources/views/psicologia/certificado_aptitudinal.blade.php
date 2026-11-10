@@ -86,7 +86,7 @@
                     $badge = $ev->badgeCertificadoAptitudinal();
                     $emitido = $ev->certificadoEmitido();
                     $estadoFiltro = $emitido ? 'EMITIDO' : 'PENDIENTE';
-                    $textoBusqueda = mb_strtolower($ev->nombre_completo . ' ' . $ev->identificacion . ' ' . ($ev->cargo_aspira ?? ''), 'UTF-8');
+                    $textoBusqueda = mb_strtolower($ev->nombre_completo . ' ' . $ev->identificacion . ' ' . ($ev->cargo_aspira ?? '') . ' ' . ($ev->sede?->nombre ?? ''), 'UTF-8');
                     $ciudadFechaDefault = $ev->certificado_ciudad_fecha ?: ('Rivera-Huila, ' . now()->format('d/m/Y'));
                     $urlPdfInline = (request()->routeIs('admin.*') ? route('admin.psicologia.certificados.pdf', $ev) : route('psicologia.certificado_aptitudinal.pdf', $ev)) . '?inline=1';
                     $urlPdfDescarga = request()->routeIs('admin.*') ? route('admin.psicologia.certificados.pdf', $ev) : route('psicologia.certificado_aptitudinal.pdf', $ev);
@@ -107,39 +107,71 @@
                         'observaciones' => $observacionDefinida,
                     ];
                 @endphp
-                <div class="item-certificado-vivo rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs space-y-3"
+                <div class="item-certificado-vivo rounded-2xl border border-slate-300/80 bg-white p-4 shadow-sm space-y-3 transition-all ring-1 ring-slate-900/5"
                      data-search="{{ $textoBusqueda }}"
                      data-estado="{{ $estadoFiltro }}">
 
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <span class="font-bold text-slate-900 text-sm block leading-snug">{{ $ev->nombre_completo }}</span>
-                            <span class="text-[11px] font-mono text-slate-500">C.C. {{ $ev->identificacion }} · {{ $ev->edad }} años</span>
+                    <!-- Fila Superior: Logo de Usuario + Nombre + Estado -->
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="h-10 w-10 rounded-2xl bg-indigo-50 border border-indigo-200/80 text-indigo-600 flex items-center justify-center shadow-2xs shrink-0 select-none">
+                                <i class="fa-solid fa-circle-user text-2xl"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="font-bold text-slate-900 text-sm block leading-snug truncate">
+                                    {{ $ev->nombre_completo }}
+                                </span>
+                                <span class="font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold text-[10px] inline-block mt-0.5 whitespace-nowrap">
+                                    CC {{ $ev->identificacion }}
+                                </span>
+                            </div>
                         </div>
-                        <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold border {{ $badge['clase'] }} shrink-0">
+                        <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold border shadow-2xs {{ $badge['clase'] }} shrink-0 whitespace-nowrap">
                             <i class="fa-solid {{ $badge['icono'] }} text-[9px]"></i>
                             {{ $badge['texto'] }}
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 text-[11px] border border-slate-100">
+                    <!-- Fila de Sede a lo largo (Horizontal completa sin saltos de línea) -->
+                    @if($ev->sede)
+                        <div class="flex items-center gap-2 text-xs text-sky-800 bg-sky-50/90 border border-sky-200/90 px-3 py-1.5 rounded-xl shadow-2xs">
+                            <i class="fa-solid fa-location-dot text-sky-600 text-xs shrink-0"></i>
+                            <span class="text-[11px] font-semibold whitespace-nowrap truncate">Sede: <strong class="font-bold text-sky-950">{{ $ev->sede->nombre }}</strong></span>
+                        </div>
+                    @endif
+
+                    <!-- Fila Central: Datos de Cargo y Pruebas -->
+                    <div class="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 text-[11px] border border-slate-200/70">
                         <div>
-                            <span class="text-slate-400 block text-[10px] uppercase font-semibold">Cargo al que aspira</span>
-                            <span class="font-bold text-slate-800">{{ $ev->cargo_aspira ?: '—' }}</span>
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Cargo al que aspira</span>
+                            <span class="font-bold text-slate-800 truncate block">{{ $ev->cargo_aspira ?: '—' }}</span>
+                            <span class="text-[10px] text-slate-400 block mt-0.5">
+                                {{ ($ev->fecha_hora_aceptacion ?? $ev->created_at)->format('d/m/Y') }}
+                                @if($ev->edad) · {{ $ev->edad }} años @endif
+                            </span>
                         </div>
                         <div>
-                            <span class="text-slate-400 block text-[10px] uppercase font-semibold">Pruebas Psicológicas</span>
-                            <div class="flex items-center gap-1.5 mt-0.5">
-                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $ev) : route('psicologia.valanti.resultado', $ev) }}" class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">VALANTI</a>
-                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $ev) : route('psicologia.paca.resultado', $ev) }}" class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">PAC-A</a>
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">Pruebas Psicológicas</span>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $ev) : route('psicologia.valanti.resultado', $ev) }}"
+                                   class="inline-flex items-center gap-1 text-[10px] font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 px-2 py-0.5 rounded-lg border border-sky-200 transition-colors">
+                                    <i class="fa-solid fa-scale-balanced text-[9px] text-sky-600"></i>
+                                    VALANTI
+                                </a>
+                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $ev) : route('psicologia.paca.resultado', $ev) }}"
+                                   class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-lg border border-indigo-200 transition-colors">
+                                    <i class="fa-solid fa-chart-simple text-[9px] text-indigo-600"></i>
+                                    PAC-A
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 flex-wrap">
+                    <!-- Fila Inferior: Botones de Acción -->
+                    <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 flex-wrap">
                         <button type="button"
                                 onclick='abrirModalCertificado(@json($payloadModal))'
-                                class="inline-flex items-center gap-1.5 rounded-xl {{ $emitido ? 'bg-slate-900 hover:bg-slate-800 text-white' : 'bg-brand-blue hover:bg-brand-deep text-white' }} px-3.5 py-2 text-xs font-bold transition cursor-pointer shadow-2xs">
+                                class="inline-flex items-center gap-1.5 rounded-xl {{ $emitido ? 'bg-slate-900 hover:bg-slate-800 text-white' : 'bg-brand-blue hover:bg-brand-deep text-white' }} px-3.5 py-2 text-xs font-bold transition cursor-pointer shadow-2xs hover:scale-[1.02]">
                             <i class="fa-solid {{ $emitido ? 'fa-pen-to-square' : 'fa-check-double' }}"></i>
                             <span>{{ $emitido ? 'Editar Certificado' : 'Diligenciar Certificado' }}</span>
                         </button>
@@ -147,12 +179,12 @@
                         <div class="flex items-center gap-1.5">
                             <button type="button"
                                     onclick="abrirModalVistaPdfCertificado('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($ev->nombre_completo) }}')"
-                                    class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 text-xs font-bold transition cursor-pointer">
-                                <i class="fa-solid fa-eye"></i>
+                                    class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 text-xs font-bold transition cursor-pointer shadow-2xs hover:scale-[1.02]">
+                                <i class="fa-solid fa-eye text-emerald-600"></i>
                                 <span>Ver PDF</span>
                             </button>
                             <a href="{{ $urlPdfDescarga }}"
-                               class="inline-flex items-center gap-1 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs font-bold transition">
+                               class="inline-flex items-center gap-1 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs font-bold transition shadow-2xs hover:scale-[1.02]">
                                 <i class="fa-solid fa-download text-emerald-600"></i>
                                 <span>PDF</span>
                             </a>
@@ -162,26 +194,52 @@
             @endforeach
         </div>
 
-        <!-- 2. VISTA ESCRITORIO (>= md): TABLA COMPLETA -->
-        <div class="hidden md:block rounded-2xl border border-slate-200/80 bg-white shadow-2xs overflow-hidden">
+        <!-- 2. VISTA ESCRITORIO: Panel Ejecutivo con Cabecera Oscura y Logo de Usuario (>= md) -->
+        <div class="hidden md:block rounded-2xl border border-slate-300/80 bg-white shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-200/80 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                            <th class="py-3.5 px-4">Evaluado</th>
-                            <th class="py-3.5 px-4">Cargo al que Aspira</th>
-                            <th class="py-3.5 px-4 text-center">Pruebas Psicológicas</th>
-                            <th class="py-3.5 px-4 text-center">Concepto Aptitudinal (GH-FO-028)</th>
-                            <th class="py-3.5 px-4 text-right">Acciones / Certificado</th>
+                    <!-- Cabecera Ejecutiva Navy / Indigo -->
+                    <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                        <tr class="text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                            <th class="py-4 px-5">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user text-indigo-400"></i>
+                                    <span>Persona Evaluada</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-briefcase text-sky-400"></i>
+                                    <span>Cargo al que Aspira</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-4 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-square-check text-emerald-400"></i>
+                                    <span>Pruebas Psicotécnicas</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-4 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-award text-amber-400"></i>
+                                    <span>Concepto Aptitudinal (GH-FO-028)</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-5 text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <i class="fa-solid fa-file-signature text-rose-400"></i>
+                                    <span>Acciones / Certificado</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200/60 text-xs">
+                    <tbody class="divide-y divide-slate-100 text-xs">
                         @foreach($evaluacionesCompletas as $ev)
                             @php
                                 $badge = $ev->badgeCertificadoAptitudinal();
                                 $emitido = $ev->certificadoEmitido();
                                 $estadoFiltro = $emitido ? 'EMITIDO' : 'PENDIENTE';
-                                $textoBusqueda = mb_strtolower($ev->nombre_completo . ' ' . $ev->identificacion . ' ' . ($ev->cargo_aspira ?? ''), 'UTF-8');
+                                $textoBusqueda = mb_strtolower($ev->nombre_completo . ' ' . $ev->identificacion . ' ' . ($ev->cargo_aspira ?? '') . ' ' . ($ev->sede?->nombre ?? ''), 'UTF-8');
                                 $ciudadFechaDefault = $ev->certificado_ciudad_fecha ?: ('Rivera-Huila, ' . now()->format('d/m/Y'));
                                 $urlPdfInline = (request()->routeIs('admin.*') ? route('admin.psicologia.certificados.pdf', $ev) : route('psicologia.certificado_aptitudinal.pdf', $ev)) . '?inline=1';
                                 $urlPdfDescarga = request()->routeIs('admin.*') ? route('admin.psicologia.certificados.pdf', $ev) : route('psicologia.certificado_aptitudinal.pdf', $ev);
@@ -202,80 +260,97 @@
                                     'observaciones' => $observacionDefinida,
                                 ];
                             @endphp
-                            <tr class="item-certificado-vivo hover:bg-slate-50/80 transition-colors"
+                            <tr class="item-certificado-vivo odd:bg-white even:bg-slate-50/70 hover:bg-indigo-50/40 transition-colors duration-150"
                                 data-search="{{ $textoBusqueda }}"
                                 data-estado="{{ $estadoFiltro }}">
 
-                                <!-- Evaluado -->
-                                <td class="py-3.5 px-4">
-                                    <div class="font-bold text-slate-900">{{ $ev->nombre_completo }}</div>
-                                    <div class="text-[11px] text-slate-500 mt-0.5">
-                                        <span class="font-mono">CC {{ $ev->identificacion }}</span>
-                                        <span>· Nac: {{ $ev->fecha_nacimiento?->format('d/m/Y') ?? '—' }} ({{ $ev->edad }} años)</span>
+                                <!-- 1. Persona Evaluada (Con Logo de Usuario) -->
+                                <td class="py-3.5 px-5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-10 w-10 rounded-2xl bg-indigo-50 border border-indigo-200/80 text-indigo-600 flex items-center justify-center shadow-2xs shrink-0 select-none">
+                                            <i class="fa-solid fa-circle-user text-2xl"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <span class="font-bold text-slate-900 block leading-tight text-sm truncate max-w-[240px]">
+                                                {{ $ev->nombre_completo }}
+                                            </span>
+                                            <div class="flex items-center gap-1.5 mt-1 text-[11px] flex-wrap">
+                                                <span class="font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold text-[10px] whitespace-nowrap">CC {{ $ev->identificacion }}</span>
+                                                @if($ev->sede)
+                                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                        <i class="fa-solid fa-location-dot text-[9px] text-sky-600"></i>
+                                                        <span class="whitespace-nowrap">{{ $ev->sede->nombre }}</span>
+                                                    </span>
+                                                @endif
+                                                @if($ev->edad)
+                                                    <span class="text-slate-400 text-[10px] whitespace-nowrap">· {{ $ev->edad }} años</span>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
 
-                                <!-- Cargo -->
+                                <!-- 2. Cargo al que Aspira -->
                                 <td class="py-3.5 px-4">
-                                    <span class="font-semibold text-slate-800">{{ $ev->cargo_aspira ?: '—' }}</span>
+                                    <span class="font-bold text-slate-800 text-xs block truncate max-w-[190px]" title="{{ $ev->cargo_aspira }}">{{ $ev->cargo_aspira ?: '—' }}</span>
                                     <div class="text-[10px] text-slate-400 mt-0.5">
                                         Evaluado el {{ ($ev->fecha_hora_aceptacion ?? $ev->created_at)->format('d/m/Y') }}
                                     </div>
                                 </td>
 
-                                <!-- Pruebas Completas -->
+                                <!-- 3. Pruebas Psicotécnicas Completas -->
                                 <td class="py-3.5 px-4 text-center">
-                                    <div class="inline-flex items-center gap-1.5">
+                                    <div class="inline-flex items-center justify-center gap-1.5">
                                         <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $ev) : route('psicologia.valanti.resultado', $ev) }}"
-                                           title="Ver resultado VALANTI"
-                                           class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 text-[11px] font-bold transition-colors">
-                                            <i class="fa-solid fa-check text-[9px]"></i>
-                                            VALANTI
+                                           title="Entrar al resultado VALANTI"
+                                           class="inline-flex items-center gap-1 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200/90 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs hover:scale-[1.02]">
+                                            <i class="fa-solid fa-scale-balanced text-[10px] text-sky-600"></i>
+                                            <span>VALANTI</span>
                                         </a>
                                         <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $ev) : route('psicologia.paca.resultado', $ev) }}"
-                                           title="Ver resultado PAC-A"
-                                           class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 text-[11px] font-bold transition-colors">
-                                            <i class="fa-solid fa-check text-[9px]"></i>
-                                            PAC-A
+                                           title="Entrar al resultado PAC-A"
+                                           class="inline-flex items-center gap-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200/90 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs hover:scale-[1.02]">
+                                            <i class="fa-solid fa-chart-simple text-[10px] text-indigo-600"></i>
+                                            <span>PAC-A</span>
                                         </a>
                                     </div>
                                 </td>
 
-                                <!-- Estado / Concepto -->
+                                <!-- 4. Concepto Aptitudinal (GH-FO-028) -->
                                 <td class="py-3.5 px-4 text-center">
-                                    <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold border {{ $badge['clase'] }}">
+                                    <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold border shadow-2xs {{ $badge['clase'] }} whitespace-nowrap">
                                         <i class="fa-solid {{ $badge['icono'] }} text-[10px]"></i>
                                         {{ $badge['texto'] }}
                                     </span>
                                     @if($ev->certificado_emitido_at)
-                                        <div class="text-[10px] text-slate-400 mt-0.5">
+                                        <div class="text-[10px] text-slate-400 mt-1 whitespace-nowrap">
                                             Emitido: {{ $ev->certificado_emitido_at->format('d/m/Y h:i A') }}
                                         </div>
                                     @endif
                                 </td>
 
-                                <!-- Acciones -->
-                                <td class="py-3.5 px-4 text-right">
-                                    <div class="inline-flex items-center justify-end gap-1.5">
+                                <!-- 5. Acciones / Certificado -->
+                                <td class="py-3.5 px-5 text-right whitespace-nowrap">
+                                    <div class="inline-flex items-center justify-end gap-2">
                                         <button type="button"
                                                 onclick='abrirModalCertificado(@json($payloadModal))'
-                                                class="inline-flex items-center gap-1.5 rounded-xl {{ $emitido ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-brand-blue hover:bg-brand-deep text-white' }} px-3.5 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
-                                            <i class="fa-solid {{ $emitido ? 'fa-pen-to-square' : 'fa-check-to-slot' }} text-[11px]"></i>
+                                                class="inline-flex items-center gap-1.5 rounded-xl {{ $emitido ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-brand-blue hover:bg-brand-deep text-white' }} px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-2xs hover:scale-[1.02]">
+                                            <i class="fa-solid {{ $emitido ? 'fa-pen-to-square' : 'fa-check-to-slot' }} text-xs"></i>
                                             <span>{{ $emitido ? 'Editar Formato' : 'Llenar Certificado' }}</span>
                                         </button>
 
                                         <button type="button"
                                                 onclick="abrirModalVistaPdfCertificado('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($ev->nombre_completo) }}')"
                                                 title="Previsualizar Certificado GH-FO-028"
-                                                class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 text-xs font-bold transition-colors cursor-pointer">
-                                            <i class="fa-solid fa-eye"></i>
+                                                class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/90 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02] cursor-pointer">
+                                            <i class="fa-solid fa-eye text-emerald-600 text-xs"></i>
                                             <span>Ver PDF</span>
                                         </button>
 
                                         <a href="{{ $urlPdfDescarga }}"
                                            title="Descargar Certificado PDF Oficial GH-FO-028"
-                                           class="inline-flex items-center gap-1 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1.5 text-xs font-bold transition-colors">
-                                            <i class="fa-solid fa-file-arrow-down text-emerald-600"></i>
+                                           class="inline-flex items-center gap-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02]">
+                                            <i class="fa-solid fa-file-arrow-down text-emerald-600 text-xs"></i>
                                             <span>PDF</span>
                                         </a>
                                     </div>

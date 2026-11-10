@@ -19,31 +19,34 @@
                 Plantillas de Certificados del Área
             </h1>
             <p class="text-xs text-muted max-w-2xl mt-0.5">
-                Explora las plantillas institucionales asignadas y diseña plantillas personalizadas para las capacitaciones de tu equipo.
+                Visualiza la plantilla oficial de certificación institucional asignada a tu área por la administración.
             </p>
         </div>
 
+        {{-- OCULTO TEMPORALMENTE: Botón Crear Nueva Plantilla (Se reactivará a futuro, toda la lógica y modal se conservan) --}}
+        {{--
         <button type="button"
                 onclick="abrirModalCrearPlantilla()"
                 class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-deep hover:brightness-110 text-white font-heading font-bold text-xs sm:text-sm shadow-md hover:-translate-y-0.5 transition-all cursor-pointer shrink-0">
             <i class="fa-solid fa-plus text-xs"></i>
             <span>Crear Nueva Plantilla</span>
         </button>
+        --}}
     </div>
 
     <!-- TARJETAS MÉTRICAS RESUMEN -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-white p-5 rounded-3xl border border-line/80 shadow-2xs flex items-center gap-4">
             <div class="w-12 h-12 rounded-2xl bg-brand-light text-brand-blue flex items-center justify-center text-lg font-bold shrink-0">
                 <i class="fa-solid fa-stamp"></i>
             </div>
             <div>
-                <span class="text-[11px] text-muted font-bold uppercase tracking-wider block">Total Plantillas</span>
-                <span class="text-xl sm:text-2xl font-heading font-extrabold text-brand-dark">{{ count($todasPlantillas) }}</span>
+                <span class="text-[11px] text-muted font-bold uppercase tracking-wider block">Plantillas Asignadas</span>
+                <span class="text-xl sm:text-2xl font-heading font-extrabold text-brand-dark">{{ count($plantillasAdmin) }}</span>
             </div>
         </div>
 
-        <!-- KPI Plantillas Activas (Reemplaza Firmas Pendientes temporalmente) -->
+        <!-- KPI Plantillas Activas -->
         <div class="bg-white p-5 rounded-3xl border border-line/80 shadow-2xs flex items-center gap-4">
             <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold shrink-0">
                 <i class="fa-solid fa-circle-check"></i>
@@ -51,7 +54,7 @@
             <div>
                 <span class="text-[11px] text-muted font-bold uppercase tracking-wider block">Plantillas Activas</span>
                 <span class="text-xl sm:text-2xl font-heading font-extrabold text-brand-dark">
-                    {{ collect($todasPlantillas)->where('estado', true)->count() }}
+                    {{ collect($plantillasAdmin)->where('estado', true)->count() }}
                 </span>
             </div>
         </div>
@@ -61,11 +64,13 @@
                 <i class="fa-solid fa-building-shield"></i>
             </div>
             <div>
-                <span class="text-[11px] text-muted font-bold uppercase tracking-wider block">Asignadas por Admin</span>
+                <span class="text-[11px] text-muted font-bold uppercase tracking-wider block">Asignadas por Administración</span>
                 <span class="text-xl sm:text-2xl font-heading font-extrabold text-brand-dark">{{ count($plantillasAdmin) }}</span>
             </div>
         </div>
 
+        {{-- OCULTO TEMPORALMENTE: Métrica Creadas por Mi Área (Se reactivará a futuro) --}}
+        {{--
         <div class="bg-white p-5 rounded-3xl border border-line/80 shadow-2xs flex items-center gap-4">
             <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-lg font-bold shrink-0">
                 <i class="fa-solid fa-certificate"></i>
@@ -75,6 +80,7 @@
                 <span class="text-xl sm:text-2xl font-heading font-extrabold text-brand-dark">{{ count($plantillasPropias) }}</span>
             </div>
         </div>
+        --}}
     </div>
 
     {{-- OCULTO TEMPORALMENTE: Banner de Firmas Pendientes para implementación futura
@@ -100,7 +106,8 @@
     @endif
     --}}
 
-    <!-- PESTAÑAS DE FILTRO -->
+    {{-- OCULTO TEMPORALMENTE: Pestañas de Filtro (Se reactivará a futuro al habilitar creación propia) --}}
+    {{--
     <div class="flex items-center gap-2 border-b border-line/70 pb-2 overflow-x-auto text-xs font-semibold">
         <button type="button" onclick="filtrarTab('todas')" id="tab-btn-todas"
                 class="tab-btn px-4 py-2 rounded-xl bg-brand-blue text-white shadow-2xs transition-all cursor-pointer">
@@ -109,41 +116,40 @@
         <button type="button" onclick="filtrarTab('admin')" id="tab-btn-admin"
                 class="tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-brand-blue hover:bg-slate-100 transition-all cursor-pointer">
             Institucionales del Admin ({{ count($plantillasAdmin) }})
-            {{-- OCULTO TEMPORALMENTE: Badge firmas pendientes
-            @if($firmasPendientesCount > 0)
-                <span class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">{{ $firmasPendientesCount }} pendientes</span>
-            @endif
-            --}}
         </button>
         <button type="button" onclick="filtrarTab('propias')" id="tab-btn-propias"
                 class="tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-brand-blue hover:bg-slate-100 transition-all cursor-pointer">
             Creadas por Mi Área ({{ count($plantillasPropias) }})
         </button>
     </div>
+    --}}
 
     <!-- LISTADO DE PLANTILLAS EN GRID -->
-    @if($todasPlantillas->isEmpty())
+    @if($plantillasAdmin->isEmpty())
         <div class="bg-white rounded-3xl border border-line/80 p-12 text-center space-y-3">
             <div class="w-16 h-16 mx-auto rounded-3xl bg-brand-light text-brand-blue flex items-center justify-center text-2xl font-bold">
                 <i class="fa-solid fa-stamp"></i>
             </div>
-            <h3 class="font-heading font-extrabold text-base text-brand-dark">No hay plantillas registradas para tu área</h3>
+            <h3 class="font-heading font-extrabold text-base text-brand-dark">No hay una plantilla asignada para tu área</h3>
             <p class="text-xs text-muted max-w-md mx-auto">
-                Puedes comenzar creando la primera plantilla personalizada para certificar las capacitaciones de tu área de {{ $area->nombre ?? 'trabajo' }}.
+                El Administrador asignará la plantilla oficial de certificación para tu área de {{ $area->nombre ?? 'trabajo' }}.
             </p>
+            {{-- OCULTO TEMPORALMENTE: Botón Crear Primera Plantilla (Se reactivará a futuro) --}}
+            {{--
             <button type="button" onclick="abrirModalCrearPlantilla()"
                     class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-blue text-white font-heading font-bold text-xs shadow-xs hover:bg-brand-deep transition-all cursor-pointer">
                 <i class="fa-solid fa-plus"></i>
                 <span>Crear Primera Plantilla</span>
             </button>
+            --}}
         </div>
     @else
         <div class="flex flex-col gap-4" id="contenedor-plantillas">
-            @foreach($todasPlantillas as $pl)
+            @foreach($plantillasAdmin as $pl)
                 @php
-                    $esDelAdmin = ($pl->creado_por !== $usuario->id);
+                    $esDelAdmin = true;
                     $tieneFirmaJefe = !empty($pl->firma_1_ruta);
-                    $tipoClase = $esDelAdmin ? 'tipo-admin' : 'tipo-propia';
+                    $tipoClase = 'tipo-admin';
                 @endphp
                 <div class="plantilla-card {{ $tipoClase }} bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden transition-all duration-200 hover:border-brand-blue/40"
                      id="plantilla-card-{{ $pl->id }}"

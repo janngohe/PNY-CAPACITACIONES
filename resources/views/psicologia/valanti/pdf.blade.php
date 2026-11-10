@@ -5,34 +5,36 @@
     <title>Cuestionario VALANTI - {{ $evaluacion->identificacion }}</title>
     <style>
         @page {
-            margin: 15mm 15mm 15mm 15mm;
+            margin: 18mm 16mm 18mm 16mm;
         }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
-            color: #0f172a;
+            color: #000000;
             font-size: 9pt;
             line-height: 1.4;
         }
+
+        /* ENCABEZADO INSTITUCIONAL IDÉNTICO AL CONSENTIMIENTO */
         .tabla-encabezado {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .tabla-encabezado td {
-            border: 1px solid #000;
+            border: 1px solid #000000;
             padding: 4px 8px;
             vertical-align: middle;
         }
         .logo-col {
-            width: 24%;
+            width: 25%;
             text-align: center;
         }
         .logo-col img {
-            max-width: 120px;
-            max-height: 44px;
+            max-width: 125px;
+            max-height: 48px;
         }
         .titulo-col {
-            width: 52%;
+            width: 50%;
             text-align: center;
         }
         .titulo-col h2 {
@@ -43,77 +45,103 @@
         }
         .titulo-col h1 {
             margin: 3px 0 0 0;
-            font-size: 11.5pt;
+            font-size: 11pt;
             font-weight: bold;
         }
         .meta-col {
-            width: 24%;
+            width: 25%;
             font-size: 7.5pt;
             line-height: 1.3;
+            padding: 0 !important;
         }
+        .tabla-meta {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tabla-meta td {
+            border: none;
+            border-bottom: 1px solid #000000;
+            padding: 2.5px 5px;
+        }
+        .tabla-meta tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* FICHA DE DATOS DEL EVALUADO */
         .tabla-ficha {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-size: 8.5pt;
         }
         .tabla-ficha td {
-            border: 1px solid #cbd5e1;
+            border: 1px solid #000000;
             padding: 4px 8px;
-            background-color: #f8fafc;
+            background-color: #fafafa;
         }
+
+        /* CAJA DEL GRÁFICO RADIAL */
         .caja-grafico {
-            border: 1px solid #cbd5e1;
-            padding: 10px 10px 6px 10px;
+            border: 1px solid #000000;
+            padding: 8px 10px 6px 10px;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            page-break-inside: avoid;
         }
         .titulo-grafico {
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: bold;
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
             color: #000000;
+            text-transform: uppercase;
         }
         .leyenda-box {
             display: inline-block;
-            border: 1px solid #475569;
-            padding: 5px 14px;
+            border: 1px solid #000000;
+            padding: 4px 12px;
             margin-bottom: 4px;
-            font-size: 8.5pt;
+            font-size: 8pt;
             background-color: #ffffff;
         }
+
+        /* CAJA DE INTERPRETACIÓN NARRATIVA */
         .caja-narrativa {
-            border: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            padding: 10px 12px;
-            margin-bottom: 10px;
-            font-size: 8.5pt;
-            line-height: 1.45;
+            border: 1px solid #000000;
+            background-color: #fafafa;
+            padding: 8px 10px;
+            margin-bottom: 12px;
+            font-size: 8pt;
+            line-height: 1.4;
             text-align: justify;
+            page-break-inside: avoid;
         }
         .caja-narrativa p {
-            margin: 0 0 5px 0;
+            margin: 0 0 4px 0;
         }
         .caja-narrativa p:last-child {
             margin-bottom: 0;
         }
+
+        /* TABLA DE RESULTADOS OFICIALES (SIN BAREMO) */
         .tabla-resultados {
             width: 100%;
             border-collapse: collapse;
             font-size: 8pt;
+            page-break-inside: avoid;
         }
         .tabla-resultados th {
-            background-color: #0f172a;
-            color: #ffffff;
-            border: 1px solid #0f172a;
-            padding: 5px 5px;
-            font-size: 7pt;
+            background-color: #f2f2f2;
+            color: #000000;
+            border: 1px solid #000000;
+            padding: 5px 6px;
+            font-size: 7.5pt;
+            font-weight: bold;
             text-transform: uppercase;
             text-align: center;
         }
         .tabla-resultados td {
-            border: 1px solid #cbd5e1;
-            padding: 4px 5px;
+            border: 1px solid #000000;
+            padding: 4px 6px;
             text-align: center;
         }
         .tabla-resultados td.col-dim {
@@ -121,9 +149,9 @@
             font-weight: bold;
         }
         .fila-total td {
-            background-color: #f1f5f9;
+            background-color: #fafafa;
             font-weight: bold;
-            border-top: 1.5px solid #0f172a;
+            border-top: 1.5px solid #000000;
         }
     </style>
 </head>
@@ -143,19 +171,19 @@
                 <h2>GESTIÓN HUMANA · PSICOLOGÍA ORGANIZACIONAL</h2>
                 <h1>CUESTIONARIO VALANTI</h1>
             </td>
-            <td class="meta-col" style="padding: 0;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 7.5pt;">
+            <td class="meta-col">
+                <table class="tabla-meta" style="font-size: 7.5pt;">
                     <tr>
-                        <td style="border: none; border-bottom: 1px solid #000; padding: 2px 5px;"><strong>PRUEBA:</strong> VALANTI</td>
+                        <td><strong>CÓDIGO:</strong> GH-FO-VAL</td>
                     </tr>
                     <tr>
-                        <td style="border: none; border-bottom: 1px solid #000; padding: 2px 5px;"><strong>FORMATO:</strong> GH-FO-VAL</td>
+                        <td><strong>VERSIÓN:</strong> 01</td>
                     </tr>
                     <tr>
-                        <td style="border: none; border-bottom: 1px solid #000; padding: 2px 5px;"><strong>FECHA:</strong> {{ ($resultado->finalizada_at ?? $evaluacion->created_at)->format('d/m/Y') }}</td>
+                        <td><strong>FECHA:</strong> {{ ($resultado->finalizada_at ?? $evaluacion->created_at)->format('d/m/Y') }}</td>
                     </tr>
                     <tr>
-                        <td style="border: none; padding: 2px 5px;"><strong>SESIÓN:</strong> {{ $evaluacion->codigo_sesion }}</td>
+                        <td><strong>PÁGINA:</strong> 1 de 1</td>
                     </tr>
                 </table>
             </td>
@@ -165,57 +193,57 @@
     <!-- DATOS DEL CANDIDATO EVALUADO -->
     <table class="tabla-ficha">
         <tr>
-            <td style="width: 38%;"><strong>Candidato(a):</strong> {{ $evaluacion->nombre_completo }}</td>
-            <td style="width: 24%;"><strong>Cédula:</strong> {{ $evaluacion->identificacion }}</td>
-            <td style="width: 24%;"><strong>Cargo:</strong> {{ $evaluacion->cargo_aspira }}</td>
-            <td style="width: 14%;"><strong>Edad:</strong> {{ $evaluacion->edad }} años</td>
+            <td style="width: 32%;"><strong>Evaluado(a):</strong> {{ $evaluacion->nombre_completo }}</td>
+            <td style="width: 20%;"><strong>Cédula:</strong> {{ $evaluacion->identificacion }}</td>
+            <td style="width: 22%;"><strong>Cargo / Área:</strong> {{ $evaluacion->cargo_aspira }}</td>
+            <td style="width: 14%;"><strong>Sede:</strong> {{ $evaluacion->sede?->nombre ?? 'Principal' }}</td>
+            <td style="width: 12%;"><strong>Edad:</strong> {{ $evaluacion->edad }} años</td>
         </tr>
     </table>
 
     <!-- GRÁFICO RADIAL DE 5 EJES -->
     <div class="caja-grafico">
-        <div class="titulo-grafico">Cuestionario VALANTI</div>
+        <div class="titulo-grafico">Gráfico de Valores Psicotécnicos (VALANTI)</div>
 
         <div class="leyenda-box">
             <span style="color: #0026c3; font-weight: bold;">
                 <span style="display: inline-block; width: 10px; height: 3px; background-color: #0026c3; vertical-align: middle;"></span>
-                <span style="display: inline-block; width: 8px; height: 8px; background-color: #0026c3; vertical-align: middle; margin: 0 2px;"></span>
-                <span style="display: inline-block; width: 10px; height: 3px; background-color: #0026c3; vertical-align: middle; margin-right: 4px;"></span>
+                <span style="display: inline-block; width: 6px; height: 6px; background-color: #0026c3; vertical-align: middle; margin: 0 1px;"></span>
+                <span style="display: inline-block; width: 10px; height: 3px; background-color: #0026c3; vertical-align: middle; margin-right: 3px;"></span>
                 Perfil ideal
             </span>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <span style="color: #000000; font-weight: bold;">
-                <span style="display: inline-block; width: 12px; height: 3px; background-color: #000000; vertical-align: middle;"></span>
-                <span style="display: inline-block; width: 8px; height: 8px; background-color: #000000; vertical-align: middle;"></span>
-                <span style="display: inline-block; width: 12px; height: 3px; background-color: #000000; vertical-align: middle; margin-right: 4px;"></span>
+                <span style="display: inline-block; width: 10px; height: 3px; background-color: #000000; vertical-align: middle;"></span>
+                <span style="display: inline-block; width: 6px; height: 6px; background-color: #000000; vertical-align: middle; margin: 0 1px;"></span>
+                <span style="display: inline-block; width: 10px; height: 3px; background-color: #000000; vertical-align: middle; margin-right: 3px;"></span>
                 {{ $evaluacion->nombre_completo }} (Puntaje estándar)
             </span>
         </div>
 
         <div style="margin-top: 2px;">
-            <img src="{{ $radarPngBase64 }}" style="width: 470px; height: 307px;" alt="Gráfico Cuestionario VALANTI">
+            <img src="{{ $radarPngBase64 }}" style="width: 440px; height: 287px;" alt="Gráfico Cuestionario VALANTI">
         </div>
     </div>
 
     <!-- INTERPRETACIÓN CUALITATIVA NARRATIVA -->
     <div class="caja-narrativa">
-        <p style="font-weight: bold; color: #0f172a;">{{ $narrativa['resumen'] }}</p>
+        <p style="font-weight: bold; color: #000000;">{{ $narrativa['resumen'] }}</p>
         @foreach($narrativa['parrafos'] as $parrafo)
             <p>{{ $parrafo }}</p>
         @endforeach
     </div>
 
-    <!-- TABLA ESTADÍSTICA DE LAS 5 DIMENSIONES -->
+    <!-- TABLA DE RESULTADOS DE LAS 5 DIMENSIONES (SIN INFORMACIÓN DE BAREMO) -->
     <table class="tabla-resultados">
         <thead>
             <tr>
-                <th style="text-align: left; width: 22%;">Dimensión / Valor</th>
-                <th style="width: 12%;">Puntaje Directo (PD)</th>
-                <th style="width: 18%;">Norma Nacional (Media / D.S.)</th>
-                <th style="width: 13%;">Puntaje Estándar (PE)</th>
-                <th style="width: 15%;">Nivel</th>
-                <th style="width: 10%;">Perfil Ideal</th>
-                <th style="width: 10%;">Distancia</th>
+                <th style="text-align: left; width: 28%;">Dimensión / Valor</th>
+                <th style="width: 14%;">Puntaje Directo (PD)</th>
+                <th style="width: 14%;">Puntaje Estándar (PE)</th>
+                <th style="width: 22%;">Nivel de Presencia</th>
+                <th style="width: 11%;">Perfil Ideal</th>
+                <th style="width: 11%;">Distancia</th>
             </tr>
         </thead>
         <tbody>
@@ -228,20 +256,17 @@
                     $ideal = (int) $info['perfil_esperado_default'];
                     $distancia = $pe - $ideal;
                     $signo = $distancia > 0 ? '+' : '';
+                    $asteriscos = \App\Constants\ValantiPreguntas::asteriscosPuntajeEstandar($pe);
                 @endphp
                 <tr>
                     <td class="col-dim">{{ $info['nombre'] }} ({{ $info['area'] }})</td>
                     <td style="font-weight: bold;">{{ $pd }}</td>
-                    <td>{{ number_format($info['media'], 2) }} / {{ number_format($info['desviacion'], 2) }}</td>
-                    @php
-                        $asteriscos = \App\Constants\ValantiPreguntas::asteriscosPuntajeEstandar($pe);
-                    @endphp
                     <td style="font-weight: bold;">{{ $pe }}</td>
                     <td style="font-weight: bold;">
                         {{ $nivel }}
-                        <div style="color: #dc2626; font-family: monospace; font-size: 8.5pt; letter-spacing: 1px;">{{ $asteriscos }}</div>
+                        <span style="color: #dc2626; font-family: monospace; font-size: 8pt; letter-spacing: 1px; margin-left: 2px;">{{ $asteriscos }}</span>
                     </td>
-                    <td style="color: #001c9b; font-weight: bold;">{{ $ideal }}</td>
+                    <td style="font-weight: bold; color: #0026c3;">{{ $ideal }}</td>
                     <td style="font-weight: bold; color: {{ $distancia >= 0 ? '#047857' : '#b45309' }};">
                         {{ $signo }}{{ $distancia }}
                     </td>
@@ -252,8 +277,8 @@
             <tr class="fila-total">
                 <td style="text-align: left;">SUMATORIA CONTROL</td>
                 <td>{{ $resultado->pd_total }} / 90 pts</td>
-                <td colspan="5" style="text-align: left; font-size: 7.5pt; font-weight: normal; color: #475569;">
-                    PE = round(50 + 10 * ((PD - Media) / D.S.)) &nbsp;|&nbsp; Distancia = PE - Perfil Ideal
+                <td colspan="4" style="text-align: right; font-size: 7.5pt; font-weight: normal; color: #444444;">
+                    Distancia = Puntaje Estándar (PE) &minus; Perfil Ideal Empresa
                 </td>
             </tr>
         </tfoot>

@@ -1034,7 +1034,7 @@ class DashboardController extends Controller
         /** @var Usuario $usuario */
         $usuario = Auth::user();
 
-        $query = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+        $query = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti', 'sede'])
             ->withCount(['respuestasPaca', 'respuestasValanti']);
 
         if ($request->filled('buscar')) {
@@ -1461,7 +1461,7 @@ class DashboardController extends Controller
         /** @var Usuario $usuario */
         $usuario = Auth::user();
 
-        $evaluacionesCompletas = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti'])
+        $evaluacionesCompletas = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti', 'sede'])
             ->whereHas('resultadoPaca')
             ->whereHas('resultadoValanti')
             ->latest('id')
