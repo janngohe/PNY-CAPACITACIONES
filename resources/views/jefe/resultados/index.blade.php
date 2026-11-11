@@ -19,8 +19,8 @@
         </div>
     </div>
 
-    <section class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden" aria-labelledby="titulo-resultados">
-        <div class="px-5 sm:px-6 py-4 border-b border-line/60">
+    <section class="bg-white rounded-3xl border border-slate-300/80 shadow-sm ring-1 ring-slate-900/5 overflow-hidden" aria-labelledby="titulo-resultados">
+        <div class="px-5 sm:px-6 py-4.5 border-b border-slate-200 bg-slate-50/70">
             <h2 id="titulo-resultados" class="font-heading font-bold text-base text-brand-dark">{{ ($panel ?? 'jefe') === 'admin' ? 'Evaluaciones de la plataforma' : 'Evaluaciones de mis capacitaciones' }}</h2>
             <p class="text-xs text-muted">Selecciona una evaluación para ver el detalle por empleado.</p>
         </div>
@@ -78,21 +78,56 @@
 
             <!-- VISTA ESCRITORIO: TABLA (hidden md:block) -->
             <div class="hidden md:block overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted">
-                        <tr>
-                            <th class="px-5 sm:px-6 py-3 font-bold">Evaluación</th>
-                            <th class="px-4 py-3 font-bold text-center">Participaron</th>
-                            <th class="px-4 py-3 font-bold text-center">Intentos</th>
-                            <th class="px-4 py-3 font-bold text-center">Aprobados</th>
-                            <th class="px-4 py-3 font-bold text-center">Promedio</th>
-                            <th class="px-4 py-3 font-bold text-center">Estado</th>
-                            <th class="px-4 py-3"></th>
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                        <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                            <th class="px-5 sm:px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-check text-sky-400"></i>
+                                    <span>Evaluación</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-users text-indigo-400"></i>
+                                    <span>Participaron</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-rotate text-amber-400"></i>
+                                    <span>Intentos</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                    <span>Aprobados</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-chart-pie text-cyan-400"></i>
+                                    <span>Promedio</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-toggle-on text-purple-400"></i>
+                                    <span>Estado</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <i class="fa-solid fa-gears text-slate-300"></i>
+                                    <span>Acción</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-line/50">
+                    <tbody class="divide-y divide-slate-200/80 text-slate-700 bg-white">
                         @foreach ($evaluaciones as $evaluacion)
-                            <tr class="hover:bg-brand-light/40 transition-colors">
+                            <tr class="hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors">
                                 <td class="px-5 sm:px-6 py-3.5">
                                     <p class="font-bold text-brand-dark">{{ $evaluacion->titulo }}</p>
                                     <p class="text-[11px] text-muted truncate max-w-xs">{{ $evaluacion->capacitacion->titulo }}</p>

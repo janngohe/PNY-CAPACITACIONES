@@ -49,8 +49,8 @@
         @endforeach
     </div>
 
-    <section class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden" aria-labelledby="titulo-detalle">
-        <div class="px-5 sm:px-6 py-4 border-b border-line/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
+    <section class="bg-white rounded-3xl border border-slate-300/80 shadow-sm ring-1 ring-slate-900/5 overflow-hidden" aria-labelledby="titulo-detalle">
+        <div class="px-5 sm:px-6 py-4 border-b border-slate-200 bg-slate-50/70 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <h2 id="titulo-detalle" class="font-heading font-bold text-base text-brand-dark">Detalle por empleado</h2>
             <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-semibold">
                 @foreach ($filtros as $clave => $etiqueta)
@@ -66,20 +66,45 @@
             <div class="p-10 text-center text-xs text-muted">No hay empleados para mostrar con este filtro.</div>
         @else
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted">
-                        <tr>
-                            <th class="px-5 sm:px-6 py-3 font-bold">Empleado</th>
-                            <th class="px-4 py-3 font-bold text-center">Intentos</th>
-                            <th class="px-4 py-3 font-bold text-center">Último intento</th>
-                            <th class="px-4 py-3 font-bold text-center">Resultado</th>
-                            <th class="px-4 py-3 font-bold">Fecha</th>
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                        <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                            <th class="px-5 sm:px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user text-indigo-400"></i>
+                                    <span>Colaborador</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-rotate text-amber-400"></i>
+                                    <span>Intentos</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-star text-cyan-400"></i>
+                                    <span>Último Intento</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                    <span>Resultado</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-regular fa-calendar text-rose-400"></i>
+                                    <span>Fecha</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-line/50">
+                    <tbody class="divide-y divide-slate-200/80 text-slate-700 bg-white">
                         @foreach ($filas as $f)
                             @php [$etiqueta, $clase] = $estados[$f->estado]; @endphp
-                            <tr class="hover:bg-brand-light/40 transition-colors">
+                            <tr class="hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors">
                                 <td class="px-5 sm:px-6 py-3.5">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-xl bg-brand-light text-brand-blue font-heading font-extrabold text-xs flex items-center justify-center shrink-0">

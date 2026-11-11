@@ -137,7 +137,7 @@
     </div>
 
     <!-- TABLA DE SEGUIMIENTO (RESPONSIVE: TARJETAS EN MÓVIL, TABLA EN ESCRITORIO) -->
-    <div id="contenedor-tabla-seguimiento" class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden transition-opacity duration-200">
+    <div id="contenedor-tabla-seguimiento" class="bg-white rounded-3xl border border-slate-300/80 shadow-sm ring-1 ring-slate-900/5 overflow-hidden transition-opacity duration-200">
         
         <!-- VISTA MÓVIL: TARJETAS (block md:hidden) -->
         <div class="block md:hidden divide-y divide-line/60">
@@ -232,19 +232,54 @@
 
         <!-- VISTA ESCRITORIO: TABLA (hidden md:block) -->
         <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted border-b border-line/60">
-                    <tr>
-                        <th class="px-5 sm:px-6 py-3.5 font-bold">Colaborador</th>
-                        <th class="px-4 py-3.5 font-bold">Área</th>
-                        <th class="px-4 py-3.5 font-bold text-center">Capacitaciones</th>
-                        <th class="px-4 py-3.5 font-bold">Avance Global</th>
-                        <th class="px-4 py-3.5 font-bold text-center">Finalizadas</th>
-                        <th class="px-4 py-3.5 font-bold text-center">Certificados</th>
-                        <th class="px-5 sm:px-6 py-3.5 font-bold text-right">Acción</th>
+            <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                    <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                        <th class="px-5 sm:px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-user text-indigo-400"></i>
+                                <span>Colaborador</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-briefcase text-amber-400"></i>
+                                <span>Área</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-4 font-bold text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-graduation-cap text-sky-400"></i>
+                                <span>Capacitaciones</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-cyan-400"></i>
+                                <span>Avance Global</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-4 font-bold text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                <span>Finalizadas</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-4 font-bold text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-award text-amber-300"></i>
+                                <span>Certificados</span>
+                            </div>
+                        </th>
+                        <th class="px-5 sm:px-6 py-4 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-2">
+                                <i class="fa-solid fa-gears text-slate-300"></i>
+                                <span>Acción</span>
+                            </div>
+                        </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-line/50">
+                <tbody class="divide-y divide-slate-200/80 text-slate-700 bg-white">
                     @forelse ($filas as $fila)
                         @php
                             $asignacionesPayload = $fila->asignaciones->map(function ($asig) use ($estados) {
@@ -263,7 +298,7 @@
                                 ];
                             });
                         @endphp
-                        <tr class="hover:bg-brand-light/30 transition-colors">
+                        <tr class="hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors">
                             <td class="px-5 sm:px-6 py-3.5">
                                 <div class="flex items-center gap-3">
                                     <span class="w-8 h-8 rounded-full bg-brand-light text-brand-blue font-bold flex items-center justify-center text-xs shrink-0">

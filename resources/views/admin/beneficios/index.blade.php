@@ -177,22 +177,57 @@
         </div>
 
         <!-- LISTADO DE CANJES: DUAL (TABLA EN DESKTOP / COLUMNA VERTICAL EN MÓVIL) -->
-        <div class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden">
+        <div class="bg-white rounded-3xl border border-slate-300/80 shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
             <!-- VISTA ESCRITORIO: TABLA COMPLETA (oculta en móvil para evitar scroll horizontal) -->
             <div class="hidden md:block overflow-x-auto">
-                <table class="w-full text-left text-xs text-brand-dark">
-                    <thead class="bg-slate-50 text-muted uppercase text-[10px] font-bold border-b border-line sticky top-0">
-                        <tr>
-                            <th class="py-3 px-4">Código</th>
-                            <th class="py-3 px-4">Colaborador</th>
-                            <th class="py-3 px-4">Incentivo / Beneficio</th>
-                            <th class="py-3 px-4">Fecha Solicitud</th>
-                            <th class="py-3 px-4">Estado</th>
-                            <th class="py-3 px-4">Persona que Realizó la Entrega</th>
-                            <th class="py-3 px-4 text-center">Código QR</th>
+                <table class="w-full text-left text-xs text-brand-dark border-collapse">
+                    <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white sticky top-0">
+                        <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                            <th class="py-4 px-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-barcode text-cyan-400"></i>
+                                    <span>Código</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user text-indigo-400"></i>
+                                    <span>Colaborador</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-gift text-amber-400"></i>
+                                    <span>Incentivo / Beneficio</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-regular fa-calendar text-rose-400"></i>
+                                    <span>Fecha Solicitud</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                    <span>Estado</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-hand-holding-hand text-purple-400"></i>
+                                    <span>Persona que Entregó</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-qrcode text-slate-300"></i>
+                                    <span>Código QR</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody id="tabla-canjes-tbody" class="divide-y divide-line/60 bg-white">
+                    <tbody id="tabla-canjes-tbody" class="divide-y divide-slate-200/80 bg-white">
                         <!-- Rellenado dinámicamente -->
                     </tbody>
                 </table>
@@ -557,19 +592,49 @@
         <!-- Modal Body (Dual: Table for Desktop, Vertical Column Cards for Mobile) -->
         <div class="overflow-y-auto overflow-x-hidden flex-1 p-3 sm:p-5">
             <!-- VISTA ESCRITORIO: TABLA -->
-            <div class="hidden md:block overflow-x-auto rounded-2xl border border-line/70">
-                <table class="w-full text-left text-xs text-brand-dark">
-                    <thead class="bg-slate-50 text-muted uppercase text-[10px] font-bold border-b border-line sticky top-0">
-                        <tr>
-                            <th class="py-2.5 px-3">Código & QR</th>
-                            <th class="py-2.5 px-3">Colaborador</th>
-                            <th class="py-2.5 px-3">Sede / Área</th>
-                            <th class="py-2.5 px-3">Fecha Canje</th>
-                            <th class="py-2.5 px-3">Persona que Entregó</th>
-                            <th class="py-2.5 px-3 text-right">Estado & QR</th>
+            <div class="hidden md:block overflow-x-auto rounded-2xl border border-slate-300/80 shadow-sm ring-1 ring-slate-900/5">
+                <table class="w-full text-left text-xs text-brand-dark border-collapse">
+                    <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white sticky top-0">
+                        <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                            <th class="py-3 px-3">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-qrcode text-cyan-400"></i>
+                                    <span>Código & QR</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-3">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-user text-indigo-400"></i>
+                                    <span>Colaborador</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-3">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-building text-amber-400"></i>
+                                    <span>Sede / Área</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-3">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-regular fa-calendar text-rose-400"></i>
+                                    <span>Fecha Canje</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-3">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-hand-holding-hand text-purple-400"></i>
+                                    <span>Persona que Entregó</span>
+                                </div>
+                            </th>
+                            <th class="py-3 px-3 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                    <span>Estado</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody id="modal-canjes-tbody" class="divide-y divide-line/60 bg-white">
+                    <tbody id="modal-canjes-tbody" class="divide-y divide-slate-200/80 bg-white">
                         <!-- Rellenado dinámicamente -->
                     </tbody>
                 </table>
@@ -727,7 +792,7 @@ function renderizarHistorialCanjes(lista) {
 
         // 1. FILA DE TABLA (ESCRITORIO)
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50/70 transition';
+        tr.className = 'hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors';
 
         tr.innerHTML = `
             <td class="py-3 px-4 whitespace-nowrap">
@@ -1112,7 +1177,7 @@ function renderizarFilasModalBeneficio(lista, totalOriginal) {
 
         // 1. Fila de tabla para escritorio
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50/60 transition';
+        tr.className = 'hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors';
         tr.innerHTML = `
             <td class="py-2.5 px-3 whitespace-nowrap">
                 <span class="inline-flex items-center gap-1 font-mono font-bold text-brand-blue text-[11px] bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">

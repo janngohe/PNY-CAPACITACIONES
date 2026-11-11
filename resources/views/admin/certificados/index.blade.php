@@ -131,7 +131,7 @@
         </div>
 
         <!-- LISTADO DE CERTIFICADOS EMITIDOS (RESPONSIVE: TARJETAS EN MÓVIL, TABLA EN ESCRITORIO) -->
-        <div class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden">
+        <div class="bg-white rounded-3xl border border-slate-300/80 shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
             
             <!-- VISTA MÓVIL: TARJETAS (block md:hidden) -->
             <div class="block md:hidden divide-y divide-line/60">
@@ -227,18 +227,48 @@
 
             <!-- VISTA ESCRITORIO: TABLA (hidden md:block) -->
             <div class="hidden md:block overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted border-b border-line/60">
-                        <tr>
-                            <th class="px-5 sm:px-6 py-3.5 font-bold">Código Único</th>
-                            <th class="px-4 py-3.5 font-bold">Colaborador</th>
-                            <th class="px-4 py-3.5 font-bold">Capacitación</th>
-                            <th class="px-4 py-3.5 font-bold text-center">Calificación</th>
-                            <th class="px-4 py-3.5 font-bold">Fecha de Emisión</th>
-                            <th class="px-5 sm:px-6 py-3.5 font-bold text-right">Acciones</th>
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                        <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                            <th class="px-5 sm:px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-qrcode text-cyan-400"></i>
+                                    <span>Código Único</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user-graduate text-indigo-400"></i>
+                                    <span>Colaborador</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-book-open text-sky-400"></i>
+                                    <span>Capacitación</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 font-bold text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-star text-amber-400"></i>
+                                    <span>Calificación</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-regular fa-calendar-check text-emerald-400"></i>
+                                    <span>Fecha de Emisión</span>
+                                </div>
+                            </th>
+                            <th class="px-5 sm:px-6 py-4 text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-2">
+                                    <i class="fa-solid fa-gears text-slate-300"></i>
+                                    <span>Acciones</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-line/50">
+                    <tbody class="divide-y divide-slate-200/80 text-slate-700 bg-white">
                         @forelse ($certificados as $cert)
                             @php
                                 $plantillaCert = $cert->plantillaCertificado ?? $plantillas->first();
@@ -262,7 +292,7 @@
                                 $org = $plantillaCert?->nombre_organizacion ?? 'C.I. Piscícola New York S.A.S.';
                                 $textoCert = $plantillaCert?->texto_certificado ?? ('La Dirección General de ' . $org . ' hace constar formalmente que:');
                             @endphp
-                            <tr class="hover:bg-brand-light/30 transition-colors">
+                            <tr class="hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors">
                                 <td class="px-5 sm:px-6 py-3.5">
                                     <span class="font-mono font-bold text-brand-blue bg-blue-50 px-2 py-0.5 rounded text-[11px]">
                                         {{ $cert->codigo }}
@@ -463,23 +493,58 @@
         </div>
 
         <!-- 2. VISTA ESCRITORIO / PC: TABLA COMPLETA TRADICIONAL (hidden md:block) -->
-        <div class="hidden md:block bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden">
+        <div class="hidden md:block bg-white rounded-3xl border border-slate-300/80 shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted border-b border-line/60">
-                        <tr>
-                            <th class="px-5 sm:px-6 py-3.5 font-bold">Colaborador</th>
-                            <th class="px-4 py-3.5 font-bold">Área</th>
-                            <th class="px-4 py-3.5 font-bold">Entidad Emisora</th>
-                            <th class="px-4 py-3.5 font-bold">Fecha Expedición</th>
-                            <th class="px-4 py-3.5 font-bold text-center">Estado</th>
-                            <th class="px-4 py-3.5 font-bold">Documento Soporte</th>
-                            <th class="px-5 sm:px-6 py-3.5 font-bold text-right">Revisión / Acción</th>
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                        <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                            <th class="px-5 sm:px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user text-indigo-400"></i>
+                                    <span>Colaborador</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-briefcase text-amber-400"></i>
+                                    <span>Área</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-building-columns text-sky-400"></i>
+                                    <span>Entidad Emisora</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-regular fa-calendar text-rose-400"></i>
+                                    <span>Fecha Expedición</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 font-bold text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                    <span>Estado</span>
+                                </div>
+                            </th>
+                            <th class="px-4 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-file-arrow-down text-cyan-400"></i>
+                                    <span>Documento Soporte</span>
+                                </div>
+                            </th>
+                            <th class="px-5 sm:px-6 py-4 text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-2">
+                                    <i class="fa-solid fa-gears text-slate-300"></i>
+                                    <span>Revisión / Acción</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-line/50">
+                    <tbody class="divide-y divide-slate-200/80 text-slate-700 bg-white">
                         @forelse ($certificadosExternos as $ext)
-                            <tr class="hover:bg-brand-light/30 transition-colors">
+                            <tr class="hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors">
                                 <td class="px-5 sm:px-6 py-3.5">
                                     <p class="font-bold text-brand-dark leading-tight">{{ $ext->usuario->nombre_completo ?? 'Colaborador' }}</p>
                                     <p class="text-[11px] text-muted font-mono mt-0.5">C.C. {{ $ext->usuario->identificacion ?? '—' }}</p>

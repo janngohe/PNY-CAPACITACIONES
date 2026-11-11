@@ -32,19 +32,44 @@
     </div>
 
     <!-- Tabla / Listado de Historial -->
-    <div class="bg-white rounded-3xl border border-line/80 shadow-xs overflow-hidden">
+    <div class="bg-white rounded-3xl border border-slate-300/80 shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-slate-50/80 border-b border-line/70 text-[11px] font-bold uppercase tracking-wider text-muted">
-                        <th class="py-4 px-6">Capacitación</th>
-                        <th class="py-4 px-4">Fecha Finalización</th>
-                        <th class="py-4 px-4 text-center">Horas</th>
-                        <th class="py-4 px-4 text-center">Estado</th>
-                        <th class="py-4 px-6 text-right">Certificado</th>
+                <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                    <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                        <th class="py-4 px-6">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-graduation-cap text-sky-400"></i>
+                                <span>Capacitación</span>
+                            </div>
+                        </th>
+                        <th class="py-4 px-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-regular fa-calendar-check text-rose-400"></i>
+                                <span>Fecha Finalización</span>
+                            </div>
+                        </th>
+                        <th class="py-4 px-4 text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <i class="fa-regular fa-clock text-amber-400"></i>
+                                <span>Horas</span>
+                            </div>
+                        </th>
+                        <th class="py-4 px-4 text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                <span>Estado</span>
+                            </div>
+                        </th>
+                        <th class="py-4 px-6 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-2">
+                                <i class="fa-solid fa-award text-amber-300"></i>
+                                <span>Certificado</span>
+                            </div>
+                        </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-line/60 text-xs text-slate-700">
+                <tbody class="divide-y divide-slate-200/80 text-xs text-slate-700 bg-white">
                     @forelse($finalizadas as $item)
                     @php
                         $titulo = $item->titulo ?? ($item['titulo'] ?? 'Capacitación');
@@ -52,7 +77,7 @@
                         $horas = $item->duracion_estimada ? $item->duracion_estimada . ' hrs' : ($item['horas'] ?? '4 hrs');
                         $certObj = isset($item->certificados) ? $item->certificados->first() : null;
                     @endphp
-                    <tr class="hover:bg-slate-50/60 transition-colors">
+                    <tr class="hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors">
                         <td class="py-4 px-6 font-semibold text-brand-dark max-w-xs">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">

@@ -113,7 +113,7 @@
     </div>
 
     <!-- LISTADO DE USUARIOS (RESPONSIVE: TARJETAS EN MÓVIL, TABLA EN ESCRITORIO) -->
-    <div id="contenedor-tabla-usuarios" class="bg-white rounded-3xl border border-line/80 shadow-2xs overflow-hidden transition-opacity duration-200">
+    <div id="contenedor-tabla-usuarios" class="bg-white rounded-3xl border border-slate-300/80 shadow-sm ring-1 ring-slate-900/5 overflow-hidden transition-opacity duration-200">
         
         <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (md:hidden) -->
         <div class="block md:hidden divide-y divide-line/60">
@@ -221,27 +221,57 @@
 
         <!-- VISTA ESCRITORIO / TABLET: TABLA COMPLETA (hidden md:block) -->
         <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted border-b border-line/60">
-                    <tr>
-                        <th class="px-5 sm:px-6 py-3.5 font-bold">Colaborador</th>
-                        <th class="px-4 py-3.5 font-bold">Identificación (C.C.)</th>
-                        <th class="px-4 py-3.5 font-bold">Rol</th>
-                        <th class="px-4 py-3.5 font-bold">Área Asignada</th>
-                        <th class="px-4 py-3.5 font-bold text-center">Estado</th>
-                        <th class="px-5 sm:px-6 py-3.5 font-bold text-right">Acciones</th>
+            <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                    <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                        <th class="px-5 sm:px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-user-tie text-indigo-400"></i>
+                                <span>Colaborador</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-id-card text-cyan-400"></i>
+                                <span>Identificación (C.C.)</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-shield-halved text-purple-400"></i>
+                                <span>Rol Institucional</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-4">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-sitemap text-amber-400"></i>
+                                <span>Área Asignada</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-4 text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                <span>Estado</span>
+                            </div>
+                        </th>
+                        <th class="px-5 sm:px-6 py-4 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-2">
+                                <i class="fa-solid fa-gears text-slate-300"></i>
+                                <span>Acciones</span>
+                            </div>
+                        </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-line/50">
+                <tbody class="divide-y divide-slate-200/80 text-slate-700 bg-white">
                     @forelse ($usuarios as $u)
-                        <tr class="hover:bg-brand-light/30 transition-colors {{ $u->estado ? '' : 'opacity-60 bg-slate-50/50' }}">
+                        <tr class="hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors {{ $u->estado ? '' : 'opacity-70 bg-slate-100/50' }}">
                             <td class="px-5 sm:px-6 py-3.5">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-deep to-brand-cyan text-white font-heading font-extrabold text-xs flex items-center justify-center shadow-2xs shrink-0">
                                         {{ strtoupper(substr($u->nombre_completo, 0, 1)) }}
                                     </div>
                                     <div class="min-w-0">
-                                        <p class="font-bold text-brand-dark truncate leading-tight">{{ $u->nombre_completo }}</p>
+                                        <p class="font-bold text-slate-900 truncate leading-tight">{{ $u->nombre_completo }}</p>
                                         @if ($u->usuario_nuevo)
                                             <span class="inline-block text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded mt-0.5">Primer ingreso pendiente</span>
                                         @endif
@@ -263,7 +293,7 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3.5 text-slate-600">
-                                <p class="font-semibold text-brand-dark leading-tight">{{ $u->area->nombre ?? '— Sin área —' }}</p>
+                                <p class="font-semibold text-slate-900 leading-tight">{{ $u->area->nombre ?? '— Sin área —' }}</p>
                                 @php $sedeUsuario = $u->sedeActual(); @endphp
                                 @if ($sedeUsuario)
                                     <span class="inline-flex items-center gap-1 text-[10px] text-brand-blue font-bold mt-0.5">
@@ -323,7 +353,7 @@
         </div>
 
         @if ($usuarios->hasPages())
-            <div class="px-6 py-4 border-t border-line/60 bg-slate-50/50">
+            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50/70">
                 {{ $usuarios->links() }}
             </div>
         @endif

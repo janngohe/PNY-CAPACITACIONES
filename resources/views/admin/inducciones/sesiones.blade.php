@@ -66,7 +66,7 @@
     </div>
 
     <!-- SECCIÓN PRINCIPAL: HISTORIAL Y FILTROS EN TIEMPO REAL -->
-    <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xs">
+    <div class="bg-white rounded-3xl border border-slate-300/80 overflow-hidden shadow-sm ring-1 ring-slate-900/5">
 
         <!-- Barra de Control y Buscador en Tiempo Real con Filtros por Sede y Área -->
         <div class="p-5 border-b border-slate-200 space-y-4">
@@ -278,21 +278,66 @@
 
             <!-- VISTA EN ESCRITORIO: TABLA COMPLETA CON ÁREAS Y FIRMAS -->
             <div class="hidden md:block overflow-hidden">
-                <table class="w-full text-left text-xs" id="tablaEscritorioSesiones">
-                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
-                        <tr>
-                            <th class="py-3 px-3.5">Código</th>
-                            <th class="py-3 px-3.5">Inducción</th>
-                            <th class="py-3 px-3.5">Facilitador</th>
-                            <th class="py-3 px-3.5">Sede</th>
-                            <th class="py-3 px-3.5">Áreas Convocadas</th>
-                            <th class="py-3 px-3.5">Fecha y Hora</th>
-                            <th class="py-3 px-3 text-center">Asistentes</th>
-                            <th class="py-3 px-3 text-center">Estado</th>
-                            <th class="py-3 px-3.5 text-right">Firmas / Acta</th>
+                <table class="w-full text-left text-xs border-collapse" id="tablaEscritorioSesiones">
+                    <thead class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+                        <tr class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-200">
+                            <th class="py-4 px-3.5 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-qrcode text-cyan-400"></i>
+                                    <span>Código</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-3.5">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-chalkboard-user text-sky-400"></i>
+                                    <span>Inducción</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-3.5 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user-tie text-indigo-400"></i>
+                                    <span>Facilitador</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-3.5 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-location-dot text-rose-400"></i>
+                                    <span>Sede</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-3.5">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-sitemap text-amber-400"></i>
+                                    <span>Áreas Convocadas</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-3.5 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-regular fa-calendar text-emerald-400"></i>
+                                    <span>Fecha y Hora</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-3 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-users text-cyan-300"></i>
+                                    <span>Asistentes</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-3 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                    <span>Estado</span>
+                                </div>
+                            </th>
+                            <th class="py-4 px-3.5 text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-2">
+                                    <i class="fa-solid fa-gears text-slate-300"></i>
+                                    <span>Firmas / Acta</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 text-slate-600">
+                    <tbody class="divide-y divide-slate-200/80 text-slate-700 bg-white">
                         @foreach($sesiones as $s)
                             @php
                                 $esActiva = $s->estaActiva();
@@ -313,7 +358,7 @@
                                     ($esActiva ? 'en curso viva activa' : 'finalizada cerrada')
                                 );
                             @endphp
-                            <tr class="item-sesion-row hover:bg-slate-50/70 transition-colors"
+                            <tr class="item-sesion-row hover:bg-sky-50/50 even:bg-slate-50/40 transition-colors"
                                 data-estado="{{ $estadoSlug }}"
                                 data-sede-id="{{ $sedeId }}"
                                 data-areas-ids="{{ implode(',', $todasAreasIds) }}"
