@@ -71,6 +71,10 @@ Route::prefix('psicologia')->name('psicologia.')->middleware(['auth', 'rol:PSICO
     Route::post('/pruebas/{evaluacion}/valanti-respuestas', [DashboardController::class, 'actualizarRespuestasValanti'])->name('valanti.actualizar_respuestas');
     Route::get('/pruebas/{evaluacion}/valanti-pdf', [DashboardController::class, 'verValantiPdf'])->name('valanti.pdf');
     Route::get('/pruebas/{evaluacion}/consentimiento-pdf', [DashboardController::class, 'verConsentimientoPdf'])->name('consentimientos.pdf');
+    Route::delete('/pruebas/{evaluacion}', [DashboardController::class, 'eliminarEvaluacion'])->name('pruebas.eliminar');
+    Route::post('/pruebas/{id}/restablecer', [DashboardController::class, 'restablecerEvaluacion'])->name('pruebas.restablecer');
+    Route::delete('/pruebas/{id}/destruir', [DashboardController::class, 'destruirEvaluacionDefinitiva'])->name('pruebas.destruir');
+    Route::post('/pruebas/vaciar-papelera', [DashboardController::class, 'vaciarPapelera'])->name('pruebas.vaciar_papelera');
 
     // 4. Certificado Aptitudinal (GH-FO-028)
     Route::get('/certificado-aptitudinal', [DashboardController::class, 'certificadoAptitudinal'])->name('certificado_aptitudinal');

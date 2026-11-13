@@ -235,6 +235,7 @@
                         @foreach($opciones as $clave => $etiqueta)
                             @php
                                 $checked = ($opcionGuardada === $clave);
+                                $textoOpcion = is_array($etiqueta) ? ($etiqueta['nombre'] ?? $etiqueta['codigo'] ?? $clave) : $etiqueta;
                             @endphp
                             <label class="relative cursor-pointer">
                                 <input type="radio"
@@ -247,7 +248,7 @@
                                 <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 transition-all duration-150 active:scale-95 hover:bg-slate-100 hover:border-slate-300
                                             peer-checked:bg-brand-blue peer-checked:text-white peer-checked:border-brand-blue peer-checked:shadow-sm">
                                     <span class="text-xs font-bold tracking-tight">
-                                        {{ $etiqueta }}
+                                        {{ $textoOpcion }}
                                     </span>
                                     <span class="w-6 h-6 rounded-lg bg-white/20 peer-checked:bg-white peer-checked:text-brand-blue flex items-center justify-center font-black text-xs font-mono shrink-0 ml-1">
                                         {{ $clave }}
@@ -260,20 +261,23 @@
             @endforeach
 
             <!-- Barra Inferior Fija de Control y Avance en Vivo (Ultra responsiva en móvil) -->
-            <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg px-3 py-2.5 sm:py-3.5">
-                <div class="max-w-3xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+            <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg px-3 py-2 sm:py-3">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-slate-100 overflow-hidden">
+                    <div id="barraProgresoInferior" class="h-full bg-gradient-to-r from-brand-blue to-emerald-500 transition-all duration-300" style="width: {{ $porcentajeInicial }}%;"></div>
+                </div>
+                <div class="max-w-3xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
                     
                     <!-- Indicador de Avance y Estado -->
-                    <div class="flex items-center gap-2 min-w-0">
-                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-brand-blue/10 text-brand-blue flex items-center justify-center text-xs font-black shrink-0 border border-brand-blue/20">
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-brand-blue/10 text-brand-blue flex items-center justify-center text-[11px] sm:text-xs font-black shrink-0 border border-brand-blue/20">
                             <span id="txtRespondidasNum">{{ $totalRespondidasInicial }}</span>/40
                         </div>
-                        <div class="min-w-0">
+                        <div class="min-w-0 flex-1">
                             <span class="text-xs sm:text-sm font-extrabold text-slate-900 block truncate" id="txtProgresoResumen">
-                                {{ $porcentajeInicial }}% respondido
+                                {{ $totalRespondidasInicial }}/40 ({{ $porcentajeInicial }}%)
                             </span>
-                            <span class="text-[10px] text-slate-400 flex items-center gap-1 truncate" id="txtEstadoGuardado">
-                                <i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i>
+                            <span class="text-[10px] text-slate-500 flex items-center gap-1 truncate" id="txtEstadoGuardado">
+                                <i class="fa-solid fa-cloud-arrow-up text-emerald-500 shrink-0"></i>
                                 <span class="hidden sm:inline">Avance auto-guardado en el servidor</span>
                                 <span class="sm:hidden">Auto-guardado activo</span>
                             </span>
@@ -286,17 +290,23 @@
                                 id="btnSaltarSiguiente"
                                 onclick="saltarSiguienteIncompleta()"
                                 title="Saltar a la siguiente pregunta no respondida"
-                                class="py-2.5 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer">
+                                class="h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer">
                             <i class="fa-solid fa-angles-down text-brand-blue text-xs"></i>
-                            <span class="hidden md:inline">Siguiente pendiente</span>
-                            <span class="md:hidden">Pendiente</span>
+                            <span class="hidden sm:inline">Pendiente</span>
                         </button>
 
                         <button type="submit"
                                 id="btnFinalizar"
-                                class="py-2.5 px-3.5 sm:px-5 rounded-2xl bg-brand-blue hover:bg-brand-dark active:scale-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
-                            <span>Finalizar</span>
-                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                                class="h-9 sm:h-10 px-3 sm:px-4 rounded-xl sm:rounded-2xl {{ $totalRespondidasInicial == 40 ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-brand-blue hover:bg-brand-dark' }} active:scale-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+                            @if($totalRespondidasInicial == 40)
+                                <span class="sm:hidden">¡Enviar!</span>
+                                <span class="hidden sm:inline">¡Enviar Todo!</span>
+                                <i class="fa-solid fa-check text-xs"></i>
+                            @else
+                                <span class="sm:hidden">Finalizar</span>
+                                <span class="hidden sm:inline">Finalizar</span>
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                            @endif
                         </button>
                     </div>
 
@@ -339,22 +349,24 @@
             const txtNum = document.getElementById('txtRespondidasNum');
             const txtResumen = document.getElementById('txtProgresoResumen');
             const barra = document.getElementById('barraProgreso');
+            const barraInferior = document.getElementById('barraProgresoInferior');
             const btnFinalizar = document.getElementById('btnFinalizar');
 
             if (txtHeader) txtHeader.textContent = `${porcentaje}% (${respondidas}/40)`;
             if (txtNum) txtNum.textContent = respondidas;
-            if (txtResumen) txtResumen.textContent = `${porcentaje}% respondido`;
+            if (txtResumen) txtResumen.textContent = `${respondidas}/40 (${porcentaje}%)`;
             if (barra) barra.style.width = `${porcentaje}%`;
+            if (barraInferior) barraInferior.style.width = `${porcentaje}%`;
 
             if (btnFinalizar) {
                 if (respondidas === 40) {
                     btnFinalizar.classList.remove('bg-brand-blue');
                     btnFinalizar.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-                    btnFinalizar.innerHTML = '<span>¡Enviar Todo!</span> <i class="fa-solid fa-check text-xs"></i>';
+                    btnFinalizar.innerHTML = '<span class="sm:hidden">¡Enviar!</span><span class="hidden sm:inline">¡Enviar Todo!</span> <i class="fa-solid fa-check text-xs"></i>';
                 } else {
                     btnFinalizar.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
                     btnFinalizar.classList.add('bg-brand-blue');
-                    btnFinalizar.innerHTML = '<span>Finalizar</span> <i class="fa-solid fa-paper-plane text-xs"></i>';
+                    btnFinalizar.innerHTML = '<span class="sm:hidden">Finalizar</span><span class="hidden sm:inline">Finalizar</span> <i class="fa-solid fa-paper-plane text-xs"></i>';
                 }
             }
         }

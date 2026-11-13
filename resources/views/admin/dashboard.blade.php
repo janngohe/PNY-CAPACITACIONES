@@ -25,31 +25,94 @@
         'icono' => 'fa-fish-fins',
     ])
 
-    <!-- ACCESOS RÁPIDOS -->
-    <div class="flex flex-wrap gap-2.5">
-        <a href="{{ route('admin.capacitaciones.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-deep text-white font-heading font-bold text-xs shadow-xs transition-colors">
-            <i class="fa-solid fa-plus"></i> Nueva capacitación
+    <!-- ACCESOS RÁPIDOS (ORDENADOS Y ADAPTADOS A GRID PERFECTO EN MÓVIL Y ESCRITORIO) -->
+    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2.5 sm:gap-3">
+        <!-- 1. Nueva Capacitación (Acción Principal Destacada) -->
+        <a href="{{ route('admin.capacitaciones.create') }}"
+           class="group flex items-center gap-2.5 p-2.5 sm:px-3 sm:py-2.5 rounded-2xl bg-gradient-to-r from-brand-blue to-brand-deep text-white shadow-xs hover:shadow-md hover:brightness-105 active:scale-98 transition-all min-h-[52px]">
+            <div class="w-8 h-8 rounded-xl bg-white/20 text-white flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-plus text-xs"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="block font-heading font-black text-[11.5px] sm:text-xs text-white leading-tight line-clamp-2">Nueva capacitación</span>
+            </div>
         </a>
-        <a href="{{ route('admin.sedes.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-line hover:border-brand-blue hover:text-brand-blue text-slate-700 font-heading font-bold text-xs transition-colors shadow-2xs">
-            <i class="fa-solid fa-building"></i> Gestionar sedes
+
+        <!-- 2. Nueva Evaluación -->
+        <a href="{{ route('admin.evaluaciones.create') }}"
+           class="group flex items-center gap-2.5 p-2.5 sm:px-3 sm:py-2.5 rounded-2xl bg-white border border-slate-200/90 hover:border-indigo-400 hover:shadow-xs active:scale-98 transition-all shadow-2xs min-h-[52px]">
+            <div class="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/80 text-indigo-700 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-clipboard-question text-xs"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="block font-heading font-black text-[11.5px] sm:text-xs text-black leading-tight line-clamp-2">Nueva evaluación</span>
+            </div>
         </a>
-        <a href="{{ route('admin.areas.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-line hover:border-brand-blue hover:text-brand-blue text-slate-700 font-heading font-bold text-xs transition-colors shadow-2xs">
-            <i class="fa-solid fa-sitemap"></i> Gestionar áreas
+
+        <!-- 3. Registrar Usuario -->
+        <a href="{{ route('admin.usuarios.create') }}"
+           class="group flex items-center gap-2.5 p-2.5 sm:px-3 sm:py-2.5 rounded-2xl bg-white border border-slate-200/90 hover:border-sky-400 hover:shadow-xs active:scale-98 transition-all shadow-2xs min-h-[52px]">
+            <div class="w-8 h-8 rounded-xl bg-sky-50 border border-sky-200/80 text-sky-700 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-user-plus text-xs"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="block font-heading font-black text-[11.5px] sm:text-xs text-black leading-tight line-clamp-2">Registrar usuario</span>
+            </div>
         </a>
-        <a href="{{ route('admin.usuarios.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-line hover:border-brand-blue hover:text-brand-blue text-slate-700 font-heading font-bold text-xs transition-colors shadow-2xs">
-            <i class="fa-solid fa-user-plus"></i> Registrar usuario
+
+        <!-- 4. Gestionar Sedes -->
+        <a href="{{ route('admin.sedes.index') }}"
+           class="group flex items-center gap-2.5 p-2.5 sm:px-3 sm:py-2.5 rounded-2xl bg-white border border-slate-200/90 hover:border-amber-400 hover:shadow-xs active:scale-98 transition-all shadow-2xs min-h-[52px]">
+            <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-building text-xs"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="block font-heading font-black text-[11.5px] sm:text-xs text-black leading-tight line-clamp-2">Gestionar sedes</span>
+            </div>
         </a>
-        <a href="{{ route('admin.evaluaciones.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-line hover:border-brand-blue hover:text-brand-blue text-slate-700 font-heading font-bold text-xs transition-colors shadow-2xs">
-            <i class="fa-solid fa-clipboard-question"></i> Nueva evaluación
+
+        <!-- 5. Gestionar Áreas -->
+        <a href="{{ route('admin.areas.index') }}"
+           class="group flex items-center gap-2.5 p-2.5 sm:px-3 sm:py-2.5 rounded-2xl bg-white border border-slate-200/90 hover:border-rose-400 hover:shadow-xs active:scale-98 transition-all shadow-2xs min-h-[52px]">
+            <div class="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-700 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-sitemap text-xs"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="block font-heading font-black text-[11.5px] sm:text-xs text-black leading-tight line-clamp-2">Gestionar áreas</span>
+            </div>
         </a>
-        <a href="{{ route('admin.reportes.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-line hover:border-brand-blue hover:text-brand-blue text-slate-700 font-heading font-bold text-xs transition-colors shadow-2xs">
-            <i class="fa-solid fa-file-arrow-down"></i> Generar reportes
+
+        <!-- 6. Generar Reportes -->
+        <a href="{{ route('admin.reportes.index') }}"
+           class="group flex items-center gap-2.5 p-2.5 sm:px-3 sm:py-2.5 rounded-2xl bg-white border border-slate-200/90 hover:border-blue-400 hover:shadow-xs active:scale-98 transition-all shadow-2xs min-h-[52px]">
+            <div class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200/80 text-brand-blue flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-file-arrow-down text-xs"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="block font-heading font-black text-[11.5px] sm:text-xs text-black leading-tight line-clamp-2">Generar reportes</span>
+            </div>
         </a>
-        <a href="{{ route('admin.psicologia.reportes') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-heading font-bold text-xs transition-colors shadow-2xs">
-            <i class="fa-solid fa-file-excel text-emerald-600"></i> Reporte Psicotécnico Excel
+
+        <!-- 7. Reporte Psicotécnico Excel -->
+        <a href="{{ route('admin.psicologia.reportes') }}"
+           class="group flex items-center gap-2.5 p-2.5 sm:px-3 sm:py-2.5 rounded-2xl bg-white border border-emerald-200/90 hover:border-emerald-400 hover:bg-emerald-50/40 hover:shadow-xs active:scale-98 transition-all shadow-2xs min-h-[52px]">
+            <div class="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-file-excel text-xs text-emerald-600"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="block font-heading font-black text-[11.5px] sm:text-xs text-black leading-tight line-clamp-2">Reporte Psicotécnico</span>
+            </div>
         </a>
-        <a href="{{ route('admin.psicologia.historial') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-300 text-purple-800 font-heading font-bold text-xs transition-colors shadow-2xs">
-            <i class="fa-solid fa-list-check text-purple-600"></i> Historial de Pruebas
+
+        <!-- 8. Historial de Pruebas -->
+        <a href="{{ route('admin.psicologia.historial') }}"
+           class="group flex items-center gap-2.5 p-2.5 sm:px-3 sm:py-2.5 rounded-2xl bg-white border border-purple-200/90 hover:border-purple-400 hover:bg-purple-50/40 hover:shadow-xs active:scale-98 transition-all shadow-2xs min-h-[52px]">
+            <div class="w-8 h-8 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-list-check text-xs text-purple-600"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="block font-heading font-black text-[11.5px] sm:text-xs text-black leading-tight line-clamp-2">Historial de Pruebas</span>
+            </div>
         </a>
     </div>
 

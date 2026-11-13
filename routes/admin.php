@@ -129,6 +129,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'rol:ADMINISTRADOR']
         Route::post('/pruebas/{evaluacion}/valanti-respuestas', [\App\Http\Controllers\Psicologia\DashboardController::class, 'actualizarRespuestasValanti'])->name('valanti.actualizar_respuestas');
         Route::get('/pruebas/{evaluacion}/valanti-pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verValantiPdf'])->name('valanti.pdf');
         Route::get('/pruebas/{evaluacion}/consentimiento-pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verConsentimientoPdf'])->name('consentimientos.pdf');
+        Route::delete('/pruebas/{evaluacion}', [\App\Http\Controllers\Psicologia\DashboardController::class, 'eliminarEvaluacion'])->name('pruebas.eliminar');
+        Route::post('/pruebas/{id}/restablecer', [\App\Http\Controllers\Psicologia\DashboardController::class, 'restablecerEvaluacion'])->name('pruebas.restablecer');
+        Route::delete('/pruebas/{id}/destruir', [\App\Http\Controllers\Psicologia\DashboardController::class, 'destruirEvaluacionDefinitiva'])->name('pruebas.destruir');
+        Route::post('/pruebas/vaciar-papelera', [\App\Http\Controllers\Psicologia\DashboardController::class, 'vaciarPapelera'])->name('pruebas.vaciar_papelera');
         Route::get('/certificado-aptitudinal', [\App\Http\Controllers\Psicologia\DashboardController::class, 'certificadoAptitudinal'])->name('certificados');
         Route::post('/certificado-aptitudinal/{evaluacion}', [\App\Http\Controllers\Psicologia\DashboardController::class, 'guardarCertificadoAptitudinal'])->name('certificados.guardar');
         Route::get('/certificado-aptitudinal/{evaluacion}/pdf', [\App\Http\Controllers\Psicologia\DashboardController::class, 'verCertificadoAptitudinalPdf'])->name('certificados.pdf');

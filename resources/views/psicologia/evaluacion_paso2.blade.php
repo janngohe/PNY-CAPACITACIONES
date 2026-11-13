@@ -178,22 +178,38 @@
                     El cuestionario consta de <strong>30 preguntas</strong>, cada una con un par de afirmaciones (<strong>A</strong> y <strong>B</strong>).
                     En cada fila usted debe distribuir <strong>exactamente 3 puntos</strong> entre las opciones A y B según su preferencia:
                 </p>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 pt-1 font-mono font-bold text-[11px]">
-                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center justify-between">
-                        <span>Opción 3 - 0</span>
-                        <span class="text-[10px] font-sans font-normal text-slate-500">A todo / B nada</span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
+                    <div class="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 shadow-2xs flex flex-col items-center justify-center text-center">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-blue-50 text-brand-blue font-mono font-black text-xs border border-blue-100">
+                            3 - 0
+                        </span>
+                        <span class="text-[11px] font-medium text-slate-700 mt-1 leading-tight">
+                            <strong class="text-slate-900">A todo</strong> / B nada
+                        </span>
                     </div>
-                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center justify-between">
-                        <span>Opción 0 - 3</span>
-                        <span class="text-[10px] font-sans font-normal text-slate-500">A nada / B todo</span>
+                    <div class="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 shadow-2xs flex flex-col items-center justify-center text-center">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-blue-50 text-brand-blue font-mono font-black text-xs border border-blue-100">
+                            0 - 3
+                        </span>
+                        <span class="text-[11px] font-medium text-slate-700 mt-1 leading-tight">
+                            A nada / <strong class="text-slate-900">B todo</strong>
+                        </span>
                     </div>
-                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center justify-between">
-                        <span>Opción 2 - 1</span>
-                        <span class="text-[10px] font-sans font-normal text-slate-500">A más / B menos</span>
+                    <div class="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 shadow-2xs flex flex-col items-center justify-center text-center">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-blue-50 text-brand-blue font-mono font-black text-xs border border-blue-100">
+                            2 - 1
+                        </span>
+                        <span class="text-[11px] font-medium text-slate-700 mt-1 leading-tight">
+                            <strong class="text-slate-900">A más</strong> / B menos
+                        </span>
                     </div>
-                    <div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-800 flex items-center justify-between">
-                        <span>Opción 1 - 2</span>
-                        <span class="text-[10px] font-sans font-normal text-slate-500">A menos / B más</span>
+                    <div class="p-2 sm:p-2.5 rounded-xl bg-white border border-slate-200 shadow-2xs flex flex-col items-center justify-center text-center">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-blue-50 text-brand-blue font-mono font-black text-xs border border-blue-100">
+                            1 - 2
+                        </span>
+                        <span class="text-[11px] font-medium text-slate-700 mt-1 leading-tight">
+                            A menos / <strong class="text-slate-900">B más</strong>
+                        </span>
                     </div>
                 </div>
                 <p class="text-[10px] text-amber-700 font-semibold bg-amber-50 p-2 rounded-xl border border-amber-200 flex items-center gap-1.5">
@@ -292,7 +308,7 @@
                                     A
                                 </span>
                                 <span class="text-slate-800 leading-snug">
-                                    {{ $item['a'] }}
+                                    {{ $item['texto_a'] ?? $item['a'] ?? '' }}
                                 </span>
                             </div>
                             <span id="pts-a-{{ $numero }}"
@@ -308,7 +324,7 @@
                                     B
                                 </span>
                                 <span class="text-slate-800 leading-snug">
-                                    {{ $item['b'] }}
+                                    {{ $item['texto_b'] ?? $item['b'] ?? '' }}
                                 </span>
                             </div>
                             <span id="pts-b-{{ $numero }}"
@@ -350,20 +366,23 @@
             @endforeach
 
             <!-- Barra Inferior Fija de Control y Avance en Vivo -->
-            <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg px-3 py-2.5 sm:py-3.5">
-                <div class="max-w-3xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+            <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg px-3 py-2 sm:py-3">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-slate-100 overflow-hidden">
+                    <div id="barraProgresoInferior" class="h-full bg-gradient-to-r from-brand-blue to-emerald-500 transition-all duration-300" style="width: {{ $porcentajeInicial }}%;"></div>
+                </div>
+                <div class="max-w-3xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
                     
                     <!-- Indicador de Avance y Suma de 90 Puntos -->
-                    <div class="flex items-center gap-2 min-w-0">
-                        <div class="w-10 h-10 rounded-2xl bg-brand-blue/10 text-brand-blue flex items-center justify-center text-xs font-black shrink-0 border border-brand-blue/20">
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-brand-blue/10 text-brand-blue flex items-center justify-center text-[11px] sm:text-xs font-black shrink-0 border border-brand-blue/20">
                             <span id="txtRespondidasNum">{{ $totalRespondidasInicial }}</span>/30
                         </div>
-                        <div class="min-w-0">
+                        <div class="min-w-0 flex-1">
                             <span class="text-xs sm:text-sm font-extrabold text-slate-900 block truncate" id="txtProgresoResumen">
-                                {{ $puntosTotalesInicial }}/90 pts asignados ({{ $porcentajeInicial }}%)
+                                {{ $puntosTotalesInicial }}/90 pts ({{ $porcentajeInicial }}%)
                             </span>
-                            <span class="text-[10px] text-slate-400 flex items-center gap-1 truncate" id="txtEstadoGuardado">
-                                <i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i>
+                            <span class="text-[10px] text-slate-500 flex items-center gap-1 truncate" id="txtEstadoGuardado">
+                                <i class="fa-solid fa-cloud-arrow-up text-emerald-500 shrink-0"></i>
                                 <span class="hidden sm:inline">Avance auto-guardado en el servidor</span>
                                 <span class="sm:hidden">Auto-guardado activo</span>
                             </span>
@@ -376,16 +395,21 @@
                                 id="btnSaltarSiguiente"
                                 onclick="saltarSiguienteIncompleta()"
                                 title="Saltar a la siguiente pregunta no respondida"
-                                class="py-2.5 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer">
+                                class="h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer">
                             <i class="fa-solid fa-angles-down text-brand-blue text-xs"></i>
-                            <span class="hidden md:inline">Siguiente pendiente</span>
-                            <span class="md:hidden">Pendiente</span>
+                            <span class="hidden sm:inline">Pendiente</span>
                         </button>
 
                         <button type="submit"
                                 id="btnFinalizar"
-                                class="py-2.5 px-3.5 sm:px-5 rounded-2xl bg-brand-blue hover:bg-brand-dark active:scale-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
-                            <span>Continuar a PAC-A</span>
+                                class="h-9 sm:h-10 px-3 sm:px-4 rounded-xl sm:rounded-2xl {{ $totalRespondidasInicial == 30 ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-brand-blue hover:bg-brand-dark' }} active:scale-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+                            @if($totalRespondidasInicial == 30)
+                                <span class="sm:hidden">¡Avanzar!</span>
+                                <span class="hidden sm:inline">¡Avanzar a PAC-A!</span>
+                            @else
+                                <span class="sm:hidden">Siguiente</span>
+                                <span class="hidden sm:inline">Continuar a PAC-A</span>
+                            @endif
                             <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
                     </div>
@@ -448,22 +472,24 @@
             const txtNum = document.getElementById('txtRespondidasNum');
             const txtResumen = document.getElementById('txtProgresoResumen');
             const barra = document.getElementById('barraProgreso');
+            const barraInferior = document.getElementById('barraProgresoInferior');
             const btnFinalizar = document.getElementById('btnFinalizar');
 
             if (txtHeader) txtHeader.textContent = `${porcentaje}% (${respondidas}/30 · ${puntosTotales}/90 pts)`;
             if (txtNum) txtNum.textContent = respondidas;
-            if (txtResumen) txtResumen.textContent = `${puntosTotales}/90 pts asignados (${porcentaje}%)`;
+            if (txtResumen) txtResumen.textContent = `${puntosTotales}/90 pts (${porcentaje}%)`;
             if (barra) barra.style.width = `${porcentaje}%`;
+            if (barraInferior) barraInferior.style.width = `${porcentaje}%`;
 
             if (btnFinalizar) {
                 if (respondidas === 30) {
                     btnFinalizar.classList.remove('bg-brand-blue');
                     btnFinalizar.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-                    btnFinalizar.innerHTML = '<span>¡Avanzar a PAC-A!</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
+                    btnFinalizar.innerHTML = '<span class="sm:hidden">¡Avanzar!</span><span class="hidden sm:inline">¡Avanzar a PAC-A!</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
                 } else {
                     btnFinalizar.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
                     btnFinalizar.classList.add('bg-brand-blue');
-                    btnFinalizar.innerHTML = '<span>Continuar a PAC-A</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
+                    btnFinalizar.innerHTML = '<span class="sm:hidden">Siguiente</span><span class="hidden sm:inline">Continuar a PAC-A</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
                 }
             }
         }

@@ -1034,8 +1034,13 @@ class DashboardController extends Controller
         /** @var Usuario $usuario */
         $usuario = Auth::user();
 
-        $query = EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti', 'sede'])
-            ->withCount(['respuestasPaca', 'respuestasValanti']);
+        $enPapelera = $request->boolean('papelera') || $request->input('ver') === 'papelera';
+        $totalEnPapelera = EvaluacionCandidato::onlyTrashed()->count();
+        $totalActivas = EvaluacionCandidato::count();
+
+        $query = $enPapelera
+            ? EvaluacionCandidato::onlyTrashed()->with(['resultadoPaca', 'resultadoValanti', 'sede'])->withCount(['respuestasPaca', 'respuestasValanti'])
+            : EvaluacionCandidato::with(['resultadoPaca', 'resultadoValanti', 'sede'])->withCount(['respuestasPaca', 'respuestasValanti']);
 
         if ($request->filled('buscar')) {
             $buscar = trim((string) $request->input('buscar'));
@@ -1062,11 +1067,12 @@ class DashboardController extends Controller
         }
 
         if ($request->filled('fecha')) {
-            $query->whereDate('created_at', $request->input('fecha'));
+            $colFecha = $enPapelera ? 'deleted_at' : 'created_at';
+            $query->whereDate($colFecha, $request->input('fecha'));
         }
 
         $aplicaciones = $query
-            ->orderByDesc('created_at')
+            ->orderByDesc($enPapelera ? 'deleted_at' : 'created_at')
             ->paginate(15)
             ->withQueryString();
 
@@ -1110,8 +1116,133 @@ class DashboardController extends Controller
             'aplicaciones',
             'filtrosActivos',
             'urlNgrokBase',
-            'urlLocalBase'
+            'urlLocalBase',
+            'enPapelera',
+            'totalEnPapelera',
+            'totalActivas'
         ));
+    }
+
+    /**
+     * Envía la evaluación a la papelera (SoftDelete) para liberar la cédula
+     * y permitir que la persona presente nuevamente la prueba si es necesario.
+     */
+    public function eliminarEvaluacion(Request $request, EvaluacionCandidato $evaluacion)
+    {
+        $nombre = $evaluacion->nombre_completo;
+        $identificacion = $evaluacion->identificacion;
+
+        // Se envía a la papelera de reciclaje. La cédula queda liberada de inmediato.
+        $evaluacion->delete();
+
+        $mensaje = "La evaluación de {$nombre} (C.C. {$identificacion}) fue enviada a la papelera. La cédula queda liberada para que pueda presentar nuevamente la prueba.";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'mensaje' => $mensaje,
+            ]);
+        }
+
+        return back()->with('success', $mensaje);
+    }
+
+    /**
+     * Restablece una evaluación previamente enviada a la papelera.
+     */
+    public function restablecerEvaluacion(Request $request, int $id)
+    {
+        $evaluacion = EvaluacionCandidato::onlyTrashed()->findOrFail($id);
+
+        // Validar si ya existe otra evaluación activa con la misma cédula
+        $activaExistente = EvaluacionCandidato::where('identificacion', $evaluacion->identificacion)->first();
+        if ($activaExistente) {
+            return back()->with('error', "No se puede restablecer. Ya existe una evaluación activa con la cédula {$evaluacion->identificacion} a nombre de {$activaExistente->nombre_completo}.");
+        }
+
+        $evaluacion->restore();
+
+        $mensaje = "¡Evaluación de {$evaluacion->nombre_completo} (C.C. {$evaluacion->identificacion}) restablecida exitosamente! Vuelve a estar en el historial activo.";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'mensaje' => $mensaje,
+            ]);
+        }
+
+        return back()->with('success', $mensaje);
+    }
+
+    /**
+     * Elimina definitivamente una evaluación de la papelera (Hard Delete permanente).
+     */
+    public function destruirEvaluacionDefinitiva(Request $request, int $id)
+    {
+        $evaluacion = EvaluacionCandidato::onlyTrashed()->findOrFail($id);
+        $nombre = $evaluacion->nombre_completo;
+        $identificacion = $evaluacion->identificacion;
+
+        // Eliminar firma digital en disco si existe
+        if ($evaluacion->firma_digital && Storage::disk('public')->exists($evaluacion->firma_digital)) {
+            Storage::disk('public')->delete($evaluacion->firma_digital);
+        }
+
+        DB::transaction(function () use ($evaluacion) {
+            $evaluacion->respuestasValanti()->delete();
+            $evaluacion->resultadoValanti()->delete();
+            $evaluacion->respuestasPaca()->delete();
+            $evaluacion->resultadoPaca()->delete();
+            $evaluacion->forceDelete();
+        });
+
+        $mensaje = "El registro de {$nombre} (C.C. {$identificacion}) fue eliminado definitivamente del sistema.";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'mensaje' => $mensaje,
+            ]);
+        }
+
+        return back()->with('success', $mensaje);
+    }
+
+    /**
+     * Vacía completamente la papelera de reciclaje de evaluaciones psicológicas.
+     */
+    public function vaciarPapelera(Request $request)
+    {
+        $eliminadas = EvaluacionCandidato::onlyTrashed()->get();
+        $total = $eliminadas->count();
+
+        if ($total === 0) {
+            return back()->with('info', 'La papelera ya se encuentra vacía.');
+        }
+
+        DB::transaction(function () use ($eliminadas) {
+            foreach ($eliminadas as $eval) {
+                if ($eval->firma_digital && Storage::disk('public')->exists($eval->firma_digital)) {
+                    Storage::disk('public')->delete($eval->firma_digital);
+                }
+                $eval->respuestasValanti()->delete();
+                $eval->resultadoValanti()->delete();
+                $eval->respuestasPaca()->delete();
+                $eval->resultadoPaca()->delete();
+                $eval->forceDelete();
+            }
+        });
+
+        $mensaje = "Se ha vaciado la papelera exitosamente. Se eliminaron definitivamente {$total} registros y todos sus datos asociados.";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'mensaje' => $mensaje,
+            ]);
+        }
+
+        return back()->with('success', $mensaje);
     }
 
     /**

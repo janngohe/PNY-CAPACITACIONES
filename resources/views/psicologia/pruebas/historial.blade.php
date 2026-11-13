@@ -7,18 +7,63 @@
 @section('content')
 <div class="space-y-6">
 
-    <!-- Encabezado Principal -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <!-- Encabezado Principal y Pestañas Activas / Papelera -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h1 class="text-xl font-bold text-slate-900">Historial de Aplicaciones y Consentimientos</h1>
-            <p class="text-xs text-slate-500 mt-1">Registro de evaluaciones psicotécnicas, custodia de consentimientos GH-FO-025 y resultados</p>
+            @if($enPapelera)
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 text-[11px] font-bold">
+                        <i class="fa-solid fa-trash-can text-rose-600"></i> Papelera de Reciclaje
+                    </span>
+                    <span class="text-xs text-slate-400 font-medium">{{ $totalEnPapelera }} registro(s)</span>
+                </div>
+                <h1 class="text-xl font-bold text-slate-900 mt-1">Papelera de Evaluaciones</h1>
+                <p class="text-xs text-slate-500 mt-0.5">Registros eliminados para liberar la cédula. Puedes restablecerlos o vaciar la papelera de forma definitiva.</p>
+            @else
+                <h1 class="text-xl font-bold text-slate-900">Historial de Aplicaciones y Consentimientos</h1>
+                <p class="text-xs text-slate-500 mt-1">Registro de evaluaciones psicotécnicas, custodia de consentimientos GH-FO-025 y resultados</p>
+            @endif
         </div>
-        @if(!request()->routeIs('admin.*'))
-            <a href="{{ route('psicologia.pruebas.realizar') }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 text-xs font-bold text-white shadow-2xs transition-all hover:scale-[1.02] shrink-0">
-                <i class="fa-solid fa-qrcode text-xs"></i>
-                Proyectar Código QR
-            </a>
-        @endif
+
+        <div class="flex items-center gap-2 flex-wrap">
+            @if($enPapelera)
+                <!-- Volver al Historial Activo -->
+                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial') : route('psicologia.pruebas.historial') }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs transition-colors">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                    <span>Volver al Historial Activo</span>
+                </a>
+
+                @if($totalEnPapelera > 0)
+                    <!-- Vaciar Papelera -->
+                    <button type="button"
+                            onclick="abrirModalVaciarPapelera()"
+                            class="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 px-3.5 py-2 text-xs font-bold text-white shadow-2xs transition-all cursor-pointer">
+                        <i class="fa-solid fa-trash text-xs"></i>
+                        <span>Vaciar Papelera ({{ $totalEnPapelera }})</span>
+                    </button>
+                @endif
+            @else
+                <!-- Botón a la Papelera -->
+                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.historial', ['papelera' => 1]) : route('psicologia.pruebas.historial', ['papelera' => 1]) }}"
+                   class="inline-flex items-center gap-2 rounded-xl {{ $totalEnPapelera > 0 ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }} px-3.5 py-2 text-xs font-bold transition-all shadow-2xs">
+                    <i class="fa-solid fa-trash-can text-xs {{ $totalEnPapelera > 0 ? 'text-rose-600' : 'text-slate-500' }}"></i>
+                    <span>Papelera</span>
+                    @if($totalEnPapelera > 0)
+                        <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-rose-600 text-white font-mono text-[10px]">
+                            {{ $totalEnPapelera }}
+                        </span>
+                    @endif
+                </a>
+
+                @if(!request()->routeIs('admin.*'))
+                    <a href="{{ route('psicologia.pruebas.realizar') }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-all hover:scale-[1.02] shrink-0">
+                        <i class="fa-solid fa-qrcode text-xs"></i>
+                        Proyectar Código QR
+                    </a>
+                @endif
+            @endif
+        </div>
     </div>
 
     <!-- Barra de Filtros en Vivo (Sin botón de filtrar) -->
@@ -101,8 +146,8 @@
                 @foreach($aplicaciones as $app)
                     @php
                         $badge = $app->badgeEstadoPaca();
-                        $urlPdfInline = route('psicologia.consentimientos.pdf', $app) . '?inline=1';
-                        $urlPdfDescarga = route('psicologia.consentimientos.pdf', $app);
+                        $urlPdfInline = !$enPapelera ? (route('psicologia.consentimientos.pdf', $app) . '?inline=1') : '#';
+                        $urlPdfDescarga = !$enPapelera ? route('psicologia.consentimientos.pdf', $app) : '#';
                         $fechaIso = ($app->fecha_hora_aceptacion ?? $app->created_at)->format('Y-m-d');
                         $estadoFiltro = ($app->pacaFinalizada() && $app->valantiFinalizada())
                             ? 'FINALIZADA'
@@ -158,59 +203,92 @@
                             </div>
                         </div>
 
-                        <!-- Fila Inferior: Botones de Acción (Consentimiento + Entrar a VALANTI / PAC-A) -->
+                        <!-- Fila Inferior: Botones de Acción -->
                         <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 flex-wrap">
-                            
-                            <!-- Ver Consentimiento -->
-                            <div class="flex items-center gap-1.5">
-                                <button type="button"
-                                        onclick="abrirModalPdf('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($app->nombre_completo) }}')"
-                                        class="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
-                                    <i class="fa-solid fa-file-pdf text-xs text-rose-600"></i>
-                                    <span>Ver Consentimiento</span>
-                                </button>
-                            </div>
-
-                            <!-- Botones para Entrar a VALANTI y PAC-A -->
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                @if($app->valantiFinalizada())
-                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}"
-                                       class="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 text-xs font-bold transition-colors shadow-2xs">
-                                        <i class="fa-solid fa-scale-balanced text-xs text-sky-600"></i>
-                                        <span>VALANTI</span>
-                                    </a>
-                                @endif
-                                @if($app->pacaFinalizada())
-                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}"
-                                       class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 text-xs font-bold transition-colors shadow-2xs">
-                                        <i class="fa-solid fa-chart-simple text-xs text-indigo-600"></i>
-                                        <span>PAC-A</span>
-                                    </a>
-                                @endif
-
-                                @if(!$app->valantiFinalizada())
-                                    @php
-                                        $pathCont = route('psicologia.evaluacion.paso2', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
-                                    @endphp
+                            @if($enPapelera)
+                                <div class="text-[11px] text-slate-500">
+                                    <i class="fa-solid fa-clock-rotate-left text-rose-500"></i>
+                                    Eliminado: <strong class="text-slate-700">{{ $app->deleted_at->format('d/m/Y H:i') }}</strong>
+                                </div>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <!-- Restablecer -->
+                                    <form method="POST" action="{{ request()->routeIs('admin.*') ? route('admin.psicologia.pruebas.restablecer', $app->id) : route('psicologia.pruebas.restablecer', $app->id) }}">
+                                        @csrf
+                                        <button type="submit"
+                                                class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
+                                            <i class="fa-solid fa-rotate-left text-xs text-emerald-600"></i>
+                                            <span>Restablecer</span>
+                                        </button>
+                                    </form>
+                                    <!-- Destruir Definitivo -->
                                     <button type="button"
-                                            onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario VALANTI')"
-                                            class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
-                                        <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
-                                        <span>QR P1</span>
+                                            onclick="abrirModalDestruirDefinitivo('{{ request()->routeIs('admin.*') ? route('admin.psicologia.pruebas.destruir', $app->id) : route('psicologia.pruebas.destruir', $app->id) }}', '{{ addslashes($app->nombre_completo) }}', '{{ $app->identificacion }}')"
+                                            class="inline-flex items-center gap-1 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 px-2.5 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                                            title="Eliminar definitivamente">
+                                        <i class="fa-solid fa-trash-can text-xs text-rose-600"></i>
+                                        <span>Destruir</span>
                                     </button>
-                                @elseif(!$app->pacaFinalizada())
-                                    @php
-                                        $pathCont = route('psicologia.evaluacion.paso3', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
-                                    @endphp
+                                </div>
+                            @else
+                                <!-- Ver Consentimiento -->
+                                <div class="flex items-center gap-1.5">
                                     <button type="button"
-                                            onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario PAC-A')"
-                                            class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
-                                        <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
-                                        <span>QR P2</span>
+                                            onclick="abrirModalPdf('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($app->nombre_completo) }}')"
+                                            class="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
+                                        <i class="fa-solid fa-file-pdf text-xs text-rose-600"></i>
+                                        <span>Ver Consentimiento</span>
                                     </button>
-                                @endif
-                            </div>
+                                </div>
 
+                                <!-- Botones para Entrar a VALANTI y PAC-A -->
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    @if($app->valantiFinalizada())
+                                        <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}"
+                                           class="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 text-xs font-bold transition-colors shadow-2xs">
+                                            <i class="fa-solid fa-scale-balanced text-xs text-sky-600"></i>
+                                            <span>VALANTI</span>
+                                        </a>
+                                    @endif
+                                    @if($app->pacaFinalizada())
+                                        <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}"
+                                           class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 text-xs font-bold transition-colors shadow-2xs">
+                                            <i class="fa-solid fa-chart-simple text-xs text-indigo-600"></i>
+                                            <span>PAC-A</span>
+                                        </a>
+                                    @endif
+
+                                    @if(!$app->valantiFinalizada())
+                                        @php
+                                            $pathCont = route('psicologia.evaluacion.paso2', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
+                                        @endphp
+                                        <button type="button"
+                                                onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario VALANTI')"
+                                                class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
+                                            <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
+                                            <span>QR P1</span>
+                                        </button>
+                                    @elseif(!$app->pacaFinalizada())
+                                        @php
+                                            $pathCont = route('psicologia.evaluacion.paso3', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
+                                        @endphp
+                                        <button type="button"
+                                                onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario PAC-A')"
+                                                class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
+                                            <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
+                                            <span>QR P2</span>
+                                        </button>
+                                    @endif
+
+                                    <!-- Botón Eliminar Persona / Enviar a Papelera -->
+                                    <button type="button"
+                                            onclick="abrirModalEliminar('{{ request()->routeIs('admin.*') ? route('admin.psicologia.pruebas.eliminar', $app) : route('psicologia.pruebas.eliminar', $app) }}', '{{ addslashes($app->nombre_completo) }}', '{{ $app->identificacion }}')"
+                                            class="inline-flex items-center gap-1 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 px-2.5 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                                            title="Enviar a papelera y liberar cédula">
+                                        <i class="fa-solid fa-trash-can text-xs text-rose-600"></i>
+                                        <span>Eliminar</span>
+                                    </button>
+                                </div>
+                            @endif
                         </div>
 
                     </div>
@@ -250,8 +328,13 @@
                                 </th>
                                 <th class="py-4 px-5 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <i class="fa-solid fa-arrow-right-to-bracket text-amber-400"></i>
-                                        <span>Entrar a Pruebas</span>
+                                        @if($enPapelera)
+                                            <i class="fa-solid fa-recycle text-amber-400"></i>
+                                            <span>Acciones de Papelera</span>
+                                        @else
+                                            <i class="fa-solid fa-arrow-right-to-bracket text-amber-400"></i>
+                                            <span>Entrar a Pruebas</span>
+                                        @endif
                                     </div>
                                 </th>
                             </tr>
@@ -260,8 +343,8 @@
                             @foreach($aplicaciones as $app)
                                 @php
                                     $badge = $app->badgeEstadoPaca();
-                                    $urlPdfInline = route('psicologia.consentimientos.pdf', $app) . '?inline=1';
-                                    $urlPdfDescarga = route('psicologia.consentimientos.pdf', $app);
+                                    $urlPdfInline = !$enPapelera ? (route('psicologia.consentimientos.pdf', $app) . '?inline=1') : '#';
+                                    $urlPdfDescarga = !$enPapelera ? route('psicologia.consentimientos.pdf', $app) : '#';
                                     $fechaIso = ($app->fecha_hora_aceptacion ?? $app->created_at)->format('Y-m-d');
                                     $estadoFiltro = ($app->pacaFinalizada() && $app->valantiFinalizada())
                                         ? 'FINALIZADA'
@@ -301,33 +384,48 @@
                                         </div>
                                     </td>
 
-                                    <!-- 2. CONSENTIMIENTO: Previsualización en Modal -->
+                                    <!-- 2. CONSENTIMIENTO: Solo disponible en Historial Activo -->
                                     <td class="py-3.5 px-4">
-                                        <div class="flex items-center gap-1.5 flex-wrap">
-                                            <!-- Botón Previsualizar PDF en Modal -->
-                                            <button type="button"
-                                                    onclick="abrirModalPdf('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($app->nombre_completo) }}')"
-                                                    title="Previsualizar consentimiento en pantalla"
-                                                    class="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs hover:scale-[1.02] cursor-pointer">
-                                                <i class="fa-solid fa-file-pdf text-rose-600 text-xs"></i>
-                                                <span>Ver Consentimiento</span>
-                                            </button>
-                                        </div>
-                                        <div class="text-[10.5px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
-                                            <i class="fa-solid fa-circle-check text-[9px]"></i>
-                                            <span>Firmado digitalmente</span>
-                                        </div>
+                                        @if($enPapelera)
+                                            <div class="text-[11px] text-slate-400 italic flex items-center gap-1.5 select-none">
+                                                <i class="fa-solid fa-file-circle-xmark text-slate-300 text-sm"></i>
+                                                <span>No disponible</span>
+                                            </div>
+                                        @else
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <!-- Botón Previsualizar PDF en Modal -->
+                                                <button type="button"
+                                                        onclick="abrirModalPdf('{{ $urlPdfInline }}', '{{ $urlPdfDescarga }}', '{{ addslashes($app->nombre_completo) }}')"
+                                                        title="Previsualizar consentimiento en pantalla"
+                                                        class="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[11px] font-bold transition-all shadow-2xs hover:scale-[1.02] cursor-pointer">
+                                                    <i class="fa-solid fa-file-pdf text-rose-600 text-xs"></i>
+                                                    <span>Ver Consentimiento</span>
+                                                </button>
+                                            </div>
+                                            <div class="text-[10.5px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
+                                                <i class="fa-solid fa-circle-check text-[9px]"></i>
+                                                <span>Firmado digitalmente</span>
+                                            </div>
+                                        @endif
                                     </td>
 
                                     <!-- 3. Pruebas / Fecha en Cápsula Estilizada -->
                                     <td class="py-3.5 px-4 whitespace-nowrap">
-                                        <div class="inline-block p-2 rounded-xl bg-slate-100/80 border border-slate-200/60 text-xs">
-                                            <strong class="text-slate-900 block font-bold text-[11px]">VALANTI · PAC-A</strong>
-                                            <span class="text-[10.5px] text-slate-500 font-medium">
-                                                {{ ($app->fecha_hora_aceptacion ?? $app->created_at)->format('d/m/Y') }}
-                                                @if($app->edad) · {{ $app->edad }} años @endif
-                                            </span>
-                                        </div>
+                                        @if($enPapelera)
+                                            <div class="inline-block p-2 rounded-xl bg-rose-50/80 border border-rose-200/60 text-xs">
+                                                <span class="text-rose-600 block font-bold text-[10px] uppercase">Eliminado</span>
+                                                <strong class="text-slate-900 block font-mono text-[11px]">{{ $app->deleted_at->format('d/m/Y H:i') }}</strong>
+                                                <span class="text-[10px] text-slate-500 font-medium">{{ $app->deleted_at->diffForHumans() }}</span>
+                                            </div>
+                                        @else
+                                            <div class="inline-block p-2 rounded-xl bg-slate-100/80 border border-slate-200/60 text-xs">
+                                                <strong class="text-slate-900 block font-bold text-[11px]">VALANTI · PAC-A</strong>
+                                                <span class="text-[10.5px] text-slate-500 font-medium">
+                                                    {{ ($app->fecha_hora_aceptacion ?? $app->created_at)->format('d/m/Y') }}
+                                                    @if($app->edad) · {{ $app->edad }} años @endif
+                                                </span>
+                                            </div>
+                                        @endif
                                     </td>
 
                                     <!-- 4. Estado con Píldora Definida -->
@@ -338,48 +436,77 @@
                                         </span>
                                     </td>
 
-                                    <!-- 5. Entrar a Pruebas (Solo VALANTI y PAC-A para entrar) -->
+                                    <!-- 5. Acciones -->
                                     <td class="py-3.5 px-5 text-right whitespace-nowrap">
                                         <div class="inline-flex items-center justify-end gap-2">
-                                            @if($app->valantiFinalizada())
-                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}"
-                                                   class="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 border border-sky-200/90 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02]"
-                                                   title="Entrar a los Resultados de VALANTI">
-                                                    <i class="fa-solid fa-scale-balanced text-xs text-sky-600"></i>
-                                                    <span>VALANTI</span>
-                                                </a>
-                                            @endif
+                                            @if($enPapelera)
+                                                <!-- Restablecer -->
+                                                <form method="POST" action="{{ request()->routeIs('admin.*') ? route('admin.psicologia.pruebas.restablecer', $app->id) : route('psicologia.pruebas.restablecer', $app->id) }}">
+                                                    @csrf
+                                                    <button type="submit"
+                                                            class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02] cursor-pointer"
+                                                            title="Restablecer evaluación al historial activo">
+                                                        <i class="fa-solid fa-rotate-left text-xs text-emerald-600"></i>
+                                                        <span>Restablecer</span>
+                                                    </button>
+                                                </form>
 
-                                            @if($app->pacaFinalizada())
-                                                <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}"
-                                                   class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-200/90 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02]"
-                                                   title="Entrar a los Resultados de PAC-A">
-                                                    <i class="fa-solid fa-chart-simple text-xs text-indigo-600"></i>
-                                                    <span>PAC-A</span>
-                                                </a>
-                                            @endif
-
-                                            @if(!$app->valantiFinalizada())
-                                                @php
-                                                    $pathCont = route('psicologia.evaluacion.paso2', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
-                                                @endphp
+                                                <!-- Destruir Definitivo -->
                                                 <button type="button"
-                                                        onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario VALANTI')"
-                                                        title="Mostrar Código QR para continuar Prueba 1"
-                                                        class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
-                                                    <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
-                                                    <span>QR Prueba 1</span>
+                                                        onclick="abrirModalDestruirDefinitivo('{{ request()->routeIs('admin.*') ? route('admin.psicologia.pruebas.destruir', $app->id) : route('psicologia.pruebas.destruir', $app->id) }}', '{{ addslashes($app->nombre_completo) }}', '{{ $app->identificacion }}')"
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 transition-all shadow-2xs hover:scale-105 cursor-pointer ml-1"
+                                                        title="Eliminar permanentemente del sistema">
+                                                    <i class="fa-solid fa-trash-can text-xs"></i>
                                                 </button>
-                                            @elseif(!$app->pacaFinalizada())
-                                                @php
-                                                    $pathCont = route('psicologia.evaluacion.paso3', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
-                                                @endphp
+                                            @else
+                                                @if($app->valantiFinalizada())
+                                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.valanti.resultado', $app) : route('psicologia.valanti.resultado', $app) }}"
+                                                       class="inline-flex items-center gap-1.5 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 border border-sky-200/90 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02]"
+                                                       title="Entrar a los Resultados de VALANTI">
+                                                        <i class="fa-solid fa-scale-balanced text-xs text-sky-600"></i>
+                                                        <span>VALANTI</span>
+                                                    </a>
+                                                @endif
+
+                                                @if($app->pacaFinalizada())
+                                                    <a href="{{ request()->routeIs('admin.*') ? route('admin.psicologia.paca.resultado', $app) : route('psicologia.paca.resultado', $app) }}"
+                                                       class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-200/90 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02]"
+                                                       title="Entrar a los Resultados de PAC-A">
+                                                        <i class="fa-solid fa-chart-simple text-xs text-indigo-600"></i>
+                                                        <span>PAC-A</span>
+                                                    </a>
+                                                @endif
+
+                                                @if(!$app->valantiFinalizada())
+                                                    @php
+                                                        $pathCont = route('psicologia.evaluacion.paso2', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
+                                                    @endphp
+                                                    <button type="button"
+                                                            onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 1: Cuestionario VALANTI')"
+                                                            title="Mostrar Código QR para continuar Prueba 1"
+                                                            class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
+                                                        <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
+                                                        <span>QR Prueba 1</span>
+                                                    </button>
+                                                @elseif(!$app->pacaFinalizada())
+                                                    @php
+                                                        $pathCont = route('psicologia.evaluacion.paso3', ['codigo' => $app->codigo_sesion ?: 'PSI-PNY', 'evaluacion' => $app->id], false);
+                                                    @endphp
+                                                    <button type="button"
+                                                            onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario PAC-A')"
+                                                            title="Mostrar Código QR para continuar Prueba 2"
+                                                            class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
+                                                        <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
+                                                        <span>QR Prueba 2</span>
+                                                    </button>
+                                                @endif
+
+                                                <!-- Botón Eliminar Persona / Enviar a Papelera -->
                                                 <button type="button"
-                                                        onclick="abrirModalQrContinuar('{{ $pathCont }}', '{{ addslashes($app->nombre_completo) }}', 'CC {{ $app->identificacion }}', 'Prueba 2: Cuestionario PAC-A')"
-                                                        title="Mostrar Código QR para continuar Prueba 2"
-                                                        class="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer shadow-2xs">
-                                                    <i class="fa-solid fa-qrcode text-xs text-amber-600"></i>
-                                                    <span>QR Prueba 2</span>
+                                                        onclick="abrirModalEliminar('{{ request()->routeIs('admin.*') ? route('admin.psicologia.pruebas.eliminar', $app) : route('psicologia.pruebas.eliminar', $app) }}', '{{ addslashes($app->nombre_completo) }}', '{{ $app->identificacion }}')"
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 transition-all shadow-2xs hover:scale-105 cursor-pointer ml-1"
+                                                        title="Enviar a papelera y liberar cédula">
+                                                    <i class="fa-solid fa-trash-can text-xs"></i>
                                                 </button>
                                             @endif
                                         </div>
@@ -525,6 +652,150 @@
                 class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer">
             Cerrar
         </button>
+    </div>
+</div>
+
+<!-- MODAL 1: ENVIAR EVALUACIÓN A LA PAPELERA (SoftDelete) -->
+<div id="modalEliminarEvaluacion" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 transition-all duration-200" aria-modal="true" role="dialog">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl flex flex-col text-left relative border border-slate-200">
+        <!-- Encabezado con Icono -->
+        <div class="flex items-start gap-3.5 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl shrink-0">
+                <i class="fa-solid fa-trash-can-arrow-up"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">Enviar a la Papelera</span>
+                <h3 class="text-base font-extrabold text-slate-900 font-heading leading-tight">¿Enviar evaluación a la papelera?</h3>
+                <p class="text-xs text-slate-500 mt-0.5">La cédula quedará liberada para que la persona pueda presentar nuevamente la prueba desde cero.</p>
+            </div>
+        </div>
+
+        <!-- Tarjeta Informativa del Candidato -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 mb-3.5">
+            <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-500 font-medium shrink-0">Persona evaluada:</span>
+                <span id="txtModalEliminarNombre" class="font-bold text-slate-900 truncate text-right"></span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-500 font-medium shrink-0">Documento:</span>
+                <span id="txtModalEliminarCedula" class="font-mono font-bold text-slate-800 text-right"></span>
+            </div>
+        </div>
+
+        <!-- Alerta Informativa -->
+        <div class="text-[11px] text-blue-900 font-medium bg-blue-50 p-3 rounded-2xl border border-blue-200/80 flex items-start gap-2 mb-5 leading-relaxed">
+            <i class="fa-solid fa-circle-info text-blue-600 shrink-0 mt-0.5"></i>
+            <span>La evaluación se moverá a la papelera. Si lo requieres, podrás <strong>restablecerla</strong> en cualquier momento desde la pestaña de Papelera.</span>
+        </div>
+
+        <!-- Formulario de Envío a Papelera -->
+        <form id="formEliminarEvaluacion" method="POST" action="">
+            @csrf
+            @method('DELETE')
+            <div class="flex items-center justify-end gap-2.5">
+                <button type="button"
+                        onclick="cerrarModalEliminar()"
+                        class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                    <span>Sí, enviar a papelera</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 2: DESTRUIR DEFINITIVAMENTE (Hard Delete Permanente) -->
+<div id="modalDestruirDefinitivo" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 transition-all duration-200" aria-modal="true" role="dialog">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl flex flex-col text-left relative border border-slate-200">
+        <!-- Encabezado con Icono -->
+        <div class="flex items-start gap-3.5 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl shrink-0">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-rose-600 block">Acción Irreversible</span>
+                <h3 class="text-base font-extrabold text-slate-900 font-heading leading-tight">¿Eliminar definitivamente?</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Esta acción eliminará de forma permanente e irrecuperable este registro y todas sus respuestas del servidor.</p>
+            </div>
+        </div>
+
+        <!-- Tarjeta Informativa del Candidato -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 mb-3.5">
+            <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-500 font-medium shrink-0">Persona evaluada:</span>
+                <span id="txtModalDestruirNombre" class="font-bold text-slate-900 truncate text-right"></span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-500 font-medium shrink-0">Documento:</span>
+                <span id="txtModalDestruirCedula" class="font-mono font-bold text-slate-800 text-right"></span>
+            </div>
+        </div>
+
+        <div class="text-[11px] text-rose-900 font-medium bg-rose-50 p-3 rounded-2xl border border-rose-200/80 flex items-start gap-2 mb-5 leading-relaxed">
+            <i class="fa-solid fa-triangle-exclamation text-rose-600 shrink-0 mt-0.5"></i>
+            <span>Se borrarán permanentemente las respuestas de <strong>VALANTI</strong> y <strong>PAC-A</strong>, la firma digital y sus resultados. No se podrá recuperar.</span>
+        </div>
+
+        <!-- Formulario de Destrucción Definitiva -->
+        <form id="formDestruirDefinitivo" method="POST" action="">
+            @csrf
+            @method('DELETE')
+            <div class="flex items-center justify-end gap-2.5">
+                <button type="button"
+                        onclick="cerrarModalDestruirDefinitivo()"
+                        class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                    <span>Sí, eliminar definitivamente</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 3: VACIAR PAPELERA COMPLETA -->
+<div id="modalVaciarPapelera" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 transition-all duration-200" aria-modal="true" role="dialog">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl flex flex-col text-left relative border border-slate-200">
+        <!-- Encabezado con Icono -->
+        <div class="flex items-start gap-3.5 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl shrink-0">
+                <i class="fa-solid fa-dumpster-fire"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-rose-600 block">Purgar Papelera</span>
+                <h3 class="text-base font-extrabold text-slate-900 font-heading leading-tight">¿Vaciar toda la papelera?</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Se eliminarán definitivamente los <strong>{{ $totalEnPapelera }}</strong> registros de la papelera con todos sus datos asociados.</p>
+            </div>
+        </div>
+
+        <div class="text-[11px] text-rose-900 font-medium bg-rose-50 p-3 rounded-2xl border border-rose-200/80 flex items-start gap-2 mb-5 leading-relaxed">
+            <i class="fa-solid fa-triangle-exclamation text-rose-600 shrink-0 mt-0.5"></i>
+            <span>Esta acción no se puede deshacer. Se purgarán todas las respuestas, calificaciones y firmas archivadas en la papelera.</span>
+        </div>
+
+        <!-- Formulario Vaciar Papelera -->
+        <form method="POST" action="{{ request()->routeIs('admin.*') ? route('admin.psicologia.pruebas.vaciar_papelera') : route('psicologia.pruebas.vaciar_papelera') }}">
+            @csrf
+            <div class="flex items-center justify-end gap-2.5">
+                <button type="button"
+                        onclick="cerrarModalVaciarPapelera()"
+                        class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                    <span>Sí, vaciar papelera ahora</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -774,10 +1045,77 @@
         document.body.classList.remove('overflow-hidden');
     }
 
+    function abrirModalEliminar(urlAction, nombre, cedula) {
+        const modal = document.getElementById('modalEliminarEvaluacion');
+        const form = document.getElementById('formEliminarEvaluacion');
+        const txtNombre = document.getElementById('txtModalEliminarNombre');
+        const txtCedula = document.getElementById('txtModalEliminarCedula');
+
+        if (!modal || !form) return;
+
+        form.action = urlAction;
+        if (txtNombre) txtNombre.textContent = nombre;
+        if (txtCedula) txtCedula.textContent = 'C.C. ' + cedula;
+
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function cerrarModalEliminar() {
+        const modal = document.getElementById('modalEliminarEvaluacion');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    }
+
+    function abrirModalDestruirDefinitivo(urlAction, nombre, cedula) {
+        const modal = document.getElementById('modalDestruirDefinitivo');
+        const form = document.getElementById('formDestruirDefinitivo');
+        const txtNombre = document.getElementById('txtModalDestruirNombre');
+        const txtCedula = document.getElementById('txtModalDestruirCedula');
+
+        if (!modal || !form) return;
+
+        form.action = urlAction;
+        if (txtNombre) txtNombre.textContent = nombre;
+        if (txtCedula) txtCedula.textContent = 'C.C. ' + cedula;
+
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function cerrarModalDestruirDefinitivo() {
+        const modal = document.getElementById('modalDestruirDefinitivo');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    }
+
+    function abrirModalVaciarPapelera() {
+        const modal = document.getElementById('modalVaciarPapelera');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+    }
+
+    function cerrarModalVaciarPapelera() {
+        const modal = document.getElementById('modalVaciarPapelera');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    }
+
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             cerrarModalPdf();
             cerrarModalQrContinuar();
+            cerrarModalEliminar();
+            cerrarModalDestruirDefinitivo();
+            cerrarModalVaciarPapelera();
         }
     });
 
@@ -790,6 +1128,24 @@
     document.getElementById('modalQrContinuar')?.addEventListener('click', function(event) {
         if (event.target === this) {
             cerrarModalQrContinuar();
+        }
+    });
+
+    document.getElementById('modalEliminarEvaluacion')?.addEventListener('click', function(event) {
+        if (event.target === this) {
+            cerrarModalEliminar();
+        }
+    });
+
+    document.getElementById('modalDestruirDefinitivo')?.addEventListener('click', function(event) {
+        if (event.target === this) {
+            cerrarModalDestruirDefinitivo();
+        }
+    });
+
+    document.getElementById('modalVaciarPapelera')?.addEventListener('click', function(event) {
+        if (event.target === this) {
+            cerrarModalVaciarPapelera();
         }
     });
 </script>
