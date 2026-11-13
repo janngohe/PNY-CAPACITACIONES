@@ -13,7 +13,8 @@ class InduccionJefeController extends Controller
 {
     /**
      * Muestra la vista de inducciones para el Jefe de Área con el PIN de 4 dígitos visible
-     * y el historial de inducciones donde han participado colaboradores de su misma área.
+     * y el historial de "Inducciones de Área" (sesiones dictadas o facilitadas por colaboradores
+     * de su área o por el mismo jefe hacia otros).
      */
     public function index(): View
     {
@@ -28,42 +29,20 @@ class InduccionJefeController extends Controller
         $areaId = $jefe->area_id;
         $areaNombre = $jefe->area?->nombre;
 
-        // Historial de sesiones donde participaron personas de su misma área
-        $sesionesArea = SesionInduccion::with(['induccion', 'facilitador', 'sede'])
-            ->withCount(['asistencias as asistencias_area_count' => function ($q) use ($areaId, $areaNombre) {
-                $q->where(function ($sub) use ($areaId, $areaNombre) {
-                    if ($areaId) {
-                        $sub->whereHas('usuario', fn ($u) => $u->where('area_id', $areaId));
-                    }
-                    if ($areaNombre) {
-                        $sub->orWhere('area', $areaNombre);
-                    }
-                });
-            }])
+        // Historial de Inducciones de Área:
+        // Sesiones dictadas/facilitadas por un empleado de esa área o por el mismo jefe a otros
+        $sesionesArea = SesionInduccion::with(['induccion', 'facilitador.area', 'sede'])
             ->withCount('asistencias as total_asistencias_count')
             ->where(function ($query) use ($areaId, $areaNombre, $jefe) {
-                // Colaboradores de su área que asistieron
-                $query->whereHas('asistencias', function ($q) use ($areaId, $areaNombre) {
-                    $q->where(function ($sub) use ($areaId, $areaNombre) {
-                        if ($areaId) {
-                            $sub->whereHas('usuario', fn ($u) => $u->where('area_id', $areaId));
-                        }
-                        if ($areaNombre) {
-                            $sub->orWhere('area', $areaNombre);
-                        }
-                    });
-                });
+                // Facilitadas por el mismo jefe
+                $query->where('facilitador_id', $jefe->id);
 
-                // Sesiones convocadas a su área
-                if ($areaId) {
-                    $query->orWhereJsonContains('areas_convocadas', (int) $areaId)
-                          ->orWhereJsonContains('areas_convocadas', (string) $areaId);
-                }
-
-                // O facilitadas por alguien de su área / el mismo jefe
-                $query->orWhere('facilitador_id', $jefe->id);
+                // O facilitadas por colaboradores de su misma área
                 if ($areaId) {
                     $query->orWhereHas('facilitador', fn ($f) => $f->where('area_id', $areaId));
+                }
+                if ($areaNombre) {
+                    $query->orWhereHas('facilitador.area', fn ($a) => $a->where('nombre', $areaNombre));
                 }
             })
             ->latest()

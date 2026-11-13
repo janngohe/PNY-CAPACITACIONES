@@ -683,13 +683,17 @@
                                                 </span>
                                             @endif
                                         </div>
-                                        <span class="text-[11px] text-muted block mt-0.5">
+                                        <div class="mt-1 flex items-center flex-wrap gap-1.5">
                                             @if($pl->area)
-                                                Área específica: <strong class="text-brand-dark">{{ $pl->area->nombre }}</strong>
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                                    <i class="fa-solid fa-sitemap text-purple-500"></i> Área: {{ $pl->area->nombre }}
+                                                </span>
                                             @else
-                                                <span class="text-brand-blue font-semibold bg-blue-50 px-2 py-0.5 rounded">Plantilla General (Aplica a todas las áreas)</span>
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-brand-blue border border-blue-200">
+                                                    <i class="fa-solid fa-earth-americas text-brand-blue"></i> Todas las Áreas (General)
+                                                </span>
                                             @endif
-                                        </span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1033,13 +1037,18 @@
                     </div>
 
                     <div>
-                        <label class="block font-bold text-brand-dark mb-1">Área Asignada</label>
-                        <select name="area_id" class="w-full px-3.5 py-2.5 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
-                            <option value="">General (Todas las Áreas de la Empresa)</option>
+                        <label class="block font-bold text-brand-dark mb-1">
+                            <i class="fa-solid fa-sitemap text-brand-blue mr-1"></i> Área de Aplicación
+                        </label>
+                        <select name="area_id" class="w-full px-3.5 py-2.5 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
+                            <option value="">🌐 Todas las Áreas (Plantilla General / Corporativa)</option>
                             @foreach($areas as $ar)
-                                <option value="{{ $ar->id }}">{{ $ar->nombre }}</option>
+                                <option value="{{ $ar->id }}">🏢 Solo Área: {{ $ar->nombre }}</option>
                             @endforeach
                         </select>
+                        <p class="text-[10.5px] text-muted mt-1 leading-relaxed">
+                            <i class="fa-solid fa-circle-info text-sky-500 mr-0.5"></i> <strong>Todas las Áreas:</strong> visible y disponible para toda la empresa. <strong>Área específica:</strong> exclusiva para las capacitaciones de esa sección.
+                        </p>
                     </div>
                 </div>
 
@@ -1233,13 +1242,18 @@
                     </div>
 
                     <div>
-                        <label class="block font-bold text-brand-dark mb-1">Área Asignada</label>
-                        <select id="edit-area-id" name="area_id" class="w-full px-3.5 py-2.5 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue">
-                            <option value="">General (Todas las Áreas de la Empresa)</option>
+                        <label class="block font-bold text-brand-dark mb-1">
+                            <i class="fa-solid fa-sitemap text-brand-blue mr-1"></i> Área de Aplicación
+                        </label>
+                        <select id="edit-area-id" name="area_id" class="w-full px-3.5 py-2.5 rounded-xl border border-line bg-white text-xs text-brand-dark focus:outline-none focus:border-brand-blue cursor-pointer">
+                            <option value="">🌐 Todas las Áreas (Plantilla General / Corporativa)</option>
                             @foreach($areas as $ar)
-                                <option value="{{ $ar->id }}">{{ $ar->nombre }}</option>
+                                <option value="{{ $ar->id }}">🏢 Solo Área: {{ $ar->nombre }}</option>
                             @endforeach
                         </select>
+                        <p class="text-[10.5px] text-muted mt-1 leading-relaxed">
+                            <i class="fa-solid fa-circle-info text-sky-500 mr-0.5"></i> Define si esta plantilla se aplicará universalmente a todas las áreas o de forma exclusiva a una.
+                        </p>
                     </div>
                 </div>
 

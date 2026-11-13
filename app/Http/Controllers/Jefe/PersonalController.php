@@ -90,7 +90,12 @@ class PersonalController extends Controller
                     if ($capacitacionIds->isNotEmpty()) {
                         $q->whereIn('capacitacion_id', $capacitacionIds);
                     }
-                    $q->with('capacitacion:id,titulo,estado,puntos,porcentaje_aprobacion');
+                    $q->with([
+                        'capacitacion' => function ($c) {
+                            $c->select('id', 'titulo', 'estado', 'puntos', 'porcentaje_aprobacion')
+                              ->withCount('modulos');
+                        }
+                    ]);
                 },
                 'certificados' => function ($q) use ($capacitacionIds) {
                     if ($capacitacionIds->isNotEmpty()) {
@@ -190,6 +195,120 @@ class PersonalController extends Controller
 
             foreach ($empleados as $emp) {
                 $emp->ultima_actividad = $ultimasActividades->get($emp->id);
+            }
+
+            // 6b. Progreso de módulos y duración desde el inicio para cada capacitación asignada
+            $progresosModulos = ProgresoModulo::query()
+                ->join('modulos', 'modulos.id', '=', 'progreso_modulos.modulo_id')
+                ->whereIn('progreso_modulos.usuario_id', $empleados->pluck('id'))
+                ->where('progreso_modulos.completado', true)
+                ->selectRaw('progreso_modulos.usuario_id, modulos.capacitacion_id, count(*) as completados')
+                ->groupBy('progreso_modulos.usuario_id', 'modulos.capacitacion_id')
+                ->get()
+                ->keyBy(fn ($r) => $r->usuario_id . '-' . $r->capacitacion_id);
+
+            $hoy = now()->startOfDay();
+
+            foreach ($empleados as $emp) {
+                foreach ($emp->asignaciones as $a) {
+                    $totalModulos = $a->capacitacion?->modulos_count ?? 0;
+                    $clave = $emp->id . '-' . $a->capacitacion_id;
+                    $completados = $progresosModulos->get($clave)?->completados ?? 0;
+
+                    if ($a->estado === 'COMPLETADA' || $a->estado === 'MODULOS_COMPLETOS') {
+                        $porcentaje = 100;
+                    } elseif ($totalModulos > 0) {
+                        $porcentaje = (int) round(($completados / $totalModulos) * 100);
+                    } elseif ($a->estado === 'EN_PROGRESO') {
+                        $porcentaje = 50;
+                    } else {
+                        $porcentaje = 0;
+                    }
+
+                    $dias = 0;
+                    $duracionTexto = 'Sin iniciar';
+                    $duracionDetalle = 'Aún no ha iniciado esta capacitación';
+
+                    if ($a->estado === 'COMPLETADA') {
+                        // Las completadas ya finalizaron: no se calcula duración hasta hoy
+                        $duracionTexto = 'Finalizada';
+                        $duracionDetalle = $a->fecha_finalizacion
+                            ? 'Capacitación completada el ' . $a->fecha_finalizacion->format('d/m/Y')
+                            : 'Capacitación finalizada y aprobada';
+                    } elseif ($a->fecha_inicio) {
+                        // Solo para cursos NO completados: se calcula la duración desde que inició hasta la fecha actual
+                        $inicio = \Illuminate\Support\Carbon::parse($a->fecha_inicio)->startOfDay();
+                        $dias = (int) $inicio->diffInDays($hoy);
+
+                        if ($dias === 0) {
+                            $duracionTexto = 'Inició hoy (Día 1)';
+                            $duracionDetalle = 'Inició hoy (' . $inicio->format('d/m/Y') . ') · Día 1 en curso';
+                        } elseif ($dias === 1) {
+                            $duracionTexto = '1 día';
+                            $duracionDetalle = 'Lleva 1 día en curso (desde el ' . $inicio->format('d/m/Y') . ' hasta hoy)';
+                        } else {
+                            $duracionTexto = "{$dias} días";
+                            $duracionDetalle = "Lleva {$dias} días en curso (desde el " . $inicio->format('d/m/Y') . ' hasta hoy)';
+                        }
+                    }
+
+                    // Diagnóstico contextual según días transcurridos y porcentaje de avance
+                    $diagnosticoTitulo = '';
+                    $diagnosticoMensaje = '';
+                    $diagnosticoTipo = 'neutral';
+                    $diagnosticoIcono = 'fa-solid fa-circle-info';
+
+                    if ($a->estado === 'COMPLETADA') {
+                        $diagnosticoTitulo = 'Capacitación Completada con Éxito';
+                        $diagnosticoMensaje = 'El colaborador culminó el 100% de los módulos y completó satisfactoriamente esta capacitación.';
+                        $diagnosticoTipo = 'success';
+                        $diagnosticoIcono = 'fa-solid fa-circle-check';
+                    } elseif (!$a->fecha_inicio) {
+                        $diagnosticoTitulo = 'Pendiente de Inicio';
+                        $diagnosticoMensaje = 'El colaborador aún no ha ingresado al sistema a realizar el primer módulo de esta capacitación.';
+                        $diagnosticoTipo = 'neutral';
+                        $diagnosticoIcono = 'fa-regular fa-clock';
+                    } else {
+                        // El colaborador sí inició el curso
+                        if ($dias >= 10 && $porcentaje === 0) {
+                            $diagnosticoTitulo = 'Alerta de Inactividad (0% de avance)';
+                            $diagnosticoMensaje = "El colaborador inició hace {$dias} días pero no ha vuelto a ingresar a avanzar en los módulos (0% completado). Se sugiere seguimiento o recordatorio.";
+                            $diagnosticoTipo = 'danger';
+                            $diagnosticoIcono = 'fa-solid fa-triangle-exclamation';
+                        } elseif ($dias >= 15 && $porcentaje < 40) {
+                            $diagnosticoTitulo = 'Progreso Lento / Posible Retraso';
+                            $diagnosticoMensaje = "Lleva {$dias} días en curso con solo el {$porcentaje}% completado. Se recomienda verificar si el colaborador ha presentado dificultades de tiempo o técnicas.";
+                            $diagnosticoTipo = 'warning';
+                            $diagnosticoIcono = 'fa-solid fa-clock-rotate-left';
+                        } elseif ($porcentaje >= 80) {
+                            $diagnosticoTitulo = 'Fase Final / Próximo a Culminar';
+                            $diagnosticoMensaje = "Excelente avance ({$porcentaje}%). El colaborador está a punto de finalizar los contenidos o presentar la evaluación final.";
+                            $diagnosticoTipo = 'info';
+                            $diagnosticoIcono = 'fa-solid fa-flag-checkered';
+                        } elseif ($dias <= 5) {
+                            $diagnosticoTitulo = 'Inicio Reciente en Plazo Regular';
+                            $diagnosticoMensaje = "Comenzó hace {$dias} " . ($dias === 1 ? 'día' : 'días') . " ({$porcentaje}% completado). Se encuentra dentro del tiempo inicial estimado de estudio.";
+                            $diagnosticoTipo = 'info';
+                            $diagnosticoIcono = 'fa-solid fa-person-chalkboard';
+                        } else {
+                            $diagnosticoTitulo = 'En Progreso Regular';
+                            $diagnosticoMensaje = "Lleva {$dias} días en desarrollo con un {$porcentaje}% de avance registrado.";
+                            $diagnosticoTipo = 'info';
+                            $diagnosticoIcono = 'fa-solid fa-chart-line';
+                        }
+                    }
+
+                    $a->porcentaje_calculado = $porcentaje;
+                    $a->dias_transcurridos = $dias;
+                    $a->duracion_texto = $duracionTexto;
+                    $a->duracion_detalle = $duracionDetalle;
+                    $a->diagnostico_titulo = $diagnosticoTitulo;
+                    $a->diagnostico_mensaje = $diagnosticoMensaje;
+                    $a->diagnostico_tipo = $diagnosticoTipo;
+                    $a->diagnostico_icono = $diagnosticoIcono;
+                    $a->modulos_completados = $completados;
+                    $a->total_modulos = $totalModulos;
+                }
             }
         }
 
